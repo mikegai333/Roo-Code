@@ -1,56 +1,63 @@
-import { ClineAPI, ClineProvider } from "../../../src/exports/cline"
 import * as vscode from "vscode"
 
-declare global {
-	var api: ClineAPI
-	var provider: ClineProvider
-	var extension: vscode.Extension<ClineAPI> | undefined
-	var panel: vscode.WebviewPanel | undefined
-}
+import { ClineAPI } from "../../../src/exports/cline"
+
+import { waitFor } from "./utils"
 
 export async function run() {
-	// Set up global extension, api, provider, and panel.
-	globalThis.extension = vscode.extensions.getExtension("RooVeterinaryInc.roo-cline")
+	const extension = vscode.extensions.getExtension<ClineAPI>("RooVeterinaryInc.roo-cline")
 
-	if (!globalThis.extension) {
+	if (!extension) {
 		throw new Error("Extension not found.")
 	}
 
-	globalThis.api = globalThis.extension.isActive
-		? globalThis.extension.exports
-		: await globalThis.extension.activate()
+	const api = extension.isActive ? extension.exports : await extension.activate()
 
-	globalThis.provider = globalThis.api.sidebarProvider
+	await api.sidebarProvider.updateGlobalState("apiProvider", "openrouter")
+	await api.sidebarProvider.updateGlobalState("openRouterModelId", "anthropic/claude-3.7-sonnet")
+	await api.sidebarProvider.updateGlobalState("autoApprovalEnabled", true)
+	await api.sidebarProvider.updateGlobalState("alwaysAllowReadOnly", true)
+	await api.sidebarProvider.updateGlobalState("alwaysAllowWrite", true)
+	await api.sidebarProvider.updateGlobalState("alwaysAllowExecute", true)
+	await api.sidebarProvider.updateGlobalState("alwaysAllowBrowser", true)
+	await api.sidebarProvider.updateGlobalState("alwaysApproveResubmit", true)
+	await api.sidebarProvider.updateGlobalState("alwaysAllowMcp", true)
+	await api.sidebarProvider.updateGlobalState("alwaysAllowModeSwitch", true)
 
-	await globalThis.provider.updateGlobalState("apiProvider", "openrouter")
-	await globalThis.provider.updateGlobalState("openRouterModelId", "anthropic/claude-3.5-sonnet")
-	await globalThis.provider.storeSecret("openRouterApiKey", process.env.OPENROUTER_API_KEY || "sk-or-v1-fake-api-key")
+	await api.sidebarProvider.storeSecret("openRouterApiKey", process.env.OPENROUTER_API_KEY!)
 
-	globalThis.panel = vscode.window.createWebviewPanel(
-		"roo-cline.SidebarProvider",
-		"Roo Code",
-		vscode.ViewColumn.One,
-		{
+	await vscode.workspace
+		.getConfiguration("roo-cline")
+		.update("allowedCommands", ["*"], vscode.ConfigurationTarget.Global)
+
+	await api.sidebarProvider.resolveWebviewView(
+		vscode.window.createWebviewPanel("roo-cline.SidebarProvider", "Roo Code", vscode.ViewColumn.One, {
 			enableScripts: true,
 			enableCommandUris: true,
 			retainContextWhenHidden: true,
-			localResourceRoots: [globalThis.extension?.extensionUri],
-		},
+			localResourceRoots: [extension.extensionUri],
+		}),
 	)
 
-	await globalThis.provider.resolveWebviewView(globalThis.panel)
+	await waitFor(() => api.sidebarProvider.viewLaunched)
 
-	let startTime = Date.now()
-	const timeout = 60000
-	const interval = 1000
+	await api.startNewTask(process.env.prompt!)
 
-	while (Date.now() - startTime < timeout) {
-		if (globalThis.provider.viewLaunched) {
-			break
-		}
+	let cursor = 0
 
-		await new Promise((resolve) => setTimeout(resolve, interval))
+	const getMessage = async () => {
+		await waitFor(() => api.sidebarProvider.messages.length > cursor, { timeout: 120_000 }).catch(() => {})
+		return api.sidebarProvider.messages[cursor++]
 	}
 
-	console.log("Extension loaded.")
+	while (true) {
+		const message = await getMessage()
+		console.log("message = ", message)
+
+		if (!message || message.say === "completion_result") {
+			break
+		}
+	}
+
+	console.log("🚀")
 }

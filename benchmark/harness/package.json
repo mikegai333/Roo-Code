@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"build": "cd ../.. && npm run build",
-		"compile": "tsc -p tsconfig.json",
+		"compile": "rm -rf out && tsc -p tsconfig.json",
 		"lint": "eslint src --ext ts",
 		"check-types": "tsc --noEmit",
 		"dev": "npm run compile && npx dotenvx run -f .env.integration -- node ./out/run.js"
@@ -12,6 +12,7 @@
 	"devDependencies": {
 		"@vscode/test-electron": "^2.4.0",
 		"tsx": "^4.19.3",
-		"typescript": "^5.4.5"
+		"typescript": "^5.4.5",
+		"yargs": "^17.7.2"
 	}
 }
