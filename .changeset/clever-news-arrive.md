@@ -1,5 +1,5 @@
 ---
-"roo-cline": patch
+"aixcoding-agent": patch
 ---
 
 Disable writing in ask mode

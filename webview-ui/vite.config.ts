@@ -32,6 +32,16 @@ export default defineConfig({
 			methods: "*",
 			allowedHeaders: "*",
 		},
+		headers: {
+			"Content-Security-Policy": "default-src 'self'; connect-src 'self' http://* https://* ws: wss:",
+		},
+		proxy: {
+			"/aicoding": {
+				target: "http://22.189.54.139",
+				changeOrigin: true,
+				secure: false,
+			},
+		},
 	},
 	define: {
 		"process.platform": JSON.stringify(process.platform),

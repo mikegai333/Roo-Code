@@ -35,8 +35,8 @@ export class OpenRouterHandler implements ApiHandler, SingleCompletionHandler {
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 
 		const defaultHeaders = {
-			"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-			"X-Title": "Roo Code",
+			"HTTP-Referer": "https://github.com/RooVetGit/aixcoding-agent",
+			"X-Title": "AIxCoding Agent",
 		}
 
 		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders })
@@ -163,6 +163,7 @@ export class OpenRouterHandler implements ApiHandler, SingleCompletionHandler {
 			}
 
 			const delta = chunk.choices[0]?.delta
+			console.log("model", delta)
 			if ("reasoning" in delta && delta.reasoning) {
 				yield {
 					type: "reasoning",

@@ -2,13 +2,14 @@ dist
 out
 out-*
 node_modules
+config
 coverage/
 
 .DS_Store
 
 # Builds
 bin/
-roo-cline-*.vsix
+aixcoding-agent-*.vsix
 
 # Local prompts and rules
 /local-prompts

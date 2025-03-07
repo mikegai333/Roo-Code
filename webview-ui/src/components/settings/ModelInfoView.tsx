@@ -84,7 +84,13 @@ export const ModelInfoView = ({
 	].filter(Boolean)
 
 	return (
-		<div style={{ fontSize: "12px", marginTop: "2px", color: "var(--vscode-descriptionForeground)" }}>
+		<div
+			style={{
+				fontSize: "12px",
+				marginTop: "2px",
+				color: "var(--vscode-descriptionForeground)",
+				display: "none",
+			}}>
 			{infoItems.map((item, index) => (
 				<Fragment key={index}>
 					{item}

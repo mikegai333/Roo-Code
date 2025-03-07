@@ -57,7 +57,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 	const [lmStudioModels, setLmStudioModels] = useState<string[]>([])
 	const [vsCodeLmModels, setVsCodeLmModels] = useState<vscodemodels.LanguageModelChatSelector[]>([])
 	const [anthropicBaseUrlSelected, setAnthropicBaseUrlSelected] = useState(!!apiConfiguration?.anthropicBaseUrl)
-	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
+	const [azureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
 	const [openRouterBaseUrlSelected, setOpenRouterBaseUrlSelected] = useState(!!apiConfiguration?.openRouterBaseUrl)
 	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
@@ -136,7 +136,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 		<div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
 			<div className="dropdown-container">
 				<label htmlFor="api-provider">
-					<span style={{ fontWeight: 500 }}>API Provider</span>
+					<span style={{ fontWeight: 500 }}>API 提供者</span>
 				</label>
 				<Dropdown
 					id="api-provider"
@@ -158,7 +158,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						{ value: "gemini", label: "Google Gemini" },
 						{ value: "deepseek", label: "DeepSeek" },
 						{ value: "openai-native", label: "OpenAI" },
-						{ value: "openai", label: "OpenAI Compatible" },
+						{ value: "openai", label: "AIxCoding" },
 						{ value: "vertex", label: "GCP Vertex AI" },
 						{ value: "bedrock", label: "AWS Bedrock" },
 						{ value: "glama", label: "Glama" },
@@ -605,16 +605,16 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						style={{ width: "100%" }}
 						type="url"
 						onBlur={handleInputChange("openAiBaseUrl")}
-						placeholder={"Enter base URL..."}>
-						<span style={{ fontWeight: 500 }}>Base URL</span>
+						placeholder={"请输入基础 URL..."}>
+						<span style={{ fontWeight: 500 }}>基础 URL</span>
 					</VSCodeTextField>
 					<VSCodeTextField
 						value={apiConfiguration?.openAiApiKey || ""}
 						style={{ width: "100%" }}
 						type="password"
 						onBlur={handleInputChange("openAiApiKey")}
-						placeholder="Enter API Key...">
-						<span style={{ fontWeight: 500 }}>API Key</span>
+						placeholder="请输入 API 密钥...">
+						<span style={{ fontWeight: 500 }}>API 密钥</span>
 					</VSCodeTextField>
 					<OpenAiModelPicker />
 					<div style={{ display: "flex", alignItems: "center" }}>
@@ -625,17 +625,17 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 									target: { value: checked },
 								})
 							}}>
-							Enable streaming
+							启用流式传输
 						</Checkbox>
 					</div>
-					<Checkbox
+					{/* <Checkbox
 						checked={apiConfiguration?.openAiUseAzure ?? false}
 						onChange={(checked: boolean) => {
 							handleInputChange("openAiUseAzure")({
 								target: { value: checked },
 							})
 						}}>
-						Use Azure
+						使用 Azure
 					</Checkbox>
 					<Checkbox
 						checked={azureApiVersionSelected}
@@ -649,14 +649,14 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 								})
 							}
 						}}>
-						Set Azure API version
-					</Checkbox>
+						设置 Azure API 版本
+					</Checkbox> */}
 					{azureApiVersionSelected && (
 						<VSCodeTextField
 							value={apiConfiguration?.azureApiVersion || ""}
 							style={{ width: "100%", marginTop: 3 }}
 							onBlur={handleInputChange("azureApiVersion")}
-							placeholder={`Default: ${azureOpenAiDefaultApiVersion}`}
+							placeholder={`默认值: ${azureOpenAiDefaultApiVersion}`}
 						/>
 					)}
 
@@ -666,7 +666,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						}}
 					/>
 					<Pane
-						title="Model Configuration"
+						title="模型配置"
 						open={false}
 						actions={[
 							{
@@ -688,12 +688,9 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 									color: "var(--vscode-descriptionForeground)",
 									margin: "0 0 15px 0",
 									lineHeight: "1.4",
-								}}>
-								Configure the capabilities and pricing for your custom OpenAI-compatible model. <br />
-								Be careful for the model capabilities, as they can affect how Roo Code can work.
-							</p>
+								}}></p>
 
-							{/* Capabilities Section */}
+							{/* 功能部分 */}
 							<div
 								style={{
 									marginBottom: 20,
@@ -709,7 +706,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 										marginBottom: 12,
 										color: "var(--vscode-editor-foreground)",
 									}}>
-									Model Capabilities
+									模型功能
 								</span>
 								<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 									<div className="token-config-field">
@@ -730,7 +727,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 														: "var(--vscode-errorForeground)"
 												})(),
 											}}
-											title="Maximum number of tokens the model can generate in a single response"
+											title="模型在单个响应中可以生成的最大 Token 数量"
 											onChange={(e: any) => {
 												const value = parseInt(e.target.value)
 												handleInputChange("openAiCustomModelInfo")({
@@ -743,8 +740,8 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 													},
 												})
 											}}
-											placeholder="e.g. 4096">
-											<span style={{ fontWeight: 500 }}>Max Output Tokens</span>
+											placeholder="例如 4096">
+											<span style={{ fontWeight: 500 }}>最大输出 Token 数量</span>
 										</VSCodeTextField>
 										<div
 											style={{
@@ -757,8 +754,9 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											}}>
 											<i className="codicon codicon-info" style={{ fontSize: "12px" }}></i>
 											<span>
-												Maximum number of tokens the model can generate in a response. <br />
-												(-1 is depend on server)
+												模型在响应中可以生成的最大 Token 数量。
+												<br />
+												（-1 表示取决于服务器）
 											</span>
 										</div>
 									</div>
@@ -781,7 +779,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 														: "var(--vscode-errorForeground)"
 												})(),
 											}}
-											title="Total number of tokens (input + output) the model can process in a single request"
+											title="模型在单个请求中可以处理的 Token 总数（输入 + 输出）"
 											onChange={(e: any) => {
 												const parsed = parseInt(e.target.value)
 												handleInputChange("openAiCustomModelInfo")({
@@ -799,8 +797,8 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 													},
 												})
 											}}
-											placeholder="e.g. 128000">
-											<span style={{ fontWeight: 500 }}>Context Window Size</span>
+											placeholder="例如 128000">
+											<span style={{ fontWeight: 500 }}>上下文窗口大小</span>
 										</VSCodeTextField>
 										<div
 											style={{
@@ -813,13 +811,12 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											}}>
 											<i className="codicon codicon-info" style={{ fontSize: "12px" }}></i>
 											<span>
-												Total tokens (input + output) the model can process. This will help Roo
-												Code run correctly.
+												模型可以处理的 Token 总数（输入 + 输出）。这将有助于插件正常运行。
 											</span>
 										</div>
 									</div>
 
-									<div
+									{/* <div
 										style={{
 											backgroundColor: "var(--vscode-editor-background)",
 											padding: "12px",
@@ -836,7 +833,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 												display: "block",
 												marginBottom: "10px",
 											}}>
-											Model Features
+											模型特性
 										</span>
 
 										<div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -858,11 +855,11 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 																},
 															})
 														}}>
-														<span style={{ fontWeight: 500 }}>Image Support</span>
+														<span style={{ fontWeight: 500 }}>图像支持</span>
 													</Checkbox>
 													<i
 														className="codicon codicon-info"
-														title="Enable if the model can process and understand images in the input. Required for image-based assistance and visual code understanding."
+														title="如果模型可以处理和理解输入中的图像，请启用此功能。这是基于图像的辅助和可视化代码理解所必需的。"
 														style={{
 															fontSize: "12px",
 															color: "var(--vscode-descriptionForeground)",
@@ -878,8 +875,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 														marginTop: "4px",
 														lineHeight: "1.4",
 													}}>
-													Allows the model to analyze and understand images, essential for
-													visual code assistance
+													允许模型分析和理解图像，这对于可视化代码辅助至关重要
 												</p>
 											</div>
 
@@ -906,11 +902,11 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 																},
 															})
 														}}>
-														<span style={{ fontWeight: 500 }}>Computer Use</span>
+														<span style={{ fontWeight: 500 }}>计算机使用</span>
 													</Checkbox>
 													<i
 														className="codicon codicon-info"
-														title="Enable if the model can interact with your computer through commands and file operations. Required for automated tasks and file modifications."
+														title="如果模型可以通过命令和文件操作与您的计算机交互，请启用此功能。这是自动化任务和文件修改所必需的。"
 														style={{
 															fontSize: "12px",
 															color: "var(--vscode-descriptionForeground)",
@@ -926,16 +922,16 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 														marginTop: "4px",
 														lineHeight: "1.4",
 													}}>
-													This model feature is for computer use like sonnet 3.5 support
+													此模型特性用于计算机使用，例如 Sonnet 3.5 支持
 												</p>
 											</div>
 										</div>
-									</div>
+									</div> */}
 								</div>
 							</div>
 
-							{/* Pricing Section */}
-							<div
+							{/* 定价部分 */}
+							{/* <div
 								style={{
 									backgroundColor: "var(--vscode-editor-inactiveSelectionBackground)",
 									padding: "12px",
@@ -951,7 +947,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											display: "block",
 											marginBottom: "4px",
 										}}>
-										Model Pricing
+										模型定价
 									</span>
 									<span
 										style={{
@@ -959,7 +955,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											color: "var(--vscode-descriptionForeground)",
 											display: "block",
 										}}>
-										Configure token-based pricing in USD per million tokens
+										配置基于 Token 的定价，以每百万 Token 的美元价格计算
 									</span>
 								</div>
 
@@ -1007,12 +1003,12 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 													},
 												})
 											}}
-											placeholder="e.g. 0.0001">
+											placeholder="例如 0.0001">
 											<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-												<span style={{ fontWeight: 500 }}>Input Price</span>
+												<span style={{ fontWeight: 500 }}>输入价格</span>
 												<i
 													className="codicon codicon-info"
-													title="Cost per million tokens in the input/prompt. This affects the cost of sending context and instructions to the model."
+													title="输入/提示中每百万 Token 的成本。这会影响将上下文和指令发送到模型的成本。"
 													style={{
 														fontSize: "12px",
 														color: "var(--vscode-descriptionForeground)",
@@ -1058,12 +1054,12 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 													},
 												})
 											}}
-											placeholder="e.g. 0.0002">
+											placeholder="例如 0.0002">
 											<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-												<span style={{ fontWeight: 500 }}>Output Price</span>
+												<span style={{ fontWeight: 500 }}>输出价格</span>
 												<i
 													className="codicon codicon-info"
-													title="Cost per million tokens in the model's response. This affects the cost of generated content and completions."
+													title="模型响应中每百万 Token 的成本。这会影响生成内容和补全的成本。"
 													style={{
 														fontSize: "12px",
 														color: "var(--vscode-descriptionForeground)",
@@ -1074,7 +1070,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 										</VSCodeTextField>
 									</div>
 								</div>
-							</div>
+							</div> */}
 						</div>
 					</Pane>
 					<div
@@ -1083,19 +1079,18 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						}}
 					/>
 
-					{/* end Model Info Configuration */}
+					{/* 模型信息配置结束 */}
 
-					<p
+					{/* <p
 						style={{
 							fontSize: "12px",
 							marginTop: 3,
 							color: "var(--vscode-descriptionForeground)",
 						}}>
 						<span style={{ color: "var(--vscode-errorForeground)" }}>
-							(<span style={{ fontWeight: 500 }}>Note:</span> Roo Code uses complex prompts and works best
-							with Claude models. Less capable models may not work as expected.)
+							(<span style={{ fontWeight: 500 }}>注意：</span> AIxCoding Agent 使用复杂的提示，并且最适合与 Claude 模型一起使用。功能较弱的模型可能无法按预期工作。)
 						</span>
-					</p>
+					</p> */}
 				</div>
 			)}
 
@@ -1161,8 +1156,8 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						</VSCodeLink>{" "}
 						feature to use it with this extension.{" "}
 						<span style={{ color: "var(--vscode-errorForeground)" }}>
-							(<span style={{ fontWeight: 500 }}>Note:</span> Roo Code uses complex prompts and works best
-							with Claude models. Less capable models may not work as expected.)
+							(<span style={{ fontWeight: 500 }}>Note:</span> AIxCoding Agent uses complex prompts and
+							works best with Claude models. Less capable models may not work as expected.)
 						</span>
 					</p>
 				</div>
@@ -1315,8 +1310,8 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 							quickstart guide.
 						</VSCodeLink>
 						<span style={{ color: "var(--vscode-errorForeground)" }}>
-							(<span style={{ fontWeight: 500 }}>Note:</span> Roo Code uses complex prompts and works best
-							with Claude models. Less capable models may not work as expected.)
+							(<span style={{ fontWeight: 500 }}>Note:</span> AIxCoding Agent uses complex prompts and
+							works best with Claude models. Less capable models may not work as expected.)
 						</span>
 					</p>
 				</div>
@@ -1427,13 +1422,13 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 }
 
 export function getGlamaAuthUrl(uriScheme?: string) {
-	const callbackUrl = `${uriScheme || "vscode"}://rooveterinaryinc.roo-cline/glama`
+	const callbackUrl = `${uriScheme || "vscode"}://RooVeterinaryInc.aixcoding-agent/glama`
 
 	return `https://glama.ai/oauth/authorize?callback_url=${encodeURIComponent(callbackUrl)}`
 }
 
 export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://rooveterinaryinc.roo-cline/openrouter`
+	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://RooVeterinaryInc.aixcoding-agent/openrouter`
 }
 
 export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration) {

@@ -1,7 +1,7 @@
 import * as assert from "assert"
 import * as vscode from "vscode"
 
-suite("Roo Code Task", () => {
+suite("AIxCoding Agent Task", () => {
 	test("Should handle prompt and response correctly", async function () {
 		const timeout = 30000
 		const interval = 1000

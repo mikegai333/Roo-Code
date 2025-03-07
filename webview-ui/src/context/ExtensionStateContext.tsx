@@ -17,7 +17,7 @@ import { vscode } from "../utils/vscode"
 import { convertTextMateToHljs } from "../utils/textMateToHljs"
 import { findLastIndex } from "../../../src/shared/array"
 import { McpServer } from "../../../src/shared/mcp"
-import { checkExistKey } from "../../../src/shared/checkExistApiConfig"
+// import { checkExistKey } from "../../../src/shared/checkExistApiConfig"
 import { Mode, CustomModePrompts, defaultModeSlug, defaultPrompts, ModeConfig } from "../../../src/shared/modes"
 import { CustomSupportPrompts } from "../../../src/shared/support-prompt"
 import { experimentDefault, ExperimentId } from "../../../src/shared/experiments"
@@ -82,6 +82,11 @@ export interface ExtensionStateContextType extends ExtensionState {
 	handleInputChange: (field: keyof ApiConfiguration, softUpdate?: boolean) => (event: any) => void
 	customModes: ModeConfig[]
 	setCustomModes: (value: ModeConfig[]) => void
+	setEnableCompletion: (value: boolean) => void
+	setReportApi: (value: string) => void
+	setBaseApi: (value: string) => void
+	setTemplateList: (value: any) => void
+	setNewVersion: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -117,6 +122,12 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		enhancementApiConfigId: "",
 		autoApprovalEnabled: false,
 		customModes: [],
+		enableCompletion: false,
+		reportApi: "http://22.189.54.139/report",
+		baseApi: "http://22.189.54.139/aicoding",
+		apiConfiguration: {},
+		templateList: [],
+		newVersion: false,
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -195,10 +206,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					setState((prevState) => ({
 						...prevState,
 						...newState,
+						apiConfiguration: {
+							...prevState.apiConfiguration,
+							...(newState.apiConfiguration || {}),
+						},
 					}))
-					const config = newState.apiConfiguration
-					const hasKey = checkExistKey(config)
-					setShowWelcome(!hasKey)
+					// const config = newState.apiConfiguration
+					// const hasKey = checkExistKey(config)
+					// setShowWelcome(!hasKey)
+					setShowWelcome(false)
 					setDidHydrateState(true)
 					break
 				}
@@ -246,6 +262,16 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					})
 					break
 				}
+				case "templateList": {
+					const templates = message.templateList || []
+					setState((prevState) => ({
+						...prevState,
+						templateList: templates,
+					}))
+					localStorage.setItem("templateList", templates)
+					console.log("messageReceive", templates)
+					break
+				}
 				case "openAiModels": {
 					const updatedModels = message.openAiModels ?? []
 					setOpenAiModels(updatedModels)
@@ -285,6 +311,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 
 	useEffect(() => {
 		vscode.postMessage({ type: "webviewDidLaunch" })
+		// 请求模板列表数据
+		// vscode.postMessage({ type: "getTemplateList" })
 	}, [])
 
 	const contextValue: ExtensionStateContextType = {
@@ -350,6 +378,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setAutoApprovalEnabled: (value) => setState((prevState) => ({ ...prevState, autoApprovalEnabled: value })),
 		handleInputChange,
 		setCustomModes: (value) => setState((prevState) => ({ ...prevState, customModes: value })),
+		setEnableCompletion: (value) => setState((prevState) => ({ ...prevState, enableCompletion: value })),
+		setReportApi: (value) => setState((prevState) => ({ ...prevState, reportApi: value })),
+		setBaseApi: (value) => setState((prevState) => ({ ...prevState, baseApi: value })),
+		setTemplateList: (value) => setState((prevState) => ({ ...prevState, templateList: value })),
+		setNewVersion: (value) => setState((prevState) => ({ ...prevState, newVersion: value })),
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

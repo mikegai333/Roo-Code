@@ -6,7 +6,7 @@ import * as vscode from "vscode"
 export async function downloadTask(dateTs: number, conversationHistory: Anthropic.MessageParam[]) {
 	// File name
 	const date = new Date(dateTs)
-	const month = date.toLocaleString("en-US", { month: "short" }).toLowerCase()
+	const month = date.toLocaleString("zh-CN", { month: "short" }).toLowerCase()
 	const day = date.getDate()
 	const year = date.getFullYear()
 	let hours = date.getHours()

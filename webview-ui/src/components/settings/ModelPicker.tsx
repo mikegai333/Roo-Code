@@ -1,4 +1,4 @@
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+// import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import debounce from "debounce"
 import { useMemo, useState, useCallback, useEffect, useRef } from "react"
 import { useMount } from "react-use"
@@ -142,19 +142,19 @@ export const ModelPicker = ({
 
 	return (
 		<>
-			<div className="font-semibold">Model</div>
+			<div className="font-semibold">模型</div>
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<Button variant="combobox" role="combobox" aria-expanded={open} className="w-full justify-between">
-						{value ?? "Select model..."}
+						{value ?? "选择模型..."}
 						<CaretSortIcon className="opacity-50" />
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent align="start" className="p-0">
 					<Command>
-						<CommandInput placeholder="Search model..." className="h-9" />
+						<CommandInput placeholder="搜索模型..." className="h-9" />
 						<CommandList>
-							<CommandEmpty>No model found.</CommandEmpty>
+							<CommandEmpty>未找到模型。</CommandEmpty>
 							<CommandGroup>
 								{modelIds.map((model) => (
 									<CommandItem key={model} value={model} onSelect={onSelect}>
@@ -166,13 +166,13 @@ export const ModelPicker = ({
 								))}
 							</CommandGroup>
 							{allowCustomModel && (
-								<CommandGroup heading="Custom">
+								<CommandGroup heading="自定义">
 									<CommandItem
 										onSelect={() => {
 											setIsCustomModel(true)
 											setOpen(false)
 										}}>
-										+ Add custom model
+										+ 添加自定义模型
 									</CommandItem>
 								</CommandGroup>
 							)}
@@ -188,32 +188,32 @@ export const ModelPicker = ({
 					setIsDescriptionExpanded={setIsDescriptionExpanded}
 				/>
 			)}
-			<p>
-				The extension automatically fetches the latest list of models available on{" "}
+			{/* <p>
+				该扩展程序会自动获取可用的最新模型列表，这些模型来自{" "}
 				<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href={serviceUrl}>
-					{serviceName}.
+					{serviceName}。
 				</VSCodeLink>
-				If you're unsure which model to choose, Roo Code works best with{" "}
-				<VSCodeLink onClick={() => onSelect(recommendedModel)}>{recommendedModel}.</VSCodeLink>
-				You can also try searching "free" for no-cost options currently available.
-			</p>
+				如果您不确定选择哪个模型，AIxCoding Agent 与{" "}
+				<VSCodeLink onClick={() => onSelect(recommendedModel)}>{recommendedModel}。</VSCodeLink>
+				您也可以尝试搜索“免费”以查找当前可用的免费选项。
+			</p> */}
 			{allowCustomModel && isCustomModel && (
 				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 					<div className="bg-[var(--vscode-editor-background)] p-6 rounded-lg w-96">
-						<h3 className="text-lg font-semibold mb-4">Add Custom Model</h3>
+						<h3 className="text-lg font-semibold mb-4">添加自定义模型</h3>
 						<input
 							type="text"
 							className="w-full p-2 mb-4 bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] border border-[var(--vscode-input-border)] rounded"
-							placeholder="Enter model ID"
+							placeholder="输入模型 ID"
 							value={customModelId}
 							onChange={(e) => setCustomModelId(e.target.value)}
 						/>
 						<div className="flex justify-end gap-2">
 							<Button variant="secondary" onClick={() => setIsCustomModel(false)}>
-								Cancel
+								取消
 							</Button>
 							<Button onClick={() => onSelectCustomModel(customModelId)} disabled={!customModelId.trim()}>
-								Add
+								添加
 							</Button>
 						</div>
 					</div>

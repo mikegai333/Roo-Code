@@ -31,7 +31,7 @@ export class DiffViewProvider {
 		const fileExists = this.editType === "modify"
 		const absolutePath = path.resolve(this.cwd, relPath)
 		this.isEditing = true
-		// if the file is already open, ensure it's not dirty before getting its contents
+		// 如果文件已打开，请确保在获取其内容之前它不是脏的
 		if (fileExists) {
 			const existingDocument = vscode.workspace.textDocuments.find((doc) =>
 				arePathsEqual(doc.uri.fsPath, absolutePath),
@@ -41,7 +41,7 @@ export class DiffViewProvider {
 			}
 		}
 
-		// get diagnostics before editing the file, we'll compare to diagnostics after editing to see if cline needs to fix anything
+		// 获取编辑文件之前的诊断信息，我们将比较编辑前后诊断信息，查看 cline 是否需要修复任何问题
 		this.preDiagnostics = vscode.languages.getDiagnostics()
 
 		if (fileExists) {
@@ -49,15 +49,15 @@ export class DiffViewProvider {
 		} else {
 			this.originalContent = ""
 		}
-		// for new files, create any necessary directories and keep track of new directories to delete if the user denies the operation
+		// 对于新文件，创建任何必要的目录，并跟踪如果用户拒绝操作要删除的新目录
 		this.createdDirs = await createDirectoriesForFile(absolutePath)
-		// make sure the file exists before we open it
+		// 确保文件存在，然后再打开它
 		if (!fileExists) {
 			await fs.writeFile(absolutePath, "")
 		}
-		// if the file was already open, close it (must happen after showing the diff view since if it's the only tab the column will close)
+		// 如果文件已打开，则关闭它（必须在显示差异视图之后发生，因为如果它是唯一选项卡，则列将关闭）
 		this.documentWasOpen = false
-		// close the tab if it's open (it's already saved above)
+		// 关闭标签页（如果已打开）（它已在上面保存）
 		const tabs = vscode.window.tabGroups.all
 			.map((tg) => tg.tabs)
 			.flat()
@@ -73,64 +73,64 @@ export class DiffViewProvider {
 		this.activeDiffEditor = await this.openDiffEditor()
 		this.fadedOverlayController = new DecorationController("fadedOverlay", this.activeDiffEditor)
 		this.activeLineController = new DecorationController("activeLine", this.activeDiffEditor)
-		// Apply faded overlay to all lines initially
+		// 最初将淡出叠加应用于所有行
 		this.fadedOverlayController.addLines(0, this.activeDiffEditor.document.lineCount)
-		this.scrollEditorToLine(0) // will this crash for new files?
+		this.scrollEditorToLine(0) // 新文件会崩溃吗？
 		this.streamedLines = []
 	}
 
 	async update(accumulatedContent: string, isFinal: boolean) {
 		if (!this.relPath || !this.activeLineController || !this.fadedOverlayController) {
-			throw new Error("Required values not set")
+			throw new Error("必需值未设置")
 		}
 		this.newContent = accumulatedContent
 		const accumulatedLines = accumulatedContent.split("\n")
 		if (!isFinal) {
-			accumulatedLines.pop() // remove the last partial line only if it's not the final update
+			accumulatedLines.pop() // 仅当它不是最终更新时才删除最后一行
 		}
 
 		const diffEditor = this.activeDiffEditor
 		const document = diffEditor?.document
 		if (!diffEditor || !document) {
-			throw new Error("User closed text editor, unable to edit file...")
+			throw new Error("用户关闭了文本编辑器，无法编辑文件...")
 		}
 
-		// Place cursor at the beginning of the diff editor to keep it out of the way of the stream animation
+		// 将光标放在差异编辑器的开头，以使其远离流动画
 		const beginningOfDocument = new vscode.Position(0, 0)
 		diffEditor.selection = new vscode.Selection(beginningOfDocument, beginningOfDocument)
 
 		const endLine = accumulatedLines.length
-		// Replace all content up to the current line with accumulated lines
+		// 将所有内容替换为当前行，并使用累积的行
 		const edit = new vscode.WorkspaceEdit()
 		const rangeToReplace = new vscode.Range(0, 0, endLine + 1, 0)
 		const contentToReplace = accumulatedLines.slice(0, endLine + 1).join("\n") + "\n"
 		edit.replace(document.uri, rangeToReplace, contentToReplace)
 		await vscode.workspace.applyEdit(edit)
-		// Update decorations
+		// 更新装饰
 		this.activeLineController.setActiveLine(endLine)
 		this.fadedOverlayController.updateOverlayAfterLine(endLine, document.lineCount)
-		// Scroll to the current line
+		// 滚动到当前行
 		this.scrollEditorToLine(endLine)
 
-		// Update the streamedLines with the new accumulated content
+		// 使用新的累积内容更新 streamedLines
 		this.streamedLines = accumulatedLines
 		if (isFinal) {
-			// Handle any remaining lines if the new content is shorter than the original
+			// 如果新内容短于原始内容，则处理任何剩余的行
 			if (this.streamedLines.length < document.lineCount) {
 				const edit = new vscode.WorkspaceEdit()
 				edit.delete(document.uri, new vscode.Range(this.streamedLines.length, 0, document.lineCount, 0))
 				await vscode.workspace.applyEdit(edit)
 			}
-			// Preserve empty last line if original content had one
+			// 如果原始内容有一行，则保留空行
 			const hasEmptyLastLine = this.originalContent?.endsWith("\n")
 			if (hasEmptyLastLine && !accumulatedContent.endsWith("\n")) {
 				accumulatedContent += "\n"
 			}
-			// Apply the final content
+			// 应用最终内容
 			const finalEdit = new vscode.WorkspaceEdit()
 			finalEdit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), accumulatedContent)
 			await vscode.workspace.applyEdit(finalEdit)
-			// Clear all decorations at the end (after applying final edit)
+			// 在最后清除所有装饰（应用最终编辑后）
 			this.fadedOverlayController.clear()
 			this.activeLineController.clear()
 		}
@@ -155,40 +155,27 @@ export class DiffViewProvider {
 		await this.closeAllDiffViews()
 
 		/*
-		Getting diagnostics before and after the file edit is a better approach than
-		automatically tracking problems in real-time. This method ensures we only
-		report new problems that are a direct result of this specific edit.
-		Since these are new problems resulting from Roo's edit, we know they're
-		directly related to the work he's doing. This eliminates the risk of Roo
-		going off-task or getting distracted by unrelated issues, which was a problem
-		with the previous auto-debug approach. Some users' machines may be slow to
-		update diagnostics, so this approach provides a good balance between automation
-		and avoiding potential issues where Roo might get stuck in loops due to
-		outdated problem information. If no new problems show up by the time the user
-		accepts the changes, they can always debug later using the '@problems' mention.
-		This way, Roo only becomes aware of new problems resulting from his edits
-		and can address them accordingly. If problems don't change immediately after
-		applying a fix, won't be notified, which is generally fine since the
-		initial fix is usually correct and it may just take time for linters to catch up.
+		获取编辑文件之前和之后的诊断信息，比实时自动跟踪问题更好。此方法确保我们仅报告此特定编辑的直接结果产生的新问题。
+		由于这些是 AIxCoding 编辑产生的新问题，我们知道它们与他正在执行的工作直接相关。这消除了 AIxCoding 脱离任务或因不相关问题而分心的风险，这在之前的自动调试方法中是一个问题。某些用户的机器更新诊断信息的速度可能很慢，因此这种方法在自动化和避免 AIxCoding 由于过时的信息而陷入循环的潜在问题之间取得了良好的平衡。如果用户接受更改时没有出现新问题，他们可以使用“@problems”提及随时进行调试。
+		这样，AIxCoding 只会注意到他编辑产生的新问题，并可以相应地解决这些问题。如果应用修复后问题没有立即改变，则不会收到通知，这通常是可以的，因为初始修复通常是正确的，并且可能需要一些时间才能让代码检查工具赶上。
 		*/
 		const postDiagnostics = vscode.languages.getDiagnostics()
 		const newProblems = diagnosticsToProblemsString(
 			getNewDiagnostics(this.preDiagnostics, postDiagnostics),
 			[
-				vscode.DiagnosticSeverity.Error, // only including errors since warnings can be distracting (if user wants to fix warnings they can use the @problems mention)
+				vscode.DiagnosticSeverity.Error, // 仅包含错误，因为警告可能会分散注意力（如果用户想修复警告，他们可以使用“@problems”提及）
 			],
 			this.cwd,
-		) // will be empty string if no errors
-		const newProblemsMessage =
-			newProblems.length > 0 ? `\n\nNew problems detected after saving the file:\n${newProblems}` : ""
+		) // 如果没有错误，则为空字符串
+		const newProblemsMessage = newProblems.length > 0 ? `\n\n保存文件后检测到新问题：\n${newProblems}` : ""
 
-		// If the edited content has different EOL characters, we don't want to show a diff with all the EOL differences.
+		// 如果编辑的内容具有不同的 EOL 字符，我们不想显示包含所有 EOL 差异的差异。
 		const newContentEOL = this.newContent.includes("\r\n") ? "\r\n" : "\n"
-		const normalizedEditedContent = editedContent.replace(/\r\n|\n/g, newContentEOL).trimEnd() + newContentEOL // trimEnd to fix issue where editor adds in extra new line automatically
-		// just in case the new content has a mix of varying EOL characters
+		const normalizedEditedContent = editedContent.replace(/\r\n|\n/g, newContentEOL).trimEnd() + newContentEOL // trimEnd 用于修复编辑器自动添加额外换行符的问题
+		// 以防新内容混合了各种不同的 EOL 字符
 		const normalizedNewContent = this.newContent.replace(/\r\n|\n/g, newContentEOL).trimEnd() + newContentEOL
 		if (normalizedEditedContent !== normalizedNewContent) {
-			// user made changes before approving edit
+			// 用户在批准编辑之前进行了更改
 			const userEdits = formatResponse.createPrettyPatch(
 				this.relPath.toPosix(),
 				normalizedNewContent,
@@ -196,7 +183,7 @@ export class DiffViewProvider {
 			)
 			return { newProblemsMessage, userEdits, finalContent: normalizedEditedContent }
 		} else {
-			// no changes to cline's edits
+			// 对 AIxCoding 的编辑没有更改
 			return { newProblemsMessage, userEdits: undefined, finalContent: normalizedEditedContent }
 		}
 	}
@@ -214,24 +201,24 @@ export class DiffViewProvider {
 			}
 			await this.closeAllDiffViews()
 			await fs.unlink(absolutePath)
-			// Remove only the directories we created, in reverse order
+			// 只删除我们创建的目录，反向顺序
 			for (let i = this.createdDirs.length - 1; i >= 0; i--) {
 				await fs.rmdir(this.createdDirs[i])
-				console.log(`Directory ${this.createdDirs[i]} has been deleted.`)
+				console.log(`目录 ${this.createdDirs[i]} 已删除。`)
 			}
-			console.log(`File ${absolutePath} has been deleted.`)
+			console.log(`文件 ${absolutePath} 已删除。`)
 		} else {
-			// revert document
+			// 恢复文档
 			const edit = new vscode.WorkspaceEdit()
 			const fullRange = new vscode.Range(
 				updatedDocument.positionAt(0),
 				updatedDocument.positionAt(updatedDocument.getText().length),
 			)
 			edit.replace(updatedDocument.uri, fullRange, this.originalContent ?? "")
-			// Apply the edit and save, since contents shouldnt have changed this wont show in local history unless of course the user made changes and saved during the edit
+			// 应用编辑并保存，因为内容不应该更改，所以除非用户在编辑期间进行了更改并保存，否则不会显示在本地历史记录中
 			await vscode.workspace.applyEdit(edit)
 			await updatedDocument.save()
-			console.log(`File ${absolutePath} has been reverted to its original content.`)
+			console.log(`文件 ${absolutePath} 已恢复到其原始内容。`)
 			if (this.documentWasOpen) {
 				await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
 					preview: false,
@@ -240,7 +227,7 @@ export class DiffViewProvider {
 			await this.closeAllDiffViews()
 		}
 
-		// edit is done
+		// 编辑完成
 		await this.reset()
 	}
 
@@ -253,7 +240,7 @@ export class DiffViewProvider {
 					tab.input?.original?.scheme === DIFF_VIEW_URI_SCHEME,
 			)
 		for (const tab of tabs) {
-			// trying to close dirty views results in save popup
+			// 尝试关闭脏视图会导致保存弹出窗口
 			if (!tab.isDirty) {
 				await vscode.window.tabGroups.close(tab)
 			}
@@ -262,10 +249,10 @@ export class DiffViewProvider {
 
 	private async openDiffEditor(): Promise<vscode.TextEditor> {
 		if (!this.relPath) {
-			throw new Error("No file path set")
+			throw new Error("未设置文件路径")
 		}
 		const uri = vscode.Uri.file(path.resolve(this.cwd, this.relPath))
-		// If this diff editor is already open (ie if a previous write file was interrupted) then we should activate that instead of opening a new diff
+		// 如果此差异编辑器已打开（即如果之前的写入文件被中断），则我们应该激活它，而不是打开新的差异
 		const diffTab = vscode.window.tabGroups.all
 			.flatMap((group) => group.tabs)
 			.find(
@@ -278,7 +265,7 @@ export class DiffViewProvider {
 			const editor = await vscode.window.showTextDocument(diffTab.input.modified)
 			return editor
 		}
-		// Open new diff editor
+		// 打开新的差异编辑器
 		return new Promise<vscode.TextEditor>((resolve, reject) => {
 			const fileName = path.basename(uri.fsPath)
 			const fileExists = this.editType === "modify"
@@ -294,12 +281,12 @@ export class DiffViewProvider {
 					query: Buffer.from(this.originalContent ?? "").toString("base64"),
 				}),
 				uri,
-				`${fileName}: ${fileExists ? "Original ↔ Roo's Changes" : "New File"} (Editable)`,
+				`${fileName}: ${fileExists ? "原始文件 ↔ AIxCoding 的更改" : "新建文件"} (可编辑)`,
 			)
-			// This may happen on very slow machines ie project idx
+			// 这可能发生在非常慢的机器上，例如项目索引
 			setTimeout(() => {
 				disposable.dispose()
-				reject(new Error("Failed to open diff editor, please try again..."))
+				reject(new Error("无法打开差异编辑器，请重试..."))
 			}, 10_000)
 		})
 	}
@@ -323,7 +310,7 @@ export class DiffViewProvider {
 		let lineCount = 0
 		for (const part of diffs) {
 			if (part.added || part.removed) {
-				// Found the first diff, scroll to it
+				// 找到第一个差异，滚动到它
 				this.activeDiffEditor.revealRange(
 					new vscode.Range(lineCount, 0, lineCount, 0),
 					vscode.TextEditorRevealType.InCenter,
@@ -336,7 +323,7 @@ export class DiffViewProvider {
 		}
 	}
 
-	// close editor if open?
+	// 关闭编辑器（如果已打开）？
 	async reset() {
 		this.editType = undefined
 		this.isEditing = false

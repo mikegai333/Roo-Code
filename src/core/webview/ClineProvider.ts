@@ -39,6 +39,8 @@ import { CustomSupportPrompts, supportPrompt } from "../../shared/support-prompt
 
 import { ACTION_NAMES } from "../CodeActionProvider"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
+import { ApiProviders } from "../../common/types"
+import { getTemplates } from "../../api/aixcoding"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -127,6 +129,10 @@ type GlobalStateKey =
 	| "requestyModelInfo"
 	| "unboundModelInfo"
 	| "modelTemperature"
+	| "reportApi"
+	| "baseApi"
+	| "openAiApiKey"
+	| "newVersion"
 
 export const GlobalFileNames = {
 	apiConversationHistory: "api_conversation_history.json",
@@ -139,8 +145,8 @@ export const GlobalFileNames = {
 }
 
 export class ClineProvider implements vscode.WebviewViewProvider {
-	public static readonly sideBarId = "roo-cline.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
-	public static readonly tabPanelId = "roo-cline.TabPanelProvider"
+	public static readonly sideBarId = "aixcoding-agent.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
+	public static readonly tabPanelId = "aixcoding-agent.TabPanelProvider"
 	private static activeInstances: Set<ClineProvider> = new Set()
 	private disposables: vscode.Disposable[] = []
 	private view?: vscode.WebviewView | vscode.WebviewPanel
@@ -209,12 +215,24 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		return findLast(Array.from(this.activeInstances), (instance) => instance.view?.visible === true)
 	}
 
+	public async getTemplateList() {
+		const visibleProvider = await ClineProvider.getInstance()
+		if (!visibleProvider) {
+			return
+		}
+		const { apiConfiguration, baseApi } = await visibleProvider.getState()
+		const apiKey = apiConfiguration.openAiApiKey
+		const apiConfig = { apiKey, baseApi }
+		const templateList = await getTemplates(apiConfig)
+		visibleProvider.postMessageToWebview({ type: "templateList", templateList })
+	}
+
 	public static async getInstance(): Promise<ClineProvider | undefined> {
 		let visibleProvider = ClineProvider.getVisibleInstance()
 
 		// If no visible provider, try to show the sidebar view
 		if (!visibleProvider) {
-			await vscode.commands.executeCommand("roo-cline.SidebarProvider.focus")
+			await vscode.commands.executeCommand("aixcoding-agent.SidebarProvider.focus")
 			// Wait briefly for the view to become visible
 			await delay(100)
 			visibleProvider = ClineProvider.getVisibleInstance()
@@ -516,7 +534,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					<meta http-equiv="Content-Security-Policy" content="${csp.join("; ")}">
 					<link rel="stylesheet" type="text/css" href="${stylesUri}">
 					<link href="${codiconsUri}" rel="stylesheet" />
-					<title>Roo Code</title>
+					<title>AIxCoding</title>
 				</head>
 				<body>
 					<div id="root"></div>
@@ -591,7 +609,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
             <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} data:; script-src 'nonce-${nonce}';">
             <link rel="stylesheet" type="text/css" href="${stylesUri}">
 			<link href="${codiconsUri}" rel="stylesheet" />
-            <title>Roo Code</title>
+            <title>AIxCoding</title>
           </head>
           <body>
             <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -611,12 +629,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	private setWebviewMessageListener(webview: vscode.Webview) {
 		webview.onDidReceiveMessage(
 			async (message: WebviewMessage) => {
+				console.log(message.type)
 				switch (message.type) {
+					case "getTemplateList":
+						this.getTemplateList()
+						break
 					case "webviewDidLaunch":
 						// Load custom modes first
 						const customModes = await this.customModesManager.getCustomModes()
 						await this.updateGlobalState("customModes", customModes)
-
+						// console.log('load aixcoding')
 						this.postStateToWebview()
 						this.workspaceTracker?.initializeFilePaths() // don't await
 						getTheme().then((theme) =>
@@ -772,6 +794,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						// Could also do this in extension .ts
 						//this.postMessageToWebview({ type: "text", text: `Extension: ${Date.now()}` })
 						// initializing new instance of Cline will make sure that any agentically running promises in old instance don't affect our new task. this essentially creates a fresh slate for the new task
+
 						await this.initClineWithTask(message.text, message.images)
 						break
 					case "apiConfiguration":
@@ -922,7 +945,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.context.globalState.update("allowedCommands", message.commands)
 						// Also update workspace settings
 						await vscode.workspace
-							.getConfiguration("roo-cline")
+							.getConfiguration("aixcoding-agent")
 							.update("allowedCommands", message.commands, vscode.ConfigurationTarget.Global)
 						break
 					case "openMcpSettings": {
@@ -1207,6 +1230,18 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.updateGlobalState("screenshotQuality", message.value)
 						await this.postStateToWebview()
 						break
+					case "reportApi":
+						await this.updateGlobalState("reportApi", message.text)
+						await this.postStateToWebview()
+						break
+					case "baseApi":
+						await this.updateGlobalState("baseApi", message.text)
+						await this.postStateToWebview()
+						break
+					case "newVersion":
+						await this.updateGlobalState("newVersion", message.bool)
+						await this.postStateToWebview()
+						break
 					case "enhancementApiConfigId":
 						await this.updateGlobalState("enhancementApiConfigId", message.text)
 						await this.postStateToWebview()
@@ -1253,6 +1288,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 									text: enhancedPrompt,
 								})
 							} catch (error) {
+								console.log(error)
 								this.outputChannel.appendLine(
 									`Error enhancing prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
 								)
@@ -1311,6 +1347,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						break
 					}
 					case "upsertApiConfiguration":
+						console.log("upsertApiConfiguration", message)
 						if (message.text && message.apiConfiguration) {
 							try {
 								await this.configManager.saveConfig(message.text, message.apiConfiguration)
@@ -1657,6 +1694,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		await this.updateGlobalState("vertexRegion", vertexRegion)
 		await this.updateGlobalState("openAiBaseUrl", openAiBaseUrl)
 		await this.storeSecret("openAiApiKey", openAiApiKey)
+		await this.updateGlobalState("openAiApiKey", openAiApiKey)
 		await this.updateGlobalState("openAiModelId", openAiModelId)
 		await this.updateGlobalState("openAiCustomModelInfo", openAiCustomModelInfo)
 		await this.updateGlobalState("openAiUseAzure", openAiUseAzure)
@@ -2378,10 +2416,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			enhancementApiConfigId,
 			autoApprovalEnabled,
 			experiments,
+			reportApi,
+			baseApi,
+			enableCompletion,
+			templateList,
+			newVersion,
 		} = await this.getState()
 
-		const allowedCommands = vscode.workspace.getConfiguration("roo-cline").get<string[]>("allowedCommands") || []
-
+		const allowedCommands =
+			vscode.workspace.getConfiguration("aixcoding-agent").get<string[]>("allowedCommands") || []
+		//   console.log('apiConfiguration', apiConfiguration)
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
@@ -2427,6 +2471,11 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			customModes: await this.customModesManager.getCustomModes(),
 			experiments: experiments ?? experimentDefault,
 			mcpServers: this.mcpHub?.getAllServers() ?? [],
+			reportApi: reportApi ?? "",
+			baseApi: baseApi ?? "",
+			enableCompletion: enableCompletion ?? false,
+			templateList: templateList ?? [],
+			newVersion: newVersion ?? false,
 		}
 	}
 
@@ -2562,6 +2611,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			requestyModelId,
 			requestyModelInfo,
 			modelTemperature,
+			reportApi,
+			baseApi,
+			newVersion,
 		] = await Promise.all([
 			this.getGlobalState("apiProvider") as Promise<ApiProvider | undefined>,
 			this.getGlobalState("apiModelId") as Promise<string | undefined>,
@@ -2580,7 +2632,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("vertexProjectId") as Promise<string | undefined>,
 			this.getGlobalState("vertexRegion") as Promise<string | undefined>,
 			this.getGlobalState("openAiBaseUrl") as Promise<string | undefined>,
-			this.getSecret("openAiApiKey") as Promise<string | undefined>,
+			// this.getSecret("openAiApiKey") as Promise<string | undefined>,
+			this.getGlobalState("openAiApiKey") as Promise<string | undefined>,
 			this.getGlobalState("openAiModelId") as Promise<string | undefined>,
 			this.getGlobalState("openAiCustomModelInfo") as Promise<ModelInfo | undefined>,
 			this.getGlobalState("openAiUseAzure") as Promise<boolean | undefined>,
@@ -2642,6 +2695,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("requestyModelId") as Promise<string | undefined>,
 			this.getGlobalState("requestyModelInfo") as Promise<ModelInfo | undefined>,
 			this.getGlobalState("modelTemperature") as Promise<number | undefined>,
+			this.getGlobalState("reportApi") as Promise<string | undefined>,
+			this.getGlobalState("baseApi") as Promise<string | undefined>,
+			this.getGlobalState("newVersion") as Promise<boolean | undefined>,
 		])
 
 		let apiProvider: ApiProvider
@@ -2768,6 +2824,11 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			experiments: experiments ?? experimentDefault,
 			autoApprovalEnabled: autoApprovalEnabled ?? false,
 			customModes,
+			reportApi: reportApi ?? "http://22.189.54.139/report",
+			baseApi: baseApi ?? "http://22.189.54.139/aicoding",
+			enableCompletion: false,
+			templateList: [],
+			newVersion,
 		}
 	}
 

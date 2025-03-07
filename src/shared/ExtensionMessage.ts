@@ -24,6 +24,7 @@ export interface ExtensionMessage {
 		| "ollamaModels"
 		| "lmStudioModels"
 		| "theme"
+		| "enableCompletion"
 		| "workspaceUpdated"
 		| "invoke"
 		| "partialMessage"
@@ -46,6 +47,11 @@ export interface ExtensionMessage {
 		| "unboundModels"
 		| "refreshUnboundModels"
 		| "currentCheckpointUpdated"
+		| "reportApi"
+		| "baseApi"
+		| "templateList"
+		| "getTemplateList"
+		| "newVersion"
 	text?: string
 	action?:
 		| "chatButtonClicked"
@@ -78,6 +84,7 @@ export interface ExtensionMessage {
 	mode?: Mode
 	customMode?: ModeConfig
 	slug?: string
+	templateList?: any
 }
 
 export interface ApiConfigMeta {
@@ -128,6 +135,11 @@ export interface ExtensionState {
 	autoApprovalEnabled?: boolean
 	customModes: ModeConfig[]
 	toolRequirements?: Record<string, boolean> // Map of tool names to their requirements (e.g. {"apply_diff": true} if diffEnabled)
+	enableCompletion: boolean
+	reportApi: string
+	baseApi: string
+	templateList: any
+	newVersion: boolean
 }
 
 export interface ClineMessage {

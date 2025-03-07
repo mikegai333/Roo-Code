@@ -19,7 +19,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 	const formatDate = (timestamp: number) => {
 		const date = new Date(timestamp)
 		return date
-			?.toLocaleString("en-US", {
+			?.toLocaleString("zh-CN", {
 				month: "long",
 				day: "numeric",
 				hour: "numeric",
@@ -33,7 +33,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 
 	return (
 		<div style={{ flexShrink: 0 }}>
-			{showCopyFeedback && <div className="copy-modal">Prompt Copied to Clipboard</div>}
+			{showCopyFeedback && <div className="copy-modal">提示已复制到剪贴板</div>}
 			<style>
 				{`
 					.copy-modal {
@@ -90,7 +90,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 						fontSize: "0.85em",
 						textTransform: "uppercase",
 					}}>
-					Recent Tasks
+					最近任务
 				</span>
 			</div>
 
@@ -121,8 +121,8 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 										{formatDate(item.ts)}
 									</span>
 									<button
-										title="Copy Prompt"
-										aria-label="Copy Prompt"
+										title="复制提示"
+										aria-label="复制提示"
 										className="copy-button"
 										data-appearance="icon"
 										onClick={(e) => copyWithFeedback(item.task, e)}>
@@ -146,14 +146,14 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								</div>
 								<div style={{ fontSize: "0.85em", color: "var(--vscode-descriptionForeground)" }}>
 									<span>
-										Tokens: ↑{formatLargeNumber(item.tokensIn || 0)} ↓
+										令牌: ↑{formatLargeNumber(item.tokensIn || 0)} ↓
 										{formatLargeNumber(item.tokensOut || 0)}
 									</span>
 									{!!item.cacheWrites && (
 										<>
 											{" • "}
 											<span>
-												Cache: +{formatLargeNumber(item.cacheWrites || 0)} →{" "}
+												缓存: +{formatLargeNumber(item.cacheWrites || 0)} →{" "}
 												{formatLargeNumber(item.cacheReads || 0)}
 											</span>
 										</>
@@ -161,7 +161,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 									{!!item.totalCost && (
 										<>
 											{" • "}
-											<span>API Cost: ${item.totalCost?.toFixed(4)}</span>
+											<span>API 成本: ${item.totalCost?.toFixed(4)}</span>
 										</>
 									)}
 								</div>
@@ -180,7 +180,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								fontSize: "var(--vscode-font-size)",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							View all history
+							查看所有历史记录
 						</div>
 					</VSCodeButton>
 				</div>

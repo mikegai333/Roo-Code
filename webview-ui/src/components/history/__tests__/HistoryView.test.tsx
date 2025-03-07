@@ -56,7 +56,7 @@ describe("HistoryView", () => {
 		})
 	})
 
-	it("renders history items correctly", () => {
+	it("正确渲染历史记录项", () => {
 		const onDone = jest.fn()
 		render(<HistoryView onDone={onDone} />)
 
@@ -67,7 +67,7 @@ describe("HistoryView", () => {
 		expect(screen.getByText("Test task 2")).toBeInTheDocument()
 	})
 
-	it("handles search functionality", () => {
+	it("处理搜索功能", () => {
 		const onDone = jest.fn()
 		render(<HistoryView onDone={onDone} />)
 

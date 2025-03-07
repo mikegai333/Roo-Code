@@ -92,6 +92,10 @@ export interface WebviewMessage {
 		| "openCustomModesSettings"
 		| "checkpointDiff"
 		| "checkpointRestore"
+		| "reportApi"
+		| "baseApi"
+		| "getTemplateList"
+		| "newVersion"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse

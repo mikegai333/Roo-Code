@@ -50,10 +50,21 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		},
 		ref,
 	) => {
-		const { filePaths, openedTabs, currentApiConfigName, listApiConfigMeta, customModes } = useExtensionState()
+		const {
+			filePaths,
+			openedTabs,
+			currentApiConfigName,
+			listApiConfigMeta,
+			customModes,
+			templateList,
+			newVersion,
+		} = useExtensionState()
+		console.log(listApiConfigMeta)
 		const [gitCommits, setGitCommits] = useState<any[]>([])
+		// if(templateList.length === 0) {
+		// 	vscode.postMessage({ type: "getTemplateList" })
+		// }
 		const [showDropdown, setShowDropdown] = useState(false)
-
 		// Close dropdown when clicking outside
 		useEffect(() => {
 			const handleClickOutside = (event: MouseEvent) => {
@@ -127,8 +138,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 					vscode.postMessage(message)
 				} else {
-					const promptDescription =
-						"The 'Enhance Prompt' button helps improve your prompt by providing additional context, clarification, or rephrasing. Try typing a prompt in here and clicking the button again to see how it works."
+					const promptDescription = `"提示词增强"按钮通过补充上下文、优化表述或提供改写建议来提升您的提示词质量。输入提示词后再次点击该按钮，即可查看优化后的效果演示。`
 					setInputValue(promptDescription)
 				}
 			}
@@ -188,6 +198,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						type: "mode",
 						text: value,
 					})
+					return
+				}
+
+				if (type === ContextMenuOptionType.Template && value) {
+					console.log("aixcoding", value)
+					setShowContextMenu(false)
+					setInputValue(value)
 					return
 				}
 
@@ -260,6 +277,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								selectedType,
 								queryItems,
 								getAllModes(customModes),
+								templateList,
 							)
 							const optionsLength = options.length
 
@@ -295,6 +313,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							selectedType,
 							queryItems,
 							getAllModes(customModes),
+							templateList,
 						)[selectedMenuIndex]
 						if (
 							selectedOption &&
@@ -362,6 +381,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				justDeletedSpaceAfterMention,
 				queryItems,
 				customModes,
+				templateList,
 			],
 		)
 
@@ -378,12 +398,21 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				const newCursorPosition = e.target.selectionStart
 				setInputValue(newValue)
 				setCursorPosition(newCursorPosition)
-				const showMenu = shouldShowContextMenu(newValue, newCursorPosition)
-
+				let showMenu = false
+				if (!newVersion && newValue.startsWith("/")) {
+					showMenu = false
+				} else {
+					showMenu = shouldShowContextMenu(newValue, newCursorPosition)
+				}
 				setShowContextMenu(showMenu)
 				if (showMenu) {
 					if (newValue.startsWith("/")) {
 						// Handle slash command
+						const query = newValue
+						setSearchQuery(query)
+						setSelectedMenuIndex(0)
+					} else if (newValue.startsWith("#")) {
+						// Handle # command
 						const query = newValue
 						setSearchQuery(query)
 						setSelectedMenuIndex(0)
@@ -403,7 +432,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setSelectedMenuIndex(-1)
 				}
 			},
-			[setInputValue],
+			[setInputValue, newVersion],
 		)
 
 		useEffect(() => {
@@ -564,6 +593,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			opacity: textAreaDisabled ? 0.5 : 0.8,
 		}
 
+		const [deepseek, setDeepseek] = useState(false)
+		const changeDeepseek = useCallback((val: boolean) => {
+			setDeepseek(val)
+		}, [])
+
 		return (
 			<div
 				className="chat-text-area"
@@ -645,6 +679,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							selectedType={selectedType}
 							queryItems={queryItems}
 							modes={getAllModes(customModes)}
+							templateList={templateList}
 						/>
 					</div>
 				)}
@@ -758,109 +793,132 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						marginTop: "auto",
 						paddingTop: "2px",
 					}}>
-					<div
-						style={{
-							display: "flex",
-							alignItems: "center",
-						}}>
-						<div style={{ position: "relative", display: "inline-block" }}>
-							<select
-								value={mode}
-								disabled={textAreaDisabled}
-								onChange={(e) => {
-									const value = e.target.value
-									if (value === "prompts-action") {
-										window.postMessage({ type: "action", action: "promptsButtonClicked" })
-										return
-									}
-									setMode(value as Mode)
-									vscode.postMessage({
-										type: "mode",
-										text: value,
-									})
-								}}
-								style={{
-									...selectStyle,
-									minWidth: "70px",
-									flex: "0 0 auto",
-								}}>
-								{getAllModes(customModes).map((mode) => (
-									<option key={mode.slug} value={mode.slug} style={{ ...optionStyle }}>
-										{mode.name}
-									</option>
-								))}
-								<option
-									disabled
-									style={{
-										borderTop: "1px solid var(--vscode-dropdown-border)",
-										...optionStyle,
-									}}>
-									────
-								</option>
-								<option value="prompts-action" style={{ ...optionStyle }}>
-									Edit...
-								</option>
-							</select>
-							<div style={caretContainerStyle}>
-								<CaretIcon />
-							</div>
-						</div>
-
+					{!newVersion && (
 						<div
 							style={{
-								position: "relative",
-								display: "inline-block",
-								flex: "1 1 auto",
-								minWidth: 0,
-								maxWidth: "150px",
-								overflow: "hidden",
-							}}>
-							<select
-								value={currentApiConfigName || ""}
-								disabled={textAreaDisabled}
-								onChange={(e) => {
-									const value = e.target.value
-									if (value === "settings-action") {
-										window.postMessage({ type: "action", action: "settingsButtonClicked" })
-										return
+								border: "1px solid rgba(85, 193, 255, .8)",
+								background: deepseek ? "rgba(85, 193, 255, .3)" : "",
+								cursor: "pointer",
+								display: "flex",
+								paddingInline: "3px",
+							}}
+							onClick={() => changeDeepseek(!deepseek)}>
+							<span
+								className="codicon codicon-check"
+								style={
+									{
+										// color: "var(--vscode-input-foreground)",
 									}
-									vscode.postMessage({
-										type: "loadApiConfiguration",
-										text: value,
-									})
-								}}
-								style={{
-									...selectStyle,
-									width: "100%",
-									textOverflow: "ellipsis",
-								}}>
-								{(listApiConfigMeta || []).map((config) => (
+								}
+							/>
+							深度思考
+						</div>
+					)}
+					{newVersion && (
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+							}}>
+							<div style={{ position: "relative", display: "inline-block" }}>
+								<select
+									value={mode}
+									disabled={textAreaDisabled}
+									onChange={(e) => {
+										const value = e.target.value
+										if (value === "prompts-action") {
+											window.postMessage({ type: "action", action: "promptsButtonClicked" })
+											return
+										}
+										setMode(value as Mode)
+										vscode.postMessage({
+											type: "mode",
+											text: value,
+										})
+									}}
+									style={{
+										...selectStyle,
+										minWidth: "70px",
+										flex: "0 0 auto",
+									}}>
+									{getAllModes(customModes).map((mode) => (
+										<option key={mode.slug} value={mode.slug} style={{ ...optionStyle }}>
+											{mode.name}
+										</option>
+									))}
 									<option
-										key={config.name}
-										value={config.name}
+										disabled
 										style={{
+											borderTop: "1px solid var(--vscode-dropdown-border)",
 											...optionStyle,
 										}}>
-										{config.name}
+										────
 									</option>
-								))}
-								<option
-									disabled
+									<option value="prompts-action" style={{ ...optionStyle }}>
+										编辑...
+									</option>
+								</select>
+								<div style={caretContainerStyle}>
+									<CaretIcon />
+								</div>
+							</div>
+
+							<div
+								style={{
+									position: "relative",
+									display: "inline-block",
+									flex: "1 1 auto",
+									minWidth: 0,
+									maxWidth: "150px",
+									overflow: "hidden",
+								}}>
+								<select
+									value={currentApiConfigName || ""}
+									disabled={textAreaDisabled}
+									onChange={(e) => {
+										const value = e.target.value
+										if (value === "settings-action") {
+											window.postMessage({ type: "action", action: "settingsButtonClicked" })
+											return
+										}
+										vscode.postMessage({
+											type: "loadApiConfiguration",
+											text: value,
+										})
+									}}
 									style={{
-										borderTop: "1px solid var(--vscode-dropdown-border)",
-										...optionStyle,
+										...selectStyle,
+										width: "100%",
+										textOverflow: "ellipsis",
 									}}>
-									────
-								</option>
-								<option value="settings-action" style={{ ...optionStyle }}>
-									Edit...
-								</option>
-							</select>
-							<div style={caretContainerStyle}>
-								<CaretIcon />
+									{(listApiConfigMeta || []).map((config) => (
+										<option
+											key={config.name}
+											value={config.name}
+											style={{
+												...optionStyle,
+											}}>
+											{config.name}
+										</option>
+									))}
+									<option
+										disabled
+										style={{
+											borderTop: "1px solid var(--vscode-dropdown-border)",
+											...optionStyle,
+										}}>
+										────
+									</option>
+									<option value="settings-action" style={{ ...optionStyle }}>
+										编辑...
+									</option>
+								</select>
+								<div style={caretContainerStyle}>
+									<CaretIcon />
+								</div>
 							</div>
 						</div>
-					</div>
+					)}
 
 					<div
 						style={{
@@ -892,13 +950,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								/>
 							)}
 						</div>
-						<span
+						{/* <span
 							className={`input-icon-button ${
 								shouldDisableImages ? "disabled" : ""
 							} codicon codicon-device-camera`}
 							onClick={() => !shouldDisableImages && onSelectImages()}
 							style={{ fontSize: 16.5 }}
-						/>
+						/> */}
 						<span
 							className={`input-icon-button ${textAreaDisabled ? "disabled" : ""} codicon codicon-send`}
 							onClick={() => !textAreaDisabled && onSend()}

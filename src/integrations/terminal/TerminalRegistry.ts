@@ -16,8 +16,8 @@ export class TerminalRegistry {
 	static createTerminal(cwd?: string | vscode.Uri | undefined): TerminalInfo {
 		const terminal = vscode.window.createTerminal({
 			cwd,
-			name: "Roo Code",
-			iconPath: new vscode.ThemeIcon("rocket"),
+			name: "AIxCoding",
+			iconPath: vscode.Uri.file("${__dirname}/../../../assets/icons/logo.png"),
 			env: {
 				PAGER: "cat",
 			},

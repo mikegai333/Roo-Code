@@ -7,6 +7,18 @@ import { CodeActionProvider } from "./core/CodeActionProvider"
 import { DIFF_VIEW_URI_SCHEME } from "./integrations/editor/DiffViewProvider"
 import { handleUri, registerCommands, registerCodeActions, registerTerminalActions } from "./activate"
 import { McpServerManager } from "./services/mcp/McpServerManager"
+import { startLinting, clearDiagnostics } from "./lint"
+import { GitVersionComparer } from "./extension/providers/gitVersionConpare"
+
+let myStatusBarItem: vscode.StatusBarItem
+import * as os from "os"
+import { CompletionProvider } from "./extension/providers/completion"
+import { TemplateProvider } from "./extension/template-provider"
+import { ServerMessage } from "./common/types"
+import { FileInteractionCache } from "./extension/file-interaction"
+import { getLineBreakCount } from "./webview/utils"
+import path from "path"
+import { delayExecution } from "./extension/utils"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -28,11 +40,14 @@ export function activate(context: vscode.ExtensionContext) {
 	outputChannel.appendLine("Roo-Code extension activated")
 
 	// Get default commands from configuration.
-	const defaultCommands = vscode.workspace.getConfiguration("roo-cline").get<string[]>("allowedCommands") || []
+	const defaultCommands = vscode.workspace.getConfiguration("aixcoding-agent").get<string[]>("allowedCommands") || []
 
 	// Initialize global state if not already set.
 	if (!context.globalState.get("allowedCommands")) {
 		context.globalState.update("allowedCommands", defaultCommands)
+	}
+	if (context.globalState.get("enableCompletion") === undefined) {
+		context.globalState.update("enableCompletion", false)
 	}
 
 	const sidebarProvider = new ClineProvider(context, outputChannel)
@@ -83,6 +98,124 @@ export function activate(context: vscode.ExtensionContext) {
 	registerCodeActions(context)
 	registerTerminalActions(context)
 
+	const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right)
+	const templateDir = path.join(os.homedir(), ".aixcoding/templates") as string
+	const templateProvider = new TemplateProvider(templateDir)
+	const fileInteractionCache = new FileInteractionCache()
+	const completionProvider = new CompletionProvider(statusBar, fileInteractionCache, templateProvider, context)
+	templateProvider.init()
+	statusBar.text = "AIxCoding"
+	statusBar.command = "aixcoding-agent.toggleCompletion"
+	updateStatusBar()
+	statusBar.show()
+	context.subscriptions.push(
+		vscode.languages.registerInlineCompletionItemProvider({ pattern: "**" }, completionProvider),
+	)
+
+	// 停止补全代码
+	const stopCompletion = vscode.commands.registerCommand("aixcoding-agent.stopCompletion", () => {
+		completionProvider.abortCompletion()
+	})
+
+	// 禁用/开启代码补全
+	const toggleCompletion = vscode.commands.registerCommand("aixcoding-agent.toggleCompletion", async () => {
+		const currentState = context.globalState.get("enableCompletion", false)
+		completionProvider.abortCompletion()
+		await context.globalState.update("enableCompletion", !currentState)
+		completionProvider.updateConfig()
+		updateStatusBar()
+	})
+
+	vscode.workspace.onDidChangeConfiguration((event) => {
+		if (event.affectsConfiguration("enableCompletion")) {
+			updateStatusBar()
+		}
+	})
+
+	function updateStatusBar() {
+		const isCompletionEnabled = context.globalState.get("enableCompletion", false)
+		statusBar.text = `${isCompletionEnabled ? "$(check)" : "$(circle-slash)"} AI×Coding`
+		statusBar.tooltip = isCompletionEnabled ? "禁用代码补全" : "开启代码补全"
+		statusBar.backgroundColor = new vscode.ThemeColor(
+			isCompletionEnabled ? "statusBarItem.background" : "statusBarItem.warningBackground",
+		)
+	}
+
+	context.subscriptions.push(
+		vscode.workspace.onDidCloseTextDocument((document) => {
+			const filePath = document.uri.fsPath
+			fileInteractionCache.endSession()
+			fileInteractionCache.delete(filePath)
+		}),
+		vscode.workspace.onDidOpenTextDocument((document) => {
+			const filePath = document.uri.fsPath
+			fileInteractionCache.startSession(filePath)
+			fileInteractionCache.incrementVisits()
+		}),
+		vscode.workspace.onDidChangeTextDocument((e) => {
+			const changes = e.contentChanges[0]
+			if (!changes) return
+			const lastCompletion = completionProvider.lastCompletionText
+			const isLastCompltionMultiline = getLineBreakCount(lastCompletion) > 1
+			completionProvider.setAcceptedLastCompletion(
+				!!(changes.text && lastCompletion && changes.text === lastCompletion && isLastCompltionMultiline),
+			)
+			// 上报补全接纳
+			if (lastCompletion) {
+				if (!!(changes.text && lastCompletion && changes.text === lastCompletion)) {
+					completionProvider.reportAccept()
+				}
+			}
+			const currentLine = changes.range.start.line
+			const currentCharacter = changes.range.start.character
+			fileInteractionCache.incrementStrokes(currentLine, currentCharacter)
+		}),
+	)
+
+	vscode.window.onDidChangeTextEditorSelection(() => {
+		completionProvider.abortCompletion()
+		delayExecution(() => {
+			completionProvider.setAcceptedLastCompletion(false)
+		}, 200)
+	})
+
+	// 扫描选中的文件
+	const lintSelected = vscode.commands.registerCommand(
+		"aixcoding-agent.lintSelected",
+		async (currentFile, selectedFiles) => {
+			startLinting(
+				"1",
+				selectedFiles.map((file: { fsPath: any }) => file.fsPath),
+			)
+		},
+	)
+	// 扫描当前文件
+	const lintCurrent = vscode.commands.registerCommand("aixcoding-agent.lintCurrent", async (currentFile) => {
+		startLinting("2", currentFile.fsPath)
+	})
+	// 扫描整个工程
+	const lintProject = vscode.commands.registerCommand("aixcoding-agent.lintProject", async () => {
+		startLinting("0", null)
+	})
+	// 清空所有问题
+	const clearProblems = vscode.commands.registerCommand("aixcoding-agent.clearDiagnostics", async () => {
+		clearDiagnostics()
+	})
+
+	// 执行 git 版本比较
+	const gitVersionCompare = vscode.commands.registerCommand("aixcoding-agent.gitVersionCompare", async () => {
+		let gitVersionComparer = new GitVersionComparer()
+		gitVersionComparer.compareAndExport()
+	})
+	context.subscriptions.push(
+		lintSelected,
+		lintCurrent,
+		lintProject,
+		clearProblems,
+		stopCompletion,
+		toggleCompletion,
+		gitVersionCompare,
+	)
 	return createClineAPI(outputChannel, sidebarProvider)
 }
 

@@ -8,7 +8,7 @@ import { useExtensionState } from "../../context/ExtensionStateContext"
 import { vscode } from "../../utils/vscode"
 import { formatLargeNumber } from "../../utils/format"
 import { highlightFzfMatch } from "../../utils/highlight"
-import { useCopyToClipboard } from "../../utils/clipboard"
+// import { useCopyToClipboard } from "../../utils/clipboard"
 import { Button } from "../ui"
 
 type HistoryViewProps = {
@@ -44,7 +44,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const formatDate = (timestamp: number) => {
 		const date = new Date(timestamp)
 		return date
-			?.toLocaleString("en-US", {
+			?.toLocaleString("zh-CN", {
 				month: "long",
 				day: "numeric",
 				hour: "numeric",
@@ -119,14 +119,14 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 					alignItems: "center",
 					padding: "10px 17px 10px 20px",
 				}}>
-				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>History</h3>
-				<VSCodeButton onClick={onDone}>Done</VSCodeButton>
+				<h3 style={{ color: "var(--vscode-foreground)", margin: 0 }}>历史记录</h3>
+				<VSCodeButton onClick={onDone}>完成</VSCodeButton>
 			</div>
 			<div style={{ padding: "5px 17px 6px 17px" }}>
 				<div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
 					<VSCodeTextField
 						style={{ width: "100%" }}
-						placeholder="Fuzzy search history..."
+						placeholder="模糊搜索历史记录..."
 						value={searchQuery}
 						onInput={(e) => {
 							const newValue = (e.target as HTMLInputElement)?.value
@@ -144,7 +144,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						{searchQuery && (
 							<div
 								className="input-icon-button codicon codicon-close"
-								aria-label="Clear search"
+								aria-label="清除搜索"
 								onClick={() => setSearchQuery("")}
 								slot="end"
 								style={{
@@ -161,15 +161,15 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						value={sortOption}
 						role="radiogroup"
 						onChange={(e) => setSortOption((e.target as HTMLInputElement).value as SortOption)}>
-						<VSCodeRadio value="newest">Newest</VSCodeRadio>
-						<VSCodeRadio value="oldest">Oldest</VSCodeRadio>
-						<VSCodeRadio value="mostExpensive">Most Expensive</VSCodeRadio>
-						<VSCodeRadio value="mostTokens">Most Tokens</VSCodeRadio>
+						<VSCodeRadio value="newest">最新</VSCodeRadio>
+						<VSCodeRadio value="oldest">最早</VSCodeRadio>
+						{/* <VSCodeRadio value="mostExpensive">最昂贵</VSCodeRadio> */}
+						<VSCodeRadio value="mostTokens">最多 Tokens</VSCodeRadio>
 						<VSCodeRadio
 							value="mostRelevant"
 							disabled={!searchQuery}
 							style={{ opacity: searchQuery ? 1 : 0.5 }}>
-							Most Relevant
+							最相关
 						</VSCodeRadio>
 					</VSCodeRadioGroup>
 				</div>
@@ -225,7 +225,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 										<Button
 											variant="ghost"
 											size="sm"
-											title="Delete Task"
+											title="删除任务"
 											onClick={(e) => {
 												e.stopPropagation()
 												handleDeleteHistoryItem(item.id)
@@ -325,7 +325,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 													fontWeight: 500,
 													color: "var(--vscode-descriptionForeground)",
 												}}>
-												Cache:
+												缓存:
 											</span>
 											<span
 												data-testid="cache-writes"
@@ -366,7 +366,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 										</div>
 									)}
 
-									{!!item.totalCost && (
+									{/* {!!item.totalCost && (
 										<div
 											style={{
 												display: "flex",
@@ -380,7 +380,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 														fontWeight: 500,
 														color: "var(--vscode-descriptionForeground)",
 													}}>
-													API Cost:
+													API 费用:
 												</span>
 												<span style={{ color: "var(--vscode-descriptionForeground)" }}>
 													${item.totalCost?.toFixed(4)}
@@ -391,7 +391,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 												<ExportButton itemId={item.id} />
 											</div>
 										</div>
-									)}
+									)} */}
 								</div>
 							</div>
 						</div>
@@ -402,22 +402,22 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	)
 }
 
-const CopyButton = ({ itemTask }: { itemTask: string }) => {
-	const { showCopyFeedback, copyWithFeedback } = useCopyToClipboard()
+// const CopyButton = ({ itemTask }: { itemTask: string }) => {
+// 	const { showCopyFeedback, copyWithFeedback } = useCopyToClipboard()
 
-	return (
-		<Button variant="ghost" size="icon" title="Copy Prompt" onClick={(e) => copyWithFeedback(itemTask, e)}>
-			{showCopyFeedback ? <span className="codicon codicon-check" /> : <span className="codicon codicon-copy" />}
-		</Button>
-	)
-}
+// 	return (
+// 		<Button variant="ghost" size="icon" title="复制 Prompt" onClick={(e) => copyWithFeedback(itemTask, e)}>
+// 			{showCopyFeedback ? <span className="codicon codicon-check" /> : <span className="codicon codicon-copy" />}
+// 		</Button>
+// 	)
+// }
 
 const ExportButton = ({ itemId }: { itemId: string }) => (
 	<Button
 		data-testid="export"
 		variant="ghost"
 		size="icon"
-		title="Export Task"
+		title="导出任务"
 		onClick={(e) => {
 			e.stopPropagation()
 			vscode.postMessage({ type: "exportTaskWithId", text: itemId })

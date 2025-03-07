@@ -1,7 +1,7 @@
 import * as assert from "assert"
 import * as vscode from "vscode"
 
-suite("Roo Code Modes", () => {
+suite("AIxCoding Agent Modes", () => {
 	test("Should handle switching modes correctly", async function () {
 		const timeout = 30000
 		const interval = 1000

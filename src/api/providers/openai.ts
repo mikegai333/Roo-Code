@@ -12,7 +12,14 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
 import { convertToSimpleMessages } from "../transform/simple-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { telemetry } from "../../common/constants"
 
+// Add custom interface for OpenRouter params
+type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
+	transforms?: string[]
+	include_reasoning?: boolean
+	telemetry?: any
+}
 export interface OpenAiHandlerOptions extends ApiHandlerOptions {
 	defaultHeaders?: Record<string, string>
 }
@@ -27,7 +34,7 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 	constructor(options: OpenAiHandlerOptions) {
 		this.options = options
 
-		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
+		const baseURL = this.options.openAiBaseUrl ?? "http://22.189.54.139/aicoding/api/v1" //"https://api.openai.com/v1"
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		let urlHost: string
 

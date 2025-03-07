@@ -16,7 +16,7 @@ const AppContent = () => {
 	const [showHistory, setShowHistory] = useState(false)
 	const [showMcp, setShowMcp] = useState(false)
 	const [showPrompts, setShowPrompts] = useState(false)
-	const [showAnnouncement, setShowAnnouncement] = useState(false)
+	// const [showAnnouncement, setShowAnnouncement] = useState(false)
 
 	const handleMessage = useCallback((e: MessageEvent) => {
 		const message: ExtensionMessage = e.data
@@ -62,7 +62,7 @@ const AppContent = () => {
 
 	useEffect(() => {
 		if (shouldShowAnnouncement) {
-			setShowAnnouncement(true)
+			// setShowAnnouncement(true)
 			vscode.postMessage({ type: "didShowAnnouncement" })
 		}
 	}, [shouldShowAnnouncement])
@@ -90,9 +90,9 @@ const AppContent = () => {
 							setShowHistory(true)
 						}}
 						isHidden={showSettings || showHistory || showMcp || showPrompts}
-						showAnnouncement={showAnnouncement}
+						showAnnouncement={false}
 						hideAnnouncement={() => {
-							setShowAnnouncement(false)
+							// setShowAnnouncement(false)
 						}}
 					/>
 				</>

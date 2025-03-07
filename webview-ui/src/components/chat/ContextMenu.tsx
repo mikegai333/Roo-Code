@@ -12,6 +12,7 @@ interface ContextMenuProps {
 	selectedType: ContextMenuOptionType | null
 	queryItems: ContextMenuQueryItem[]
 	modes?: ModeConfig[]
+	templateList?: any
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -23,12 +24,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	selectedType,
 	queryItems,
 	modes,
+	templateList,
 }) => {
 	const menuRef = useRef<HTMLDivElement>(null)
 
 	const filteredOptions = useMemo(
-		() => getContextMenuOptions(searchQuery, selectedType, queryItems, modes),
-		[searchQuery, selectedType, queryItems, modes],
+		() => getContextMenuOptions(searchQuery, selectedType, queryItems, modes, templateList),
+		[searchQuery, selectedType, queryItems, modes, templateList],
 	)
 
 	useEffect(() => {
@@ -68,12 +70,31 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						)}
 					</div>
 				)
+			case ContextMenuOptionType.Template:
+				return (
+					<div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+						<span style={{ lineHeight: "1.2" }}>{option.label}</span>
+						{option.description && (
+							<span
+								style={{
+									opacity: 0.5,
+									fontSize: "0.9em",
+									lineHeight: "1.2",
+									whiteSpace: "nowrap",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+								}}>
+								{option.description}
+							</span>
+						)}
+					</div>
+				)
 			case ContextMenuOptionType.Problems:
-				return <span>Problems</span>
+				return <span>问题</span>
 			case ContextMenuOptionType.URL:
-				return <span>Paste URL to fetch contents</span>
+				return <span>粘贴 URL 以获取内容</span>
 			case ContextMenuOptionType.NoResults:
-				return <span>No results found</span>
+				return <span>未找到结果</span>
 			case ContextMenuOptionType.Git:
 				if (option.value) {
 					return (
@@ -93,7 +114,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</div>
 					)
 				} else {
-					return <span>Git Commits</span>
+					return <span>Git 提交</span>
 				}
 			case ContextMenuOptionType.File:
 			case ContextMenuOptionType.OpenedFile:
@@ -116,7 +137,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						</>
 					)
 				} else {
-					return <span>Add {option.type === ContextMenuOptionType.File ? "File" : "Folder"}</span>
+					return <span>添加 {option.type === ContextMenuOptionType.File ? "文件" : "文件夹"}</span>
 				}
 		}
 	}
@@ -124,6 +145,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	const getIconForOption = (option: ContextMenuQueryItem): string => {
 		switch (option.type) {
 			case ContextMenuOptionType.Mode:
+				return "symbol-misc"
+			case ContextMenuOptionType.Template:
 				return "symbol-misc"
 			case ContextMenuOptionType.OpenedFile:
 				return "window"
@@ -185,7 +208,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							justifyContent: "space-between",
 							backgroundColor:
 								index === selectedIndex && isOptionSelectable(option)
-									? "var(--vscode-list-activeSelectionBackground)"
+									? "rgba(0, 122, 204, 0.1)" // 使用半透明的浅蓝色
 									: "",
 						}}
 						onMouseEnter={() => isOptionSelectable(option) && setSelectedIndex(index)}>

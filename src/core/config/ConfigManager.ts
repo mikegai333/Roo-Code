@@ -12,16 +12,39 @@ export interface ApiConfigData {
 }
 
 export class ConfigManager {
-	private readonly defaultConfig: ApiConfigData = {
-		currentApiConfigName: "default",
-		apiConfigs: {
-			default: {
-				id: this.generateId(),
-			},
+	private readonly defaultConfig: ApiConfigData = 
+	{
+		"currentApiConfigName": "qwen",
+		"apiConfigs": {
+		  "deepseek-r1": {
+			"apiProvider": "openai",
+			"openAiBaseUrl": "http://22.189.54.139/aicoding/api/v1",
+			"openAiApiKey": "",
+			"openAiModelId": "deepseek-r1-chat-v1.0",
+			"id": "ktfvsw1xwl"
+		  },
+		  "qwen": {
+			"apiProvider": "openai",
+			"openAiBaseUrl": "http://22.189.54.139/aicoding/api/v1",
+			"openAiApiKey": "",
+			"openAiModelId": "qwencoder-model-chat-v1.0",
+			"id": "nwmcw0x6wcq"
+		  }
 		},
-	}
+		"modeApiConfigs": {
+		  "code": "nwmcw0x6wcq"
+		}
+	  } 
+	// {
+	// 	currentApiConfigName: "default",
+	// 	apiConfigs: {
+	// 		default: {
+	// 			id: this.generateId(),
+	// 		},
+	// 	},
+	// }
 
-	private readonly SCOPE_PREFIX = "roo_cline_config_"
+	private readonly SCOPE_PREFIX = "aixcoding_config_"
 	private readonly context: ExtensionContext
 
 	constructor(context: ExtensionContext) {
@@ -225,6 +248,7 @@ export class ConfigManager {
 	private async writeConfig(config: ApiConfigData): Promise<void> {
 		try {
 			const content = JSON.stringify(config, null, 2)
+			console.log(content)
 			await this.context.secrets.store(this.getConfigKey(), content)
 		} catch (error) {
 			throw new Error(`Failed to write config to secrets: ${error}`)

@@ -43,7 +43,7 @@ const ReasoningBlock: React.FC<ReasoningBlockProps> = ({
 					justifyContent: "space-between",
 					borderBottom: isCollapsed ? "none" : "1px solid var(--vscode-editorGroup-border)",
 				}}>
-				<span style={{ fontWeight: "bold" }}>Reasoning</span>
+				<span style={{ fontWeight: "bold" }}>深度思考</span>
 				<span className={`codicon codicon-chevron-${isCollapsed ? "right" : "down"}`}></span>
 			</div>
 			{!isCollapsed && (

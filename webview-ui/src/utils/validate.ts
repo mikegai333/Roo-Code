@@ -10,42 +10,42 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 		switch (apiConfiguration.apiProvider) {
 			case "anthropic":
 				if (!apiConfiguration.apiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的 API 密钥或选择其他提供商。"
 				}
 				break
 			case "glama":
 				if (!apiConfiguration.glamaApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的 API 密钥或选择其他提供商。"
 				}
 				break
 			case "bedrock":
 				if (!apiConfiguration.awsRegion) {
-					return "You must choose a region to use with AWS Bedrock."
+					return "您必须选择一个区域以使用 AWS Bedrock。"
 				}
 				break
 			case "openrouter":
 				if (!apiConfiguration.openRouterApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的 API 密钥或选择其他提供商。"
 				}
 				break
 			case "vertex":
 				if (!apiConfiguration.vertexProjectId || !apiConfiguration.vertexRegion) {
-					return "You must provide a valid Google Cloud Project ID and Region."
+					return "您必须提供有效的 Google Cloud 项目 ID 和区域。"
 				}
 				break
 			case "gemini":
 				if (!apiConfiguration.geminiApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的 API 密钥或选择其他提供商。"
 				}
 				break
 			case "openai-native":
 				if (!apiConfiguration.openAiNativeApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的 API 密钥或选择其他提供商。"
 				}
 				break
 			case "mistral":
 				if (!apiConfiguration.mistralApiKey) {
-					return "You must provide a valid API key or choose a different provider."
+					return "您必须提供有效的 API 密钥或选择其他提供商。"
 				}
 				break
 			case "openai":
@@ -54,22 +54,22 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 					!apiConfiguration.openAiApiKey ||
 					!apiConfiguration.openAiModelId
 				) {
-					return "You must provide a valid base URL, API key, and model ID."
+					return "您必须提供有效的基准 URL、API 密钥和模型 ID。"
 				}
 				break
 			case "ollama":
 				if (!apiConfiguration.ollamaModelId) {
-					return "You must provide a valid model ID."
+					return "您必须提供有效的模型 ID。"
 				}
 				break
 			case "lmstudio":
 				if (!apiConfiguration.lmStudioModelId) {
-					return "You must provide a valid model ID."
+					return "您必须提供有效的模型 ID。"
 				}
 				break
 			case "vscode-lm":
 				if (!apiConfiguration.vsCodeLmModelSelector) {
-					return "You must provide a valid model selector."
+					return "您必须提供有效的模型选择器。"
 				}
 				break
 		}
@@ -88,31 +88,31 @@ export function validateModelId(
 			case "glama":
 				const glamaModelId = apiConfiguration.glamaModelId || glamaDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
 				if (!glamaModelId) {
-					return "You must provide a model ID."
+					return "您必须提供模型 ID。"
 				}
 				if (glamaModels && !Object.keys(glamaModels).includes(glamaModelId)) {
 					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
-					return "The model ID you provided is not available. Please choose a different model."
+					return "您提供的模型 ID 不可用。请选择其他模型。"
 				}
 				break
 			case "openrouter":
 				const modelId = apiConfiguration.openRouterModelId || openRouterDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
 				if (!modelId) {
-					return "You must provide a model ID."
+					return "您必须提供模型 ID。"
 				}
 				if (openRouterModels && !Object.keys(openRouterModels).includes(modelId)) {
 					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
-					return "The model ID you provided is not available. Please choose a different model."
+					return "您提供的模型 ID 不可用。请选择其他模型。"
 				}
 				break
 			case "unbound":
 				const unboundModelId = apiConfiguration.unboundModelId || unboundDefaultModelId
 				if (!unboundModelId) {
-					return "You must provide a model ID."
+					return "您必须提供模型 ID。"
 				}
 				if (unboundModels && !Object.keys(unboundModels).includes(unboundModelId)) {
 					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
-					return "The model ID you provided is not available. Please choose a different model."
+					return "您提供的模型 ID 不可用。请选择其他模型。"
 				}
 				break
 		}

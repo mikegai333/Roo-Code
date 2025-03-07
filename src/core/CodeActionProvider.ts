@@ -2,18 +2,18 @@ import * as vscode from "vscode"
 import { EditorUtils } from "./EditorUtils"
 
 export const ACTION_NAMES = {
-	EXPLAIN: "Roo Code: Explain Code",
-	FIX: "Roo Code: Fix Code",
-	FIX_LOGIC: "Roo Code: Fix Logic",
-	IMPROVE: "Roo Code: Improve Code",
-	ADD_TO_CONTEXT: "Roo Code: Add to Context",
+	EXPLAIN: "AIxCoding：解释代码",
+	FIX: "AIxCoding：修复代码",
+	FIX_LOGIC: "AIxCoding：修复逻辑",
+	IMPROVE: "AIxCoding：改进代码",
+	ADD_TO_CONTEXT: "AIxCoding：添加到上下文",
 } as const
 
 export const COMMAND_IDS = {
-	EXPLAIN: "roo-cline.explainCode",
-	FIX: "roo-cline.fixCode",
-	IMPROVE: "roo-cline.improveCode",
-	ADD_TO_CONTEXT: "roo-cline.addToContext",
+	EXPLAIN: "aixcoding-agent.explainCode",
+	FIX: "aixcoding-agent.fixCode",
+	IMPROVE: "aixcoding-agent.improveCode",
+	ADD_TO_CONTEXT: "aixcoding-agent.addToContext",
 } as const
 
 export class CodeActionProvider implements vscode.CodeActionProvider {
@@ -35,8 +35,8 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 		args: any[],
 	): vscode.CodeAction[] {
 		return [
-			this.createAction(`${baseTitle} in New Task`, kind, baseCommand, args),
-			this.createAction(`${baseTitle} in Current Task`, kind, `${baseCommand}InCurrentTask`, args),
+			this.createAction(`${baseTitle} 在新任务中`, kind, baseCommand, args),
+			this.createAction(`${baseTitle} 在当前任务中`, kind, `${baseCommand} 在当前任务中`, args),
 		]
 	}
 

@@ -22,15 +22,12 @@ const WelcomeView = () => {
 
 	return (
 		<div className="flex flex-col min-h-screen px-0 pb-5">
-			<h2>Hi, I'm Roo!</h2>
+			<h2>你好，我是 AIxCoding!</h2>
 			<p>
-				I can do all kinds of tasks thanks to the latest breakthroughs in agentic coding capabilities and access
-				to tools that let me create & edit files, explore complex projects, use the browser, and execute
-				terminal commands (with your permission, of course). I can even use MCP to create new tools and extend
-				my own capabilities.
+				我可以完成各种任务，这要归功于代理编码能力的最新突破以及访问各种工具的能力，这些工具使我能够创建和编辑文件、浏览复杂的项目、使用浏览器和执行终端命令（当然，需要您的许可）。
 			</p>
 
-			<b>To get started, this extension needs an API provider.</b>
+			<b>要开始使用，此扩展程序需要一个 API 提供程序。</b>
 
 			<div className="mt-3">
 				<ApiOptions fromWelcomeView />
@@ -38,7 +35,7 @@ const WelcomeView = () => {
 
 			<div className="sticky bottom-0 bg-[var(--vscode-editor-background)] py-3">
 				<div className="flex flex-col gap-1.5">
-					<VSCodeButton onClick={handleSubmit}>Let's go!</VSCodeButton>
+					<VSCodeButton onClick={handleSubmit}>开始吧！</VSCodeButton>
 					{errorMessage && <span className="text-destructive">{errorMessage}</span>}
 				</div>
 			</div>

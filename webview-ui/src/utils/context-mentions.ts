@@ -15,6 +15,14 @@ export function insertMention(
 		}
 	}
 
+	// Handle # command
+	if (text.startsWith("#")) {
+		return {
+			newValue: "#" + value + " ",
+			mentionIndex: 0,
+		}
+	}
+
 	const beforeCursor = text.slice(0, position)
 	const afterCursor = text.slice(position)
 
@@ -65,6 +73,7 @@ export enum ContextMenuOptionType {
 	Git = "git",
 	NoResults = "noResults",
 	Mode = "mode", // Add mode type
+	Template = "template",
 }
 
 export interface ContextMenuQueryItem {
@@ -80,6 +89,7 @@ export function getContextMenuOptions(
 	selectedType: ContextMenuOptionType | null = null,
 	queryItems: ContextMenuQueryItem[],
 	modes?: ModeConfig[],
+	templateList?: any,
 ): ContextMenuQueryItem[] {
 	// Handle slash commands for modes
 	if (query.startsWith("/")) {
@@ -113,6 +123,40 @@ export function getContextMenuOptions(
 				}))
 
 		return matchingModes.length > 0 ? matchingModes : [{ type: ContextMenuOptionType.NoResults }]
+	}
+	// 处理“#”指令获取模板
+	if (query.startsWith("#")) {
+		console.log(localStorage.getItem)
+		const templateQuery = query.slice(1)
+		if (!templateList?.length) return [{ type: ContextMenuOptionType.NoResults }]
+
+		// Create searchable strings array for fzf
+		const searchableItems = templateList.map((template: any) => ({
+			original: template,
+			searchStr: template.name,
+		}))
+
+		// Initialize fzf instance for fuzzy search
+		const fzf = new Fzf(searchableItems, {
+			selector: (item: any) => item.searchStr,
+		})
+
+		// Get fuzzy matching items
+		const matchingTemplates = templateQuery
+			? fzf.find(templateQuery).map((result: any) => ({
+					type: ContextMenuOptionType.Template,
+					value: result.item.original.content,
+					label: result.item.original.name,
+					description: result.item.original.content,
+				}))
+			: templateList.map((template: any) => ({
+					type: ContextMenuOptionType.Template,
+					value: template.content,
+					label: template.name,
+					description: template.content,
+				}))
+
+		return matchingTemplates.length > 0 ? matchingTemplates : [{ type: ContextMenuOptionType.NoResults }]
 	}
 
 	const workingChanges: ContextMenuQueryItem = {
@@ -249,7 +293,7 @@ export function getContextMenuOptions(
 
 export function shouldShowContextMenu(text: string, position: number): boolean {
 	// Handle slash command
-	if (text.startsWith("/")) {
+	if (text.startsWith("/") || text.startsWith("#")) {
 		return position <= text.length && !text.includes(" ")
 	}
 

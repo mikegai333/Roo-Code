@@ -351,6 +351,11 @@ describe("ClineProvider", () => {
 			mode: defaultModeSlug,
 			customModes: [],
 			experiments: experimentDefault,
+			reportApi: "",
+			enableCompletion: false,
+			baseApi: "",
+			templateList: [],
+			newVersion: false,
 		}
 
 		const message: ExtensionMessage = {

@@ -149,7 +149,7 @@ const ApiConfigManager = ({
 					gap: "2px",
 				}}>
 				<label htmlFor="config-profile">
-					<span style={{ fontWeight: "500" }}>Configuration Profile</span>
+					<span style={{ fontWeight: "500" }}>配置文件</span>
 				</label>
 
 				{isRenaming ? (
@@ -165,7 +165,7 @@ const ApiConfigManager = ({
 									setInputValue(target.target.value)
 									setError(null)
 								}}
-								placeholder="Enter new name"
+								placeholder="输入新名称"
 								style={{ flexGrow: 1 }}
 								onKeyDown={(e: unknown) => {
 									const event = e as { key: string }
@@ -180,7 +180,7 @@ const ApiConfigManager = ({
 								appearance="icon"
 								disabled={!inputValue.trim()}
 								onClick={handleSave}
-								title="Save"
+								title="保存"
 								style={{
 									padding: 0,
 									margin: 0,
@@ -193,7 +193,7 @@ const ApiConfigManager = ({
 							<VSCodeButton
 								appearance="icon"
 								onClick={handleCancel}
-								title="Cancel"
+								title="取消"
 								style={{
 									padding: 0,
 									margin: 0,
@@ -232,7 +232,7 @@ const ApiConfigManager = ({
 							<VSCodeButton
 								appearance="icon"
 								onClick={handleAdd}
-								title="Add profile"
+								title="添加配置文件"
 								style={{
 									padding: 0,
 									margin: 0,
@@ -260,7 +260,7 @@ const ApiConfigManager = ({
 									<VSCodeButton
 										appearance="icon"
 										onClick={handleDelete}
-										title={isOnlyProfile ? "Cannot delete the only profile" : "Delete profile"}
+										title={isOnlyProfile ? "无法删除唯一配置文件" : "删除配置文件"}
 										disabled={isOnlyProfile}
 										style={{
 											padding: 0,
@@ -280,7 +280,7 @@ const ApiConfigManager = ({
 								margin: "5px 0 12px",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							Save different API configurations to quickly switch between providers and settings
+							保存不同的 API 配置，以便在提供程序和设置之间快速切换
 						</p>
 					</>
 				)}
@@ -299,9 +299,9 @@ const ApiConfigManager = ({
 					aria-labelledby="new-profile-title">
 					<DialogContent className="p-4 max-w-sm">
 						<h2 id="new-profile-title" className="text-lg font-semibold mb-4">
-							New Configuration Profile
+							新建配置配置文件
 						</h2>
-						<button className="absolute right-4 top-4" aria-label="Close dialog" onClick={resetCreateState}>
+						<button className="absolute right-4 top-4" aria-label="关闭对话框" onClick={resetCreateState}>
 							<span className="codicon codicon-close" />
 						</button>
 						<VSCodeTextField
@@ -312,7 +312,7 @@ const ApiConfigManager = ({
 								setNewProfileName(target.target.value)
 								setError(null)
 							}}
-							placeholder="Enter profile name"
+							placeholder="输入配置文件名称"
 							style={{ width: "100%" }}
 							onKeyDown={(e: unknown) => {
 								const event = e as { key: string }
@@ -330,13 +330,13 @@ const ApiConfigManager = ({
 						)}
 						<div className="flex justify-end gap-2 mt-4">
 							<VSCodeButton appearance="secondary" onClick={resetCreateState}>
-								Cancel
+								取消
 							</VSCodeButton>
 							<VSCodeButton
 								appearance="primary"
 								disabled={!newProfileName.trim()}
 								onClick={handleNewProfileSave}>
-								Create Profile
+								创建配置文件
 							</VSCodeButton>
 						</div>
 					</DialogContent>

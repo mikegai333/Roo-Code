@@ -9,7 +9,7 @@ import { vscode } from "../../utils/vscode"
 import Thumbnails from "../common/Thumbnails"
 import { mentionRegexGlobal } from "../../../../src/shared/context-mentions"
 import { formatLargeNumber } from "../../utils/format"
-import { normalizeApiConfiguration } from "../settings/ApiOptions"
+// import { normalizeApiConfiguration } from "../settings/ApiOptions"
 import { Button } from "../ui"
 import { HistoryItem } from "../../../../src/shared/HistoryItem"
 
@@ -37,13 +37,13 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	onClose,
 }) => {
 	const { apiConfiguration, currentTaskItem } = useExtensionState()
-	const { selectedModelInfo } = useMemo(() => normalizeApiConfiguration(apiConfiguration), [apiConfiguration])
+	// const { selectedModelInfo } = useMemo(() => normalizeApiConfiguration(apiConfiguration), [apiConfiguration])
 	const [isTaskExpanded, setIsTaskExpanded] = useState(true)
 	const [isTextExpanded, setIsTextExpanded] = useState(false)
 	const [showSeeMore, setShowSeeMore] = useState(false)
 	const textContainerRef = useRef<HTMLDivElement>(null)
 	const textRef = useRef<HTMLDivElement>(null)
-	const contextWindow = selectedModelInfo?.contextWindow || 1
+	// const contextWindow = selectedModelInfo?.contextWindow || 1
 
 	/*
 	When dealing with event listeners in React components that depend on state variables, we face a challenge. We want our listener to always use the most up-to-date version of a callback function that relies on current state, but we don't want to constantly add and remove event listeners as that function updates. This scenario often arises with resize listeners or other window events. Simply adding the listener in a useEffect with an empty dependency array risks using stale state, while including the callback in the dependencies can lead to unnecessary re-registrations of the listener. There are react hook libraries that provide a elegant solution to this problem by utilizing the useRef hook to maintain a reference to the latest callback function without triggering re-renders or effect re-runs. This approach ensures that our event listener always has access to the most current state while minimizing performance overhead and potential memory leaks from multiple listener registrations. 
@@ -158,7 +158,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 								flexGrow: 1,
 								minWidth: 0, // This allows the div to shrink below its content size
 							}}>
-							<span style={{ fontWeight: "bold" }}>Task{!isTaskExpanded && ":"}</span>
+							<span style={{ fontWeight: "bold" }}>任务{!isTaskExpanded && ":"}</span>
 							{!isTaskExpanded && (
 								<span style={{ marginLeft: 4 }}>{highlightMentions(task.text, false)}</span>
 							)}
@@ -235,7 +235,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 											backgroundColor: "var(--vscode-badge-background)",
 										}}
 										onClick={() => setIsTextExpanded(!isTextExpanded)}>
-										See more
+										加载更多
 									</div>
 								</div>
 							)}
@@ -250,7 +250,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 									paddingRight: 2,
 								}}
 								onClick={() => setIsTextExpanded(!isTextExpanded)}>
-								See less
+								折叠
 							</div>
 						)}
 
@@ -278,14 +278,14 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 								{!isCostAvailable && <TaskActions item={currentTaskItem} />}
 							</div>
 
-							{isTaskExpanded && contextWindow && (
+							{/* {isTaskExpanded && contextWindow && (
 								<div className={`flex ${windowWidth < 270 ? "flex-col" : "flex-row"} gap-1 h-[20px]`}>
 									<ContextWindowProgress
 										contextWindow={contextWindow}
 										contextTokens={contextTokens || 0}
 									/>
 								</div>
-							)}
+							)} */}
 
 							{shouldShowPromptCacheInfo && (cacheReads !== undefined || cacheWrites !== undefined) && (
 								<div className="flex items-center gap-1 flex-wrap h-[20px]">
@@ -363,27 +363,27 @@ const TaskActions = ({ item }: { item: HistoryItem | undefined }) => (
 	</div>
 )
 
-const ContextWindowProgress = ({ contextWindow, contextTokens }: { contextWindow: number; contextTokens: number }) => (
-	<>
-		<div className="flex items-center gap-1 flex-shrink-0">
-			<span className="font-bold">Context Window:</span>
-		</div>
-		<div className="flex items-center gap-2 flex-1 whitespace-nowrap">
-			<div>{formatLargeNumber(contextTokens)}</div>
-			<div className="flex items-center gap-[3px] flex-1">
-				<div className="flex-1 h-1 rounded-[2px] overflow-hidden bg-[color-mix(in_srgb,var(--vscode-badge-foreground)_20%,transparent)]">
-					<div
-						className="h-full rounded-[2px] bg-[var(--vscode-badge-foreground)]"
-						style={{
-							width: `${(contextTokens / contextWindow) * 100}%`,
-							transition: "width 0.3s ease-out",
-						}}
-					/>
-				</div>
-			</div>
-			<div>{formatLargeNumber(contextWindow)}</div>
-		</div>
-	</>
-)
+// const ContextWindowProgress = ({ contextWindow, contextTokens }: { contextWindow: number; contextTokens: number }) => (
+// 	<>
+// 		<div className="flex items-center gap-1 flex-shrink-0">
+// 			<span className="font-bold">Context Window:</span>
+// 		</div>
+// 		<div className="flex items-center gap-2 flex-1 whitespace-nowrap">
+// 			<div>{formatLargeNumber(contextTokens)}</div>
+// 			<div className="flex items-center gap-[3px] flex-1">
+// 				<div className="flex-1 h-1 rounded-[2px] overflow-hidden bg-[color-mix(in_srgb,var(--vscode-badge-foreground)_20%,transparent)]">
+// 					<div
+// 						className="h-full rounded-[2px] bg-[var(--vscode-badge-foreground)]"
+// 						style={{
+// 							width: `${(contextTokens / contextWindow) * 100}%`,
+// 							transition: "width 0.3s ease-out",
+// 						}}
+// 					/>
+// 				</div>
+// 			</div>
+// 			<div>{formatLargeNumber(contextWindow)}</div>
+// 		</div>
+// 	</>
+// )
 
 export default memo(TaskHeader)

@@ -1,7 +1,7 @@
 import * as assert from "assert"
 import * as vscode from "vscode"
 
-suite("Roo Code Extension", () => {
+suite("AIxCoding Agent Extension", () => {
 	test("OPENROUTER_API_KEY environment variable is set", () => {
 		if (!process.env.OPENROUTER_API_KEY) {
 			assert.fail("OPENROUTER_API_KEY environment variable is not set")
@@ -14,15 +14,15 @@ suite("Roo Code Extension", () => {
 		const startTime = Date.now()
 
 		const expectedCommands = [
-			"roo-cline.plusButtonClicked",
-			"roo-cline.mcpButtonClicked",
-			"roo-cline.historyButtonClicked",
-			"roo-cline.popoutButtonClicked",
-			"roo-cline.settingsButtonClicked",
-			"roo-cline.openInNewTab",
-			"roo-cline.explainCode",
-			"roo-cline.fixCode",
-			"roo-cline.improveCode",
+			"aixcoding-agent.plusButtonClicked",
+			"aixcoding-agent.mcpButtonClicked",
+			"aixcoding-agent.historyButtonClicked",
+			"aixcoding-agent.popoutButtonClicked",
+			"aixcoding-agent.settingsButtonClicked",
+			"aixcoding-agent.openInNewTab",
+			"aixcoding-agent.explainCode",
+			"aixcoding-agent.fixCode",
+			"aixcoding-agent.improveCode",
 		]
 
 		while (Date.now() - startTime < timeout) {

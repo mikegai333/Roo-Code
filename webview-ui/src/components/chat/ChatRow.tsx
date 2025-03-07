@@ -121,14 +121,14 @@ export const ChatRowContent = ({
 					<span
 						className="codicon codicon-error"
 						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: errorColor, fontWeight: "bold" }}>Error</span>,
+					<span style={{ color: errorColor, fontWeight: "bold" }}>错误</span>,
 				]
 			case "mistake_limit_reached":
 				return [
 					<span
 						className="codicon codicon-error"
 						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: errorColor, fontWeight: "bold" }}>Roo is having trouble...</span>,
+					<span style={{ color: errorColor, fontWeight: "bold" }}>AIxCoding 遇到了问题...</span>,
 				]
 			case "command":
 				return [
@@ -139,7 +139,7 @@ export const ChatRowContent = ({
 							className="codicon codicon-terminal"
 							style={{ color: normalColor, marginBottom: "-1.5px" }}></span>
 					),
-					<span style={{ color: normalColor, fontWeight: "bold" }}>Roo wants to execute this command:</span>,
+					<span style={{ color: normalColor, fontWeight: "bold" }}>AIxCoding 想要执行这个命令：</span>,
 				]
 			case "use_mcp_server":
 				const mcpServerUse = JSON.parse(message.text || "{}") as ClineAskUseMcpServer
@@ -152,7 +152,7 @@ export const ChatRowContent = ({
 							style={{ color: normalColor, marginBottom: "-1.5px" }}></span>
 					),
 					<span style={{ color: normalColor, fontWeight: "bold" }}>
-						Roo wants to {mcpServerUse.type === "use_mcp_tool" ? "use a tool" : "access a resource"} on the{" "}
+						AIxCoding 想要{mcpServerUse.type === "use_mcp_tool" ? "使用工具" : "访问资源"}，在{" "}
 						<code>{mcpServerUse.serverName}</code> MCP server:
 					</span>,
 				]
@@ -161,7 +161,7 @@ export const ChatRowContent = ({
 					<span
 						className="codicon codicon-check"
 						style={{ color: successColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: successColor, fontWeight: "bold" }}>Task Completed</span>,
+					<span style={{ color: successColor, fontWeight: "bold" }}>任务完成</span>,
 				]
 			case "api_req_retry_delayed":
 				return []
@@ -200,16 +200,16 @@ export const ChatRowContent = ({
 					),
 					apiReqCancelReason !== null && apiReqCancelReason !== undefined ? (
 						apiReqCancelReason === "user_cancelled" ? (
-							<span style={{ color: normalColor, fontWeight: "bold" }}>API Request Cancelled</span>
+							<span style={{ color: normalColor, fontWeight: "bold" }}>API 请求已取消</span>
 						) : (
-							<span style={{ color: errorColor, fontWeight: "bold" }}>API Streaming Failed</span>
+							<span style={{ color: errorColor, fontWeight: "bold" }}>API 流式传输失败</span>
 						)
 					) : cost !== null && cost !== undefined ? (
-						<span style={{ color: normalColor, fontWeight: "bold" }}>API Request</span>
+						<span style={{ color: normalColor, fontWeight: "bold" }}>API 请求</span>
 					) : apiRequestFailedMessage ? (
-						<span style={{ color: errorColor, fontWeight: "bold" }}>API Request Failed</span>
+						<span style={{ color: errorColor, fontWeight: "bold" }}>API 请求失败</span>
 					) : (
-						<span style={{ color: normalColor, fontWeight: "bold" }}>API Request...</span>
+						<span style={{ color: normalColor, fontWeight: "bold" }}>API 请求中...</span>
 					),
 				]
 			case "followup":
@@ -217,7 +217,7 @@ export const ChatRowContent = ({
 					<span
 						className="codicon codicon-question"
 						style={{ color: normalColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: normalColor, fontWeight: "bold" }}>Roo has a question:</span>,
+					<span style={{ color: normalColor, fontWeight: "bold" }}>AIxCoding 有一个问题：</span>,
 				]
 			default:
 				return [null, null]
@@ -259,7 +259,7 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon(tool.tool === "appliedDiff" ? "diff" : "edit")}
-							<span style={{ fontWeight: "bold" }}>Roo wants to edit this file:</span>
+							<span style={{ fontWeight: "bold" }}>AIxCoding 想要编辑这个文件：</span>
 						</div>
 						<CodeAccordian
 							isLoading={message.partial}
@@ -275,7 +275,7 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("new-file")}
-							<span style={{ fontWeight: "bold" }}>Roo wants to create a new file:</span>
+							<span style={{ fontWeight: "bold" }}>AIxCoding 想要创建一个新文件：</span>
 						</div>
 						<CodeAccordian
 							isLoading={message.partial}
@@ -292,7 +292,7 @@ export const ChatRowContent = ({
 						<div style={headerStyle}>
 							{toolIcon("file-code")}
 							<span style={{ fontWeight: "bold" }}>
-								{message.type === "ask" ? "Roo wants to read this file:" : "Roo read this file:"}
+								{message.type === "ask" ? "AIxCoding 想要读取这个文件：" : "AIxCoding 读取了这个文件："}
 							</span>
 						</div>
 						{/* <CodeAccordian
@@ -350,8 +350,8 @@ export const ChatRowContent = ({
 							{toolIcon("folder-opened")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
-									? "Roo wants to view the top level files in this directory:"
-									: "Roo viewed the top level files in this directory:"}
+									? "AIxCoding 想要查看此目录中的顶层文件："
+									: "AIxCoding 查看了此目录中的顶层文件："}
 							</span>
 						</div>
 						<CodeAccordian
@@ -370,8 +370,8 @@ export const ChatRowContent = ({
 							{toolIcon("folder-opened")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
-									? "Roo wants to recursively view all files in this directory:"
-									: "Roo recursively viewed all files in this directory:"}
+									? "AIxCoding 想要递归查看此目录中的所有文件："
+									: "AIxCoding 递归查看了此目录中的所有文件："}
 							</span>
 						</div>
 						<CodeAccordian
@@ -390,8 +390,8 @@ export const ChatRowContent = ({
 							{toolIcon("file-code")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
-									? "Roo wants to view source code definition names used in this directory:"
-									: "Roo viewed source code definition names used in this directory:"}
+									? "AIxCoding 想要查看此目录中使用的源代码定义名称："
+									: "AIxCoding 查看了此目录中使用的源代码定义名称："}
 							</span>
 						</div>
 						<CodeAccordian
@@ -410,11 +410,11 @@ export const ChatRowContent = ({
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask" ? (
 									<>
-										Roo wants to search this directory for <code>{tool.regex}</code>:
+										AIxCoding 想要在此目录中搜索 <code>{tool.regex}</code>：
 									</>
 								) : (
 									<>
-										Roo searched this directory for <code>{tool.regex}</code>:
+										AIxCoding 在此目录中搜索了 <code>{tool.regex}</code>：
 									</>
 								)}
 							</span>
@@ -437,9 +437,9 @@ export const ChatRowContent = ({
 			// 				{isInspecting ? <ProgressIndicator /> : toolIcon("inspect")}
 			// 				<span style={{ fontWeight: "bold" }}>
 			// 					{message.type === "ask" ? (
-			// 						<>Roo wants to inspect this website:</>
+			// 						<>AIxCoding wants to inspect this website:</>
 			// 					) : (
-			// 						<>Roo is inspecting this website:</>
+			// 						<>AIxCoding is inspecting this website:</>
 			// 					)}
 			// 				</span>
 			// 			</div>
@@ -462,13 +462,13 @@ export const ChatRowContent = ({
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask" ? (
 									<>
-										Roo wants to switch to <code>{tool.mode}</code> mode
-										{tool.reason ? ` because: ${tool.reason}` : ""}
+										AIxCoding 想要切换到 <code>{tool.mode}</code> 模式
+										{tool.reason ? `，原因：${tool.reason}` : ""}
 									</>
 								) : (
 									<>
-										Roo switched to <code>{tool.mode}</code> mode
-										{tool.reason ? ` because: ${tool.reason}` : ""}
+										AIxCoding 已切换到 <code>{tool.mode}</code> 模式
+										{tool.reason ? `，原因：${tool.reason}` : ""}
 									</>
 								)}
 							</span>
@@ -481,7 +481,7 @@ export const ChatRowContent = ({
 						<div style={headerStyle}>
 							{toolIcon("new-file")}
 							<span style={{ fontWeight: "bold" }}>
-								Roo wants to create a new task in <code>{tool.mode}</code> mode:
+								AIxCoding 想要在 <code>{tool.mode}</code> 模式下创建新任务：
 							</span>
 						</div>
 						<div style={{ paddingLeft: "26px", marginTop: "4px" }}>
@@ -716,19 +716,17 @@ export const ChatRowContent = ({
 											fontSize: 18,
 											color: "#FFA500",
 										}}></i>
-									<span style={{ fontWeight: 500, color: "#FFA500" }}>
-										Shell Integration Unavailable
-									</span>
+									<span style={{ fontWeight: 500, color: "#FFA500" }}>Shell 集成不可用</span>
 								</div>
 								<div>
-									Roo won't be able to view the command's output. Please update VSCode (
-									<code>CMD/CTRL + Shift + P</code> → "Update") and make sure you're using a supported
-									shell: zsh, bash, fish, or PowerShell (<code>CMD/CTRL + Shift + P</code> →
-									"Terminal: Select Default Profile").{" "}
+									AIxCoding 将无法查看命令的输出。请更新 VSCode（
+									<code>CMD/CTRL + Shift + P</code> → "Update"）并确保您使用的是受支持的
+									shell：zsh、bash、fish 或 PowerShell（<code>CMD/CTRL + Shift + P</code> → "Terminal:
+									Select Default Profile"）。{" "}
 									<a
 										href="https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Shell-Integration-Unavailable"
 										style={{ color: "inherit", textDecoration: "underline" }}>
-										Still having trouble?
+										仍然遇到问题？
 									</a>
 								</div>
 							</div>
@@ -745,7 +743,7 @@ export const ChatRowContent = ({
 										fontSize: "12px",
 										textTransform: "uppercase",
 									}}>
-									Response
+									响应
 								</div>
 								<CodeAccordian
 									code={message.text}
@@ -856,7 +854,7 @@ export const ChatRowContent = ({
 											}}>
 											<span
 												className={`codicon codicon-chevron-${isExpanded ? "down" : "right"}`}></span>
-											<span style={{ fontSize: "0.8em" }}>Command Output</span>
+											<span style={{ fontSize: "0.8em" }}>命令输出</span>
 										</div>
 										{isExpanded && <CodeBlock source={`${"```"}shell\n${output}\n${"```"}`} />}
 									</div>
@@ -928,7 +926,7 @@ export const ChatRowContent = ({
 														fontSize: "12px",
 														textTransform: "uppercase",
 													}}>
-													Arguments
+													参数
 												</div>
 												<CodeAccordian
 													code={useMcpServer.arguments}
@@ -1045,7 +1043,7 @@ const Markdown = memo(({ markdown, partial }: { markdown?: string; partial?: boo
 								}
 							}
 						}}
-						title="Copy as markdown">
+						title="复制为 Markdown">
 						<span className="codicon codicon-copy"></span>
 					</VSCodeButton>
 				</div>
