@@ -64,7 +64,7 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
 
-		const deepseekReasoner = modelId.includes("deepseek-reasoner")
+		const deepseekReasoner = modelId.includes("deepseek-r1")
 		const ark = modelUrl.includes(".volces.com")
 
 		if (this.options.openAiStreamingEnabled ?? true) {
@@ -96,10 +96,12 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 			}
 
 			const stream = await this.client.chat.completions.create(requestOptions)
-
+			let fullContent = ""
 			for await (const chunk of stream) {
-				const delta = chunk.choices[0]?.delta ?? {}
+				let delta = chunk.choices[0]?.delta ?? {}
+				fullContent = fullContent + delta.content
 
+				console.log("delta\n", fullContent)
 				if (delta.content) {
 					yield {
 						type: "text",
@@ -107,10 +109,10 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 					}
 				}
 
-				if ("reasoning_content" in delta && delta.reasoning_content) {
+				if ("reasoning" in delta && delta.reasoning) {
 					yield {
 						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
+						text: (delta.reasoning as string | undefined) || "",
 					}
 				}
 				if (chunk.usage) {

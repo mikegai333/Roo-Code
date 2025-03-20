@@ -59,11 +59,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			templateList,
 			newVersion,
 		} = useExtensionState()
-		console.log(listApiConfigMeta)
 		const [gitCommits, setGitCommits] = useState<any[]>([])
-		// if(templateList.length === 0) {
-		// 	vscode.postMessage({ type: "getTemplateList" })
-		// }
+		useEffect(() => {
+			vscode.postMessage({ type: "getTemplateList" })
+		}, [])
 		const [showDropdown, setShowDropdown] = useState(false)
 		// Close dropdown when clicking outside
 		useEffect(() => {
@@ -413,6 +412,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						setSelectedMenuIndex(0)
 					} else if (newValue.startsWith("#")) {
 						// Handle # command
+						vscode.postMessage({ type: "getTemplateList" })
 						const query = newValue
 						setSearchQuery(query)
 						setSelectedMenuIndex(0)
@@ -596,6 +596,17 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [deepseek, setDeepseek] = useState(false)
 		const changeDeepseek = useCallback((val: boolean) => {
 			setDeepseek(val)
+			if (val) {
+				vscode.postMessage({
+					type: "loadApiConfiguration",
+					text: "deepseek-r1",
+				})
+			} else {
+				vscode.postMessage({
+					type: "loadApiConfiguration",
+					text: "qwen",
+				})
+			}
 		}, [])
 
 		return (
@@ -741,7 +752,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							onHeightChange?.(height)
 						}}
 						placeholder={placeholderText}
-						minRows={3}
+						minRows={newVersion ? 3 : 1}
 						maxRows={15}
 						autoFocus={true}
 						style={{
@@ -800,7 +811,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								background: deepseek ? "rgba(85, 193, 255, .3)" : "",
 								cursor: "pointer",
 								display: "flex",
-								paddingInline: "3px",
+								padding: "3px",
 							}}
 							onClick={() => changeDeepseek(!deepseek)}>
 							<span

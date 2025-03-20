@@ -1063,8 +1063,8 @@ export class Cline {
 					// Remove all instances of <thinking> (with optional line break after) and </thinking> (with optional line break before)
 					// - Needs to be separate since we dont want to remove the line break before the first tag
 					// - Needs to happen before the xml parsing below
-					content = content.replace(/<think>\s?/g, "")
-					content = content.replace(/\s?<\/think>/g, "")
+					// content = content.replace(/<think>\s?/g, "")
+					// content = content.replace(/\s?<\/think>/g, "")
 
 					// Remove partial XML tag at the very end of the content (for tool use and thinking tags)
 					// (prevents scrollview from jumping when tags are automatically removed)

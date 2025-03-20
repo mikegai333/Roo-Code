@@ -1422,13 +1422,13 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 }
 
 export function getGlamaAuthUrl(uriScheme?: string) {
-	const callbackUrl = `${uriScheme || "vscode"}://RooVeterinaryInc.aixcoding-agent/glama`
+	const callbackUrl = `${uriScheme || "vscode"}://bocsoft.aixcoding-agent/glama`
 
 	return `https://glama.ai/oauth/authorize?callback_url=${encodeURIComponent(callbackUrl)}`
 }
 
 export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://RooVeterinaryInc.aixcoding-agent/openrouter`
+	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://bocsoft.aixcoding-agent/openrouter`
 }
 
 export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration) {

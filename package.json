@@ -2,7 +2,7 @@
 	"name": "aixcoding-agent",
 	"displayName": "AIxCoding",
 	"description": "A VS Code plugin that enhances coding with AI-powered automation, multi-model support, and experimental features.",
-	"publisher": "RooVeterinaryInc",
+	"publisher": "bocsoft",
 	"version": "3.3.19",
 	"icon": "assets/icons/logo.png",
 	"galleryBanner": {

@@ -17,7 +17,7 @@ import { vscode } from "../utils/vscode"
 import { convertTextMateToHljs } from "../utils/textMateToHljs"
 import { findLastIndex } from "../../../src/shared/array"
 import { McpServer } from "../../../src/shared/mcp"
-// import { checkExistKey } from "../../../src/shared/checkExistApiConfig"
+import { checkExistKey } from "../../../src/shared/checkExistApiConfig"
 import { Mode, CustomModePrompts, defaultModeSlug, defaultPrompts, ModeConfig } from "../../../src/shared/modes"
 import { CustomSupportPrompts } from "../../../src/shared/support-prompt"
 import { experimentDefault, ExperimentId } from "../../../src/shared/experiments"
@@ -211,10 +211,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 							...(newState.apiConfiguration || {}),
 						},
 					}))
-					// const config = newState.apiConfiguration
-					// const hasKey = checkExistKey(config)
-					// setShowWelcome(!hasKey)
-					setShowWelcome(false)
+					const config = newState.apiConfiguration
+					const hasKey = checkExistKey(config)
+					setShowWelcome(!hasKey)
+					// setShowWelcome(false)
 					setDidHydrateState(true)
 					break
 				}

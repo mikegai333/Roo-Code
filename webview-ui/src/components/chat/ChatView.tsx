@@ -972,6 +972,9 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		},
 		[setNewVersion],
 	)
+	const runCommand = (val: string) => {
+		vscode.postMessage({ type: "runCommand", text: val })
+	}
 
 	return (
 		<div
@@ -1015,11 +1018,12 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 								justifyContent: "space-between",
 								cursor: "pointer",
 								alignItems: "center",
+								flexWrap: "wrap",
 							}}>
 							<h2>欢迎！我是AIxCoding！</h2>
 							<VSCodeButton onClick={() => saveNewVersion(!newVersion)}>
 								{newVersion ? "返回旧版" : "体验新版"}
-								<span slot="start" className="codicon codicon-sparkle"></span>
+								{!newVersion && <span slot="start" className="codicon codicon-sparkle"></span>}
 							</VSCodeButton>
 						</div>
 						<p>
@@ -1161,6 +1165,32 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				mode={newVersion ? mode : "ask"}
 				setMode={setMode}
 			/>
+			{!newVersion && (
+				<div
+					style={{
+						display: "grid",
+						gridTemplateColumns: "1fr 1fr",
+						gap: "8px",
+						padding: "0 8px 8px",
+					}}>
+					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+						解释代码
+						<span slot="start" className="codicon codicon-question"></span>
+					</VSCodeButton>
+					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+						检查代码
+						<span slot="start" className="codicon codicon-symbol-property"></span>
+					</VSCodeButton>
+					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+						生成注释
+						<span slot="start" className="codicon codicon-diff-added"></span>
+					</VSCodeButton>
+					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+						编写测试
+						<span slot="start" className="codicon codicon-vm-connect"></span>
+					</VSCodeButton>
+				</div>
+			)}
 
 			<div id="chat-view-portal" />
 		</div>

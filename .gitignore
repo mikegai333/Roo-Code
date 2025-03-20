@@ -2,7 +2,7 @@ dist
 out
 out-*
 node_modules
-config
+/config
 coverage/
 
 .DS_Store

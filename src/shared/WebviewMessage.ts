@@ -96,6 +96,8 @@ export interface WebviewMessage {
 		| "baseApi"
 		| "getTemplateList"
 		| "newVersion"
+		| "initConfig"
+		| "runCommand"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse
@@ -118,6 +120,7 @@ export interface WebviewMessage {
 	modeConfig?: ModeConfig
 	timeout?: number
 	payload?: WebViewMessagePayload
+	initConfig?: any
 }
 
 export const checkoutDiffPayloadSchema = z.object({

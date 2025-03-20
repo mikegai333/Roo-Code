@@ -141,5 +141,5 @@ export function mergeJson(
 }
 
 function getExtensionUri(): vscode.Uri {
-	return vscode.extensions.getExtension("RooVeterinaryInc.aixcoding-agent")!.extensionUri
+	return vscode.extensions.getExtension("bocsoft.aixcoding-agent")!.extensionUri
 }

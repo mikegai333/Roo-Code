@@ -13,7 +13,7 @@ export default defineConfig({
 		timeout: 60000,
 	},
 	launchArgs: [
-		'--enable-proposed-api=RooVeterinaryInc.aixcoding-agent',
+		'--enable-proposed-api=bocsoft.aixcoding-agent',
 		'--disable-extensions'
 	]
 });

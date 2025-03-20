@@ -29,7 +29,7 @@ export async function run(): Promise<void> {
 		files.forEach((f: string) => mocha.addFile(path.resolve(testsRoot, f)))
 
 		//Set up global extension, api, provider, and panel
-		globalThis.extension = vscode.extensions.getExtension("RooVeterinaryInc.aixcoding-agent")
+		globalThis.extension = vscode.extensions.getExtension("bocsoft.aixcoding-agent")
 		if (!globalThis.extension) {
 			throw new Error("Extension not found")
 		}

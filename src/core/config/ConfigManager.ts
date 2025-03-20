@@ -12,29 +12,28 @@ export interface ApiConfigData {
 }
 
 export class ConfigManager {
-	private readonly defaultConfig: ApiConfigData = 
-	{
-		"currentApiConfigName": "qwen",
-		"apiConfigs": {
-		  "deepseek-r1": {
-			"apiProvider": "openai",
-			"openAiBaseUrl": "http://22.189.54.139/aicoding/api/v1",
-			"openAiApiKey": "",
-			"openAiModelId": "deepseek-r1-chat-v1.0",
-			"id": "ktfvsw1xwl"
-		  },
-		  "qwen": {
-			"apiProvider": "openai",
-			"openAiBaseUrl": "http://22.189.54.139/aicoding/api/v1",
-			"openAiApiKey": "",
-			"openAiModelId": "qwencoder-model-chat-v1.0",
-			"id": "nwmcw0x6wcq"
-		  }
+	private readonly defaultConfig: ApiConfigData = {
+		currentApiConfigName: "qwen",
+		apiConfigs: {
+			"deepseek-r1": {
+				apiProvider: "openai",
+				openAiBaseUrl: "",
+				openAiApiKey: "",
+				openAiModelId: "deepseek-r1-chat-v1.0",
+				id: "ktfvsw1xwl",
+			},
+			qwen: {
+				apiProvider: "openai",
+				openAiBaseUrl: "",
+				openAiApiKey: "",
+				openAiModelId: "qwencoder-model-chat-v1.0",
+				id: "nwmcw0x6wcq",
+			},
 		},
-		"modeApiConfigs": {
-		  "code": "nwmcw0x6wcq"
-		}
-	  } 
+		modeApiConfigs: {
+			code: "nwmcw0x6wcq",
+		},
+	}
 	// {
 	// 	currentApiConfigName: "default",
 	// 	apiConfigs: {
@@ -245,7 +244,7 @@ export class ConfigManager {
 		}
 	}
 
-	private async writeConfig(config: ApiConfigData): Promise<void> {
+	async writeConfig(config: ApiConfigData): Promise<void> {
 		try {
 			const content = JSON.stringify(config, null, 2)
 			console.log(content)

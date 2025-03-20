@@ -32,7 +32,7 @@ import { playSound, setSoundEnabled, setSoundVolume } from "../../utils/sound"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { singleCompletionHandler } from "../../utils/single-completion-handler"
 import { searchCommits } from "../../utils/git"
-import { ConfigManager } from "../config/ConfigManager"
+import { ApiConfigData, ConfigManager } from "../config/ConfigManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { EXPERIMENT_IDS, experiments as Experiments, experimentDefault, ExperimentId } from "../../shared/experiments"
 import { CustomSupportPrompts, supportPrompt } from "../../shared/support-prompt"
@@ -803,6 +803,13 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						}
 						await this.postStateToWebview()
 						break
+					case "initConfig":
+						await this.initConfig(message.initConfig)
+						await this.postStateToWebview()
+						break
+					case "runCommand":
+						await vscode.commands.executeCommand(message.text || "")
+						break
 					case "customInstructions":
 						await this.updateCustomInstructions(message.text)
 						break
@@ -1421,12 +1428,12 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					case "deleteApiConfiguration":
 						if (message.text) {
 							const answer = await vscode.window.showInformationMessage(
-								"Are you sure you want to delete this configuration profile?",
+								"确认删除这个配置文件?",
 								{ modal: true },
-								"Yes",
+								"是",
 							)
 
-							if (answer !== "Yes") {
+							if (answer !== "是") {
 								break
 							}
 
@@ -1515,12 +1522,12 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					case "deleteCustomMode":
 						if (message.slug) {
 							const answer = await vscode.window.showInformationMessage(
-								"Are you sure you want to delete this custom mode?",
+								"确认删除这个自定义模式?",
 								{ modal: true },
-								"Yes",
+								"是",
 							)
 
-							if (answer !== "Yes") {
+							if (answer !== "是") {
 								break
 							}
 
@@ -1616,6 +1623,68 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		}
 
 		await this.postStateToWebview()
+	}
+	// 初始化AIxCoding配置
+	private async initConfig(config: any) {
+		const { apiKey, baseApi, reportApi } = {
+			apiKey: "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",
+			baseApi: "https://openrouter.ai",
+			reportApi: "https://openrouter.ai",
+		} //config
+		await this.updateGlobalState("baseApi", baseApi)
+		await this.updateGlobalState("reportApi", reportApi)
+		await this.updateGlobalState("baseApi", baseApi)
+		await this.storeSecret("openAiApiKey", apiKey)
+		await this.updateGlobalState("openAiApiKey", apiKey)
+		const openAiBaseUrl = `${baseApi}/api/v1`
+		const defaultConfig: ApiConfigData = {
+			currentApiConfigName: "qwen",
+			apiConfigs: {
+				"deepseek-r1": {
+					apiProvider: "openai",
+					openAiBaseUrl: openAiBaseUrl,
+					openAiApiKey: apiKey,
+					// "openAiModelId": "deepseek-r1-chat-v1.0",
+					openAiModelId: "anthropic/claude-3.5-sonnet",
+					id: "ktfvsw1xwl",
+				},
+				qwen: {
+					apiProvider: "openai",
+					openAiBaseUrl: openAiBaseUrl,
+					openAiApiKey: apiKey,
+					// "openAiModelId": "qwencoder-model-chat-v1.0",
+					openAiModelId: "qwen/qwq-32b",
+					id: "nwmcw0x6wcq",
+				},
+			},
+			modeApiConfigs: {
+				code: "nwmcw0x6wcq",
+			},
+		}
+		// await this.configManager.saveConfig('deepseek-r1', {...apiConfig, openAiModelId: "deepseek-r1-chat-v1.0"})
+		// await this.configManager.saveConfig('qwen', {...apiConfig, openAiModelId: "qwencoder-model-chat-v1.0"})
+		await this.configManager.writeConfig(defaultConfig)
+		await this.handleModeSwitch("ask" as Mode)
+		const listApiConfig = await this.configManager.listConfig()
+		const apiConfig = await this.configManager.loadConfig("qwen")
+		await Promise.all([
+			this.updateGlobalState("listApiConfigMeta", listApiConfig),
+			this.updateGlobalState("currentApiConfigName", "qwen"),
+			this.updateApiConfiguration(apiConfig),
+		])
+
+		await this.postStateToWebview()
+
+		// await this.configManager.loadConfig("qwen")
+		// const { mode } = await this.getState()
+		// if (mode) {
+		// 	const currentApiConfigName = await this.getGlobalState("currentApiConfigName")
+		// 	const listApiConfig = await this.configManager.listConfig()
+		// 	const config = listApiConfig?.find((c) => c.name === currentApiConfigName)
+		// 	if (config?.id) {
+		// 		await this.configManager.setModeConfig(mode, config.id)
+		// 	}
+		// }
 	}
 
 	private async updateApiConfiguration(apiConfiguration: ApiConfiguration) {
@@ -2893,12 +2962,12 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 
 	async resetState() {
 		const answer = await vscode.window.showInformationMessage(
-			"Are you sure you want to reset all state and secret storage in the extension? This cannot be undone.",
+			"确认重置插件的所有状态和设置？",
 			{ modal: true },
-			"Yes",
+			"是",
 		)
 
-		if (answer !== "Yes") {
+		if (answer !== "是") {
 			return
 		}
 

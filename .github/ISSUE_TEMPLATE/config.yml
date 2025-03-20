@@ -4,5 +4,5 @@ contact_links:
       url: https://github.com/RooVetGit/Roo-Code/discussions/categories/feature-requests
       about: Share and vote on feature requests for AIxCoding Agent
     - name: Leave a Review
-      url: https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.aixcoding-agent&ssr=false#review-details
+      url: https://marketplace.visualstudio.com/items?itemName=bocsoft.aixcoding-agent&ssr=false#review-details
       about: Enjoying AIxCoding Agent? Leave a review here!

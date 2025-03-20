@@ -604,11 +604,41 @@ export const ChatRowContent = ({
 				case "api_req_finished":
 					return null // we should never see this message type
 				case "text":
-					return (
-						<div>
-							<Markdown markdown={message.text} partial={message.partial} />
-						</div>
-					)
+					if (message.text?.includes("</think>")) {
+						const regex = /<think>(.*?)<\/think>(.*)/s
+						const match = message.text?.match(regex)
+						let thinkingContent = ""
+						let answerContent = ""
+
+						if (match) {
+							thinkingContent += match[1]
+							answerContent += match[2]
+						} else {
+							answerContent += message.text
+						}
+						return (
+							<div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+								{thinkingContent && (
+									<ReasoningBlock
+										content={thinkingContent || ""}
+										isCollapsed={reasoningCollapsed}
+										onToggleCollapse={() => setReasoningCollapsed(!reasoningCollapsed)}
+									/>
+								)}
+								{answerContent && (
+									<div>
+										<Markdown markdown={answerContent} partial={message.partial} />
+									</div>
+								)}
+							</div>
+						)
+					} else {
+						return (
+							<div>
+								<Markdown markdown={message.text} partial={message.partial} />
+							</div>
+						)
+					}
 				case "user_feedback":
 					return (
 						<div

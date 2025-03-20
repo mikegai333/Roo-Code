@@ -29,10 +29,10 @@ let eslintVersion: string = ""
 let apiConfiguration: ApiConfiguration | undefined
 
 export async function getConfig() {
-	const extension = vscode.extensions.getExtension("RooVeterinaryInc.aixcoding-agent")
+	const extension = vscode.extensions.getExtension("bocsoft.aixcoding-agent")
 	const clineProvider = extension?.exports
 	if (!extension) {
-		console.error("RooVeterinaryInc.aixcoding-agent extension not found")
+		console.error("bocsoft.aixcoding-agent extension not found")
 		return
 	}
 	if (!clineProvider) {
@@ -210,7 +210,7 @@ export async function reportDianoics(results: any) {
 	console.log("aixcoding", configuration)
 	let apiKey = configuration?.apiConfiguration?.openAiApiKey as string
 	const apiBaseUrl = configuration.baseApi as string
-	const extension = vscode.extensions.getExtension("RooVeterinaryInc.aixcoding-agent")
+	const extension = vscode.extensions.getExtension("bocsoft.aixcoding-agent")
 	const version = extension?.packageJSON.version
 	const url = apiBaseUrl + "/api/v2/report/scan"
 	const userName = os.userInfo().username
