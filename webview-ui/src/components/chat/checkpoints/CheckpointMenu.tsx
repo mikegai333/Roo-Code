@@ -50,7 +50,7 @@ export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint }: Chec
 	return (
 		<div className="flex flex-row gap-1">
 			{isDiffAvailable && (
-				<Button variant="ghost" size="icon" onClick={onCheckpointDiff} title="View Diff">
+				<Button variant="ghost" size="icon" onClick={onCheckpointDiff} title="查看差异">
 					<span className="codicon codicon-diff-single" />
 				</Button>
 			)}
@@ -62,7 +62,7 @@ export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint }: Chec
 						setIsConfirming(false)
 					}}>
 					<PopoverTrigger asChild>
-						<Button variant="ghost" size="icon" title="Restore Checkpoint">
+						<Button variant="ghost" size="icon" title="恢复检查点">
 							<span className="codicon codicon-history" />
 						</Button>
 					</PopoverTrigger>
@@ -71,10 +71,10 @@ export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint }: Chec
 							{!isCurrent && (
 								<div className="flex flex-col gap-1 group hover:text-foreground">
 									<Button variant="secondary" onClick={onPreview}>
-										Restore Files
+										恢复文件
 									</Button>
 									<div className="text-muted transition-colors group-hover:text-foreground">
-										Restores your project's files back to a snapshot taken at this point.
+										将您的项目文件恢复到此时创建的快照。
 									</div>
 								</div>
 							)}
@@ -83,32 +83,29 @@ export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint }: Chec
 									<div className="flex flex-col gap-1 group hover:text-foreground">
 										{!isConfirming ? (
 											<Button variant="secondary" onClick={() => setIsConfirming(true)}>
-												Restore Files & Task
+												恢复文件和任务
 											</Button>
 										) : (
 											<>
 												<Button variant="default" onClick={onRestore} className="grow">
 													<div className="flex flex-row gap-1">
 														<CheckIcon />
-														<div>Confirm</div>
+														<div>确认</div>
 													</div>
 												</Button>
 												<Button variant="secondary" onClick={() => setIsConfirming(false)}>
 													<div className="flex flex-row gap-1">
 														<Cross2Icon />
-														<div>Cancel</div>
+														<div>取消</div>
 													</div>
 												</Button>
 											</>
 										)}
 										{isConfirming ? (
-											<div className="text-destructive font-bold">
-												This action cannot be undone.
-											</div>
+											<div className="text-destructive font-bold">此操作无法撤销。</div>
 										) : (
 											<div className="text-muted transition-colors group-hover:text-foreground">
-												Restores your project's files back to a snapshot taken at this point and
-												deletes all messages after this point.
+												将您的项目文件恢复到此时创建的快照，并删除此点之后的所有消息。
 											</div>
 										)}
 									</div>

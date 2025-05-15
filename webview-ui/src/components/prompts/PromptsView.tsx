@@ -65,7 +65,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 	const [selectedPromptTitle, setSelectedPromptTitle] = useState("")
 	const [isToolsEditMode, setIsToolsEditMode] = useState(false)
 	const [isCreateModeDialogOpen, setIsCreateModeDialogOpen] = useState(false)
-	const [activeSupportTab, setActiveSupportTab] = useState<SupportPromptType>("ENHANCE")
+	const [activeSupportTab, setActiveSupportTab] = useState<SupportPromptType>("EXPLAIN")
 
 	// Direct update functions
 	const updateAgentPrompt = useCallback(
@@ -564,43 +564,50 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								</VSCodeButton>
 							)}
 						</div>
-						<div
-							style={{
-								fontSize: "13px",
-								color: "var(--vscode-descriptionForeground)",
-								marginBottom: "8px",
-							}}>
-							此描述塑造了AIxCoding如何展现自己和处理任务的方式。
-						</div>
-						<VSCodeTextArea
-							value={(() => {
-								const customMode = findModeBySlug(mode, customModes)
-								const prompt = customModePrompts?.[mode] as PromptComponent
-								return customMode?.roleDefinition ?? prompt?.roleDefinition ?? getRoleDefinition(mode)
-							})()}
-							onChange={(e) => {
-								const value =
-									(e as CustomEvent)?.detail?.target?.value ||
-									((e as any).target as HTMLTextAreaElement).value
-								const customMode = findModeBySlug(mode, customModes)
-								if (customMode) {
-									// For custom modes, update the JSON file
-									updateCustomMode(mode, {
-										...customMode,
-										roleDefinition: value.trim() || "",
-									})
-								} else {
-									// For built-in modes, update the prompts
-									updateAgentPrompt(mode, {
-										roleDefinition: value.trim() || undefined,
-									})
-								}
-							}}
-							rows={4}
-							resize="vertical"
-							style={{ width: "100%" }}
-							data-testid={`${getCurrentMode()?.slug || "code"}-prompt-textarea`}
-						/>
+						{findModeBySlug(mode, customModes) && (
+							<div
+								style={{
+									fontSize: "13px",
+									color: "var(--vscode-descriptionForeground)",
+									marginBottom: "8px",
+								}}>
+								此描述塑造了AIxCoding如何展现自己和处理任务的方式。
+							</div>
+						)}
+
+						{findModeBySlug(mode, customModes) && (
+							<VSCodeTextArea
+								value={(() => {
+									const customMode = findModeBySlug(mode, customModes)
+									const prompt = customModePrompts?.[mode] as PromptComponent
+									return (
+										customMode?.roleDefinition ?? prompt?.roleDefinition ?? getRoleDefinition(mode)
+									)
+								})()}
+								onChange={(e) => {
+									const value =
+										(e as CustomEvent)?.detail?.target?.value ||
+										((e as any).target as HTMLTextAreaElement).value
+									const customMode = findModeBySlug(mode, customModes)
+									if (customMode) {
+										// For custom modes, update the JSON file
+										updateCustomMode(mode, {
+											...customMode,
+											roleDefinition: value.trim() || "",
+										})
+									} else {
+										// For built-in modes, update the prompts
+										updateAgentPrompt(mode, {
+											roleDefinition: value.trim() || undefined,
+										})
+									}
+								}}
+								rows={4}
+								resize="vertical"
+								style={{ width: "100%" }}
+								data-testid={`${getCurrentMode()?.slug || "code"}-prompt-textarea`}
+							/>
+						)}
 					</div>
 					{/* Mode settings */}
 					<>
@@ -744,74 +751,75 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 					</>
 
 					{/* Role definition for both built-in and custom modes */}
-					<div style={{ marginBottom: "8px" }}>
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center",
-								marginBottom: "4px",
-							}}>
-							<div style={{ fontWeight: "bold" }}>特定模式的自定义说明</div>
-							{!findModeBySlug(mode, customModes) && (
-								<VSCodeButton
-									appearance="icon"
-									onClick={() => {
-										const currentMode = getCurrentMode()
-										if (currentMode?.slug) {
-											handleAgentReset(currentMode.slug, "customInstructions")
-										}
-									}}
-									title="重置为默认值"
-									data-testid="custom-instructions-reset">
-									<span className="codicon codicon-discard"></span>
-								</VSCodeButton>
-							)}
-						</div>
-						<div
-							style={{
-								fontSize: "13px",
-								color: "var(--vscode-descriptionForeground)",
-								marginBottom: "8px",
-							}}>
-							添加特定于 {getCurrentMode()?.name || "代码"} 模式的行为准则。
-						</div>
-						<VSCodeTextArea
-							value={(() => {
-								const customMode = findModeBySlug(mode, customModes)
-								const prompt = customModePrompts?.[mode] as PromptComponent
-								return (
-									customMode?.customInstructions ??
-									prompt?.customInstructions ??
-									getCustomInstructions(mode, customModes)
-								)
-							})()}
-							onChange={(e) => {
-								const value =
-									(e as CustomEvent)?.detail?.target?.value ||
-									((e as any).target as HTMLTextAreaElement).value
-								const customMode = findModeBySlug(mode, customModes)
-								if (customMode) {
-									// For custom modes, update the JSON file
-									updateCustomMode(mode, {
-										...customMode,
-										customInstructions: value.trim() || undefined,
-									})
-								} else {
-									// For built-in modes, update the prompts
-									const existingPrompt = customModePrompts?.[mode] as PromptComponent
-									updateAgentPrompt(mode, {
-										...existingPrompt,
-										customInstructions: value.trim(),
-									})
-								}
-							}}
-							rows={4}
-							resize="vertical"
-							style={{ width: "100%" }}
-							data-testid={`${getCurrentMode()?.slug || "code"}-custom-instructions-textarea`}
-						/>
-						{/* <div
+					{findModeBySlug(mode, customModes) && (
+						<div style={{ marginBottom: "8px" }}>
+							<div
+								style={{
+									display: "flex",
+									justifyContent: "space-between",
+									alignItems: "center",
+									marginBottom: "4px",
+								}}>
+								<div style={{ fontWeight: "bold" }}>特定模式的自定义说明</div>
+								{!findModeBySlug(mode, customModes) && (
+									<VSCodeButton
+										appearance="icon"
+										onClick={() => {
+											const currentMode = getCurrentMode()
+											if (currentMode?.slug) {
+												handleAgentReset(currentMode.slug, "customInstructions")
+											}
+										}}
+										title="重置为默认值"
+										data-testid="custom-instructions-reset">
+										<span className="codicon codicon-discard"></span>
+									</VSCodeButton>
+								)}
+							</div>
+							<div
+								style={{
+									fontSize: "13px",
+									color: "var(--vscode-descriptionForeground)",
+									marginBottom: "8px",
+								}}>
+								添加特定于 {getCurrentMode()?.name || "代码"} 模式的行为准则。
+							</div>
+							<VSCodeTextArea
+								value={(() => {
+									const customMode = findModeBySlug(mode, customModes)
+									const prompt = customModePrompts?.[mode] as PromptComponent
+									return (
+										customMode?.customInstructions ??
+										prompt?.customInstructions ??
+										getCustomInstructions(mode, customModes)
+									)
+								})()}
+								onChange={(e) => {
+									const value =
+										(e as CustomEvent)?.detail?.target?.value ||
+										((e as any).target as HTMLTextAreaElement).value
+									const customMode = findModeBySlug(mode, customModes)
+									if (customMode) {
+										// For custom modes, update the JSON file
+										updateCustomMode(mode, {
+											...customMode,
+											customInstructions: value.trim() || undefined,
+										})
+									} else {
+										// For built-in modes, update the prompts
+										const existingPrompt = customModePrompts?.[mode] as PromptComponent
+										updateAgentPrompt(mode, {
+											...existingPrompt,
+											customInstructions: value.trim(),
+										})
+									}
+								}}
+								rows={4}
+								resize="vertical"
+								style={{ width: "100%" }}
+								data-testid={`${getCurrentMode()?.slug || "code"}-custom-instructions-textarea`}
+							/>
+							{/* <div
 							style={{
 								fontSize: "12px",
 								color: "var(--vscode-descriptionForeground)",
@@ -842,43 +850,46 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 							</span>{" "}
 							文件加载。
 						</div> */}
-					</div>
+						</div>
+					)}
 				</div>
-				<div
-					style={{
-						paddingBottom: "40px",
-						marginBottom: "20px",
-						borderBottom: "1px solid var(--vscode-input-border)",
-					}}>
-					<div style={{ display: "flex", gap: "8px" }}>
-						<VSCodeButton
-							appearance="primary"
-							onClick={() => {
-								const currentMode = getCurrentMode()
-								if (currentMode) {
+				{false && (
+					<div
+						style={{
+							paddingBottom: "40px",
+							marginBottom: "20px",
+							borderBottom: "1px solid var(--vscode-input-border)",
+						}}>
+						<div style={{ display: "flex", gap: "8px" }}>
+							<VSCodeButton
+								appearance="primary"
+								onClick={() => {
+									const currentMode = getCurrentMode()
+									if (currentMode) {
+										vscode.postMessage({
+											type: "getSystemPrompt",
+											mode: currentMode.slug,
+										})
+									}
+								}}
+								data-testid="preview-prompt-button">
+								预览系统提示
+							</VSCodeButton>
+							<VSCodeButton
+								appearance="icon"
+								title="复制系统提示到剪贴板"
+								onClick={() => {
 									vscode.postMessage({
-										type: "getSystemPrompt",
-										mode: currentMode.slug,
+										type: "copySystemPrompt",
+										text: selectedPromptContent,
 									})
-								}
-							}}
-							data-testid="preview-prompt-button">
-							预览系统提示
-						</VSCodeButton>
-						<VSCodeButton
-							appearance="icon"
-							title="复制系统提示到剪贴板"
-							onClick={() => {
-								vscode.postMessage({
-									type: "copySystemPrompt",
-									text: selectedPromptContent,
-								})
-							}}
-							data-testid="copy-prompt-button">
-							<span className="codicon codicon-copy"></span>
-						</VSCodeButton>
+								}}
+								data-testid="copy-prompt-button">
+								<span className="codicon codicon-copy"></span>
+							</VSCodeButton>
+						</div>
 					</div>
-				</div>
+				)}
 
 				<div
 					style={{

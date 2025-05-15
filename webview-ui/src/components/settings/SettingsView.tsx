@@ -507,7 +507,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 					</div>
 				</div>
 
-				<div style={{ marginBottom: 40 }}>
+				<div style={{ marginBottom: 40, display: "none" }}>
 					<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 15px 0" }}>浏览器设置</h3>
 					<div style={{ marginBottom: 15 }}>
 						<label style={{ fontWeight: "500", display: "block", marginBottom: 5 }}>视口大小</label>
@@ -611,7 +611,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 					)}
 				</div>
 
-				<div style={{ marginBottom: 40 }}>
+				<div style={{ marginBottom: 40, display: "none" }}>
 					<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 15px 0" }}>高级设置</h3>
 					<div style={{ marginBottom: 15 }}>
 						<div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -672,8 +672,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 								marginTop: "5px",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							启用后，插件将能够更快地编辑文件，并且会自动拒绝截断的完整文件写入。与最新的 Claude 3.5
-							Sonnet 模型配合使用效果最佳。
+							启用后，插件将能够更快地编辑文件，并且会自动拒绝截断的完整文件写入。
 						</p>
 
 						{diffEnabled && (

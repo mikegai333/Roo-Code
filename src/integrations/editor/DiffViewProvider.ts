@@ -7,6 +7,7 @@ import { formatResponse } from "../../core/prompts/responses"
 import { DecorationController } from "./DecorationController"
 import * as diff from "diff"
 import { diagnosticsToProblemsString, getNewDiagnostics } from "../diagnostics"
+import { reportCodeUsage, updateCodeUsage, codeUsage, codeUsageUpdate } from "../../api/aixcoding"
 
 export const DIFF_VIEW_URI_SCHEME = "cline-diff"
 
@@ -23,6 +24,7 @@ export class DiffViewProvider {
 	private activeLineController?: DecorationController
 	private streamedLines: string[] = []
 	private preDiagnostics: [vscode.Uri, vscode.Diagnostic[]][] = []
+	private currentTool: string = ""
 
 	constructor(private cwd: string) {}
 
@@ -181,8 +183,10 @@ export class DiffViewProvider {
 				normalizedNewContent,
 				normalizedEditedContent,
 			)
+			this.updateDiffApprove(2)
 			return { newProblemsMessage, userEdits, finalContent: normalizedEditedContent }
 		} else {
+			this.updateDiffApprove(1)
 			// 对 AIxCoding 的编辑没有更改
 			return { newProblemsMessage, userEdits: undefined, finalContent: normalizedEditedContent }
 		}
@@ -192,6 +196,7 @@ export class DiffViewProvider {
 		if (!this.relPath || !this.activeDiffEditor) {
 			return
 		}
+		this.updateDiffApprove(4)
 		const fileExists = this.editType === "modify"
 		const updatedDocument = this.activeDiffEditor.document
 		const absolutePath = path.resolve(this.cwd, this.relPath)
@@ -321,6 +326,61 @@ export class DiffViewProvider {
 				lineCount += part.count || 0
 			}
 		}
+	}
+
+	getProjectName() {
+		let projectName = ""
+		const workspaceFolders = vscode.workspace.workspaceFolders
+
+		if (workspaceFolders && workspaceFolders.length > 0) {
+			// 获取第一个工作区文件夹的名称
+			projectName = workspaceFolders[0].name
+		}
+		return projectName
+	}
+
+	reportDiff(toolName: string) {
+		this.currentTool = toolName
+		if (!this.activeDiffEditor) {
+			return
+		}
+		const currentContent = this.activeDiffEditor.document.getText()
+		const diffs = diff.diffLines(this.originalContent || "", currentContent)
+		if (!diffs.length) {
+			return
+		}
+		let originalLines = 0
+		let addedLines = 0
+		let deletedLines = 0
+		diffs.forEach((part) => {
+			if (part.added) {
+				addedLines += part.count || 0
+			} else if (part.removed) {
+				deletedLines += part.count || 0
+				originalLines += part.count || 0
+			} else {
+				originalLines += part.count || 0
+			}
+		})
+		let codeUsage: codeUsage = {
+			projectName: this.getProjectName(),
+			filePath: this.relPath || "",
+			eventType: toolName,
+			originalLines,
+			addedLines,
+			deletedLines,
+		}
+		reportCodeUsage(codeUsage)
+	}
+
+	updateDiffApprove(status: number) {
+		let codeUsageUpdate: codeUsageUpdate = {
+			projectName: this.getProjectName(),
+			filePath: this.relPath || "",
+			eventType: this.currentTool,
+			status,
+		}
+		updateCodeUsage(codeUsageUpdate)
 	}
 
 	// 关闭编辑器（如果已打开）？

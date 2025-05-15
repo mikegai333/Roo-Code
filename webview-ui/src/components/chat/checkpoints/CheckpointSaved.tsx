@@ -37,8 +37,8 @@ export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) 
 		<div className="flex items-center justify-between">
 			<div className="flex gap-2">
 				<span className="codicon codicon-git-commit text-blue-400" />
-				<span className="font-bold">{metadata.isFirst ? "Initial Checkpoint" : "Checkpoint"}</span>
-				{isCurrent && <span className="text-muted text-sm">Current</span>}
+				<span className="font-bold">{metadata.isFirst ? "初始检查点" : "检查点"}</span>
+				{isCurrent && <span className="text-muted text-sm">当前节点</span>}
 			</div>
 			<CheckpointMenu {...props} checkpoint={metadata} />
 		</div>

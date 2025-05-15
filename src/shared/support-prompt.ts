@@ -31,19 +31,19 @@ interface SupportPromptConfig {
 }
 
 const supportPromptConfigs: Record<string, SupportPromptConfig> = {
-	ENHANCE: {
-		label: "增强提示",
-		description:
-			"使用提示增强功能来获取针对您的输入的量身定制的建议或改进。这确保AIxCoding了解您的意图并提供尽可能最佳的响应。可通过聊天中的 ✨ 图标使用。",
-		template: `Generate an enhanced version of this prompt (reply with only the enhanced prompt - no conversation, explanations, lead-in, bullet points, placeholders, or surrounding quotes):
+	// 	ENHANCE: {
+	// 		label: "增强提示",
+	// 		description:
+	// 			"使用提示增强功能来获取针对您的输入的量身定制的建议或改进。这确保AIxCoding了解您的意图并提供尽可能最佳的响应。可通过聊天中的 ✨ 图标使用。",
+	// 		template: `Generate an enhanced version of this prompt (reply with only the enhanced prompt - no conversation, explanations, lead-in, bullet points, placeholders, or surrounding quotes):
 
-\${userInput}`,
-	},
+	// \${userInput}`,
+	// 	},
 	EXPLAIN: {
 		label: "解释代码",
 		description:
 			"获取代码片段、函数或整个文件的详细解释。有助于理解复杂的代码或学习新的模式。可在代码操作（编辑器中的灯泡图标）和编辑器上下文菜单（右键单击选定的代码）中使用。",
-		template: `Explain the following code from file path @/\${filePath}:
+		template: `请解释文件 @/\${filePath}中的以下代码:
 \${userInput}
 
 \`\`\`
@@ -138,6 +138,45 @@ Please provide:
 1. What the command does
 2. Explanation of each part/flag
 3. Expected output and behavior`,
+	},
+
+	CHECK: {
+		label: "检查代码",
+		description: "允许您选中代码后，让 AIxCoding 针对此代码查找问题。",
+		template: `检查以下文件 @/\${filePath}中的代码:
+\${userInput}
+
+\`\`\`
+\${selectedText}
+\`\`\`
+
+对以上代码的风格、缺陷、安全隐患、逻辑进行复查，提供改进意见，并给出改进后的代码：`,
+	},
+
+	COMMENTS: {
+		label: "生成注释",
+		description: "允许您选中代码后，让 AIxCoding 针对此代码添加注释。",
+		template: `请为文件@/\${filePath}中的代码添加注释，代码如下:
+\${userInput}
+
+\`\`\`
+\${selectedText}
+\`\`\`
+
+`,
+	},
+
+	TEST: {
+		label: "编写测试",
+		description: "允许您选中代码后，让 AIxCoding 针对此代码提供测试案例。",
+		template: `请为文件 @/\${filePath}中的代码生成测试案例，代码如下:
+\${userInput}
+
+\`\`\`
+\${selectedText}
+\`\`\`
+
+对以上代码的风格、缺陷、安全隐患、逻辑进行复查，提供改进意见，并给出改进后的代码：`,
 	},
 } as const
 

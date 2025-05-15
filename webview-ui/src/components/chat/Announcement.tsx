@@ -30,11 +30,7 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			</VSCodeButton>
 			<h2 style={{ margin: "0 0 8px" }}>🎉{"  "}Introducing AIxCoding Agent 3.2</h2>
 
-			<p style={{ margin: "5px 0px" }}>
-				Our biggest update yet is here - we're officially changing our name from Roo Cline to AIxCoding Agent!
-				After growing beyond 50,000 installations, we're ready to chart our own course. Our heartfelt thanks to
-				everyone in the Cline community who helped us reach this milestone.
-			</p>
+			<p style={{ margin: "5px 0px" }}></p>
 
 			<h3 style={{ margin: "12px 0 8px" }}>Custom Modes: Celebrating Our New Identity</h3>
 			<p style={{ margin: "5px 0px" }}>

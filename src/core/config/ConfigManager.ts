@@ -247,7 +247,6 @@ export class ConfigManager {
 	async writeConfig(config: ApiConfigData): Promise<void> {
 		try {
 			const content = JSON.stringify(config, null, 2)
-			console.log(content)
 			await this.context.secrets.store(this.getConfigKey(), content)
 		} catch (error) {
 			throw new Error(`Failed to write config to secrets: ${error}`)

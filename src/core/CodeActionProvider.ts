@@ -7,13 +7,21 @@ export const ACTION_NAMES = {
 	FIX_LOGIC: "AIxCoding：修复逻辑",
 	IMPROVE: "AIxCoding：改进代码",
 	ADD_TO_CONTEXT: "AIxCoding：添加到上下文",
+
+	CHECK: "AIxCoding：检查代码",
+	COMMENTS: "AIxCoding：生成注释",
+	TEST: "AIxCoding：编写测试",
 } as const
 
 export const COMMAND_IDS = {
-	EXPLAIN: "aixcoding-agent.explainCode",
-	FIX: "aixcoding-agent.fixCode",
-	IMPROVE: "aixcoding-agent.improveCode",
-	ADD_TO_CONTEXT: "aixcoding-agent.addToContext",
+	EXPLAIN: "aixcoding.explainCode",
+	FIX: "aixcoding.fixCode",
+	IMPROVE: "aixcoding.improveCode",
+	ADD_TO_CONTEXT: "aixcoding.addToContext",
+
+	CHECK: "aixcoding.checkCode",
+	COMMENTS: "aixcoding.addComments",
+	TEST: "aixcoding.addTest",
 } as const
 
 export class CodeActionProvider implements vscode.CodeActionProvider {

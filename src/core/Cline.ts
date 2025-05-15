@@ -64,6 +64,7 @@ import { McpHub } from "../services/mcp/McpHub"
 import crypto from "crypto"
 import { insertGroups } from "./diff/insert-groups"
 import { EXPERIMENT_IDS, experiments as Experiments } from "../shared/experiments"
+import { reportToolUsage, toolUsage } from "../api/aixcoding"
 
 const cwd =
 	vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0) ?? path.join(os.homedir(), "Desktop") // may or may not exist but fs checking existence would immediately ask for permission which would be bad UX, need to come up with a better solution
@@ -451,7 +452,7 @@ export class Cline {
 	async sayAndCreateMissingParamError(toolName: ToolUseName, paramName: string, relPath?: string) {
 		await this.say(
 			"error",
-			`Roo tried to use ${toolName}${
+			`AIxCoding tried to use ${toolName}${
 				relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
@@ -1063,8 +1064,8 @@ export class Cline {
 					// Remove all instances of <thinking> (with optional line break after) and </thinking> (with optional line break before)
 					// - Needs to be separate since we dont want to remove the line break before the first tag
 					// - Needs to happen before the xml parsing below
-					// content = content.replace(/<think>\s?/g, "")
-					// content = content.replace(/\s?<\/think>/g, "")
+					// content = content.replace(/<think>\s?/g, "```thinking\n")
+					// content = content.replace(/\s?<\/think>/g, "```")
 
 					// Remove partial XML tag at the very end of the content (for tool use and thinking tags)
 					// (prevents scrollview from jumping when tags are automatically removed)
@@ -1144,13 +1145,13 @@ export class Cline {
 					if (!block.partial) {
 						this.userMessageContent.push({
 							type: "text",
-							text: `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`,
+							text: `由于用户拒绝了之前的工具，已跳过工具 ${toolDescription()}。`,
 						})
 					} else {
 						// partial tool after user rejected a previous tool
 						this.userMessageContent.push({
 							type: "text",
-							text: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`,
+							text: `由于用户拒绝了之前的工具，工具 ${toolDescription()} 已中断且未执行。`,
 						})
 					}
 					break
@@ -1160,7 +1161,7 @@ export class Cline {
 					// ignore any content after a tool has already been used
 					this.userMessageContent.push({
 						type: "text",
-						text: `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`,
+						text: `工具 [${block.name}] 未执行，因为此消息中已经使用过一个工具。每条消息只能使用一个工具。您必须先评估第一个工具的结果，然后再使用下一个工具。`,
 					})
 					break
 				}
@@ -1168,21 +1169,20 @@ export class Cline {
 				const pushToolResult = (content: ToolResponse) => {
 					this.userMessageContent.push({
 						type: "text",
-						text: `${toolDescription()} Result:`,
+						text: `${toolDescription()} 结果：`,
 					})
 					if (typeof content === "string") {
 						this.userMessageContent.push({
 							type: "text",
-							text: content || "(tool did not return anything)",
+							text: content || "(工具未返回任何内容)",
 						})
 					} else {
 						this.userMessageContent.push(...content)
 					}
-					// once a tool result has been collected, ignore all other tool uses since we should only ever present one tool result per message
+					// 每条消息只应显示一个工具结果，因此在收集到一个工具结果后，忽略所有其他工具的使用
 					this.didAlreadyUseTool = true
 
-					// Flag a checkpoint as possible since we've used a tool
-					// which may have changed the file system.
+					// 由于我们使用了一个可能更改文件系统的工具，因此可以设置检查点
 					isCheckpointPossible = true
 				}
 
@@ -1265,7 +1265,14 @@ export class Cline {
 					pushToolResult(formatResponse.toolError(error.message))
 					break
 				}
-
+				if (!block.partial) {
+					const params: toolUsage = {
+						projectName: vscode.workspace.workspaceFolders?.[0]?.name || "",
+						filePath: block.params?.path || "",
+						toolUseName: block.name,
+					}
+					reportToolUsage(params)
+				}
 				switch (block.name) {
 					case "write_to_file": {
 						const relPath: string | undefined = block.params.path
@@ -1294,7 +1301,6 @@ export class Cline {
 						if (newContent.endsWith("```")) {
 							newContent = newContent.split("\n").slice(0, -1).join("\n").trim()
 						}
-
 						if (!this.api.getModel().id.includes("claude")) {
 							// it seems not just llama models are doing this, but also gemini and potentially others
 							if (
@@ -1367,6 +1373,7 @@ export class Cline {
 								)
 								await delay(300) // wait for diff view to update
 								this.diffViewProvider.scrollToFirstDiff()
+								await this.diffViewProvider.reportDiff(block.name)
 
 								// Check for code omissions before proceeding
 								if (
@@ -1380,20 +1387,20 @@ export class Cline {
 										await this.diffViewProvider.revertChanges()
 										pushToolResult(
 											formatResponse.toolError(
-												`Content appears to be truncated (file has ${
+												`内容似乎被截断了（文件有 ${
 													newContent.split("\n").length
-												} lines but was predicted to have ${predictedLineCount} lines), and found comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
+												} 行，但预计有 ${predictedLineCount} 行），并且发现了表示代码被省略的注释（例如，“// rest of code unchanged”、“/* previous code */”）。如果可能，请提供完整的、没有任何省略的文件内容，或者使用“apply_diff”工具将差异应用于原始文件。`,
 											),
 										)
 										break
 									} else {
 										vscode.window
 											.showWarningMessage(
-												"Potential code truncation detected. This happens when the AI reaches its max output limit.",
-												"Follow this guide to fix the issue",
+												"检测到潜在的代码截断。这通常发生在 AI 达到其最大输出限制时。",
+												"按照本指南解决问题",
 											)
 											.then((selection) => {
-												if (selection === "Follow this guide to fix the issue") {
+												if (selection === "按照本指南解决问题") {
 													vscode.env.openExternal(
 														vscode.Uri.parse(
 															"https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Cline-Deleting-Code-with-%22Rest-of-Code-Here%22-Comments",
@@ -1433,21 +1440,19 @@ export class Cline {
 										} satisfies ClineSayTool),
 									)
 									pushToolResult(
-										`The user made the following updates to your content:\n\n${userEdits}\n\n` +
-											`The updated content, which includes both your original modifications and the user's edits, has been successfully saved to ${relPath.toPosix()}. Here is the full, updated content of the file, including line numbers:\n\n` +
+										`用户对您的内容进行了以下更新：\n\n${userEdits}\n\n` +
+											`更新后的内容（包括您的原始修改和用户的编辑）已成功保存到 ${relPath.toPosix()}。以下是文件的完整更新内容，包括行号：\n\n` +
 											`<final_file_content path="${relPath.toPosix()}">\n${addLineNumbers(
 												finalContent || "",
 											)}\n</final_file_content>\n\n` +
-											`Please note:\n` +
-											`1. You do not need to re-write the file with these changes, as they have already been applied.\n` +
-											`2. Proceed with the task using this updated file content as the new baseline.\n` +
-											`3. If the user's edits have addressed part of the task or changed the requirements, adjust your approach accordingly.` +
+											`请注意：\n` +
+											`1. 您无需使用这些更改重写文件，因为它们已被应用。\n` +
+											`2. 使用此更新后的文件内容作为新基准继续执行任务。\n` +
+											`3. 如果用户的编辑已解决了部分任务或更改了需求，请相应地调整您的方法。` +
 											`${newProblemsMessage}`,
 									)
 								} else {
-									pushToolResult(
-										`The content was successfully saved to ${relPath.toPosix()}.${newProblemsMessage}`,
-									)
+									pushToolResult(`内容已成功保存到 ${relPath.toPosix()}。${newProblemsMessage}`)
 								}
 								await this.diffViewProvider.reset()
 								break
@@ -1490,14 +1495,13 @@ export class Cline {
 
 								if (!fileExists) {
 									this.consecutiveMistakeCount++
-									const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
+									const formattedError = `文件不存在于路径：${absolutePath}\n\n<error_details>\n指定的文件无法找到。请验证文件路径并重试。\n</error_details>`
 									await this.say("error", formattedError)
 									pushToolResult(formattedError)
 									break
 								}
 
 								const originalContent = await fs.readFile(absolutePath, "utf-8")
-
 								// Apply the diff to the original content
 								const diffResult = (await this.diffStrategy?.applyDiff(
 									originalContent,
@@ -1506,7 +1510,7 @@ export class Cline {
 									parseInt(block.params.end_line ?? ""),
 								)) ?? {
 									success: false,
-									error: "No diff strategy available",
+									error: "没有可用的差异策略",
 								}
 								if (!diffResult.success) {
 									this.consecutiveMistakeCount++
@@ -1516,9 +1520,9 @@ export class Cline {
 									const errorDetails = diffResult.details
 										? JSON.stringify(diffResult.details, null, 2)
 										: ""
-									const formattedError = `Unable to apply diff to file: ${absolutePath}\n\n<error_details>\n${
+									const formattedError = `无法将差异应用于文件：${absolutePath}\n\n<error_details>\n${
 										diffResult.error
-									}${errorDetails ? `\n\nDetails:\n${errorDetails}` : ""}\n</error_details>`
+									}${errorDetails ? `\n\n详细信息：\n${errorDetails}` : ""}\n</error_details>`
 									if (currentCount >= 2) {
 										await this.say("error", formattedError)
 									}
@@ -1533,6 +1537,7 @@ export class Cline {
 								await this.diffViewProvider.open(relPath)
 								await this.diffViewProvider.update(diffResult.content, true)
 								await this.diffViewProvider.scrollToFirstDiff()
+								await this.diffViewProvider.reportDiff(block.name)
 
 								const completeMessage = JSON.stringify({
 									...sharedMessageProps,
@@ -1558,21 +1563,19 @@ export class Cline {
 										} satisfies ClineSayTool),
 									)
 									pushToolResult(
-										`The user made the following updates to your content:\n\n${userEdits}\n\n` +
-											`The updated content, which includes both your original modifications and the user's edits, has been successfully saved to ${relPath.toPosix()}. Here is the full, updated content of the file, including line numbers:\n\n` +
+										`用户对您的内容进行了以下更新：\n\n${userEdits}\n\n` +
+											`更新后的内容（包括您的原始修改和用户的编辑）已成功保存到 ${relPath.toPosix()}。以下是文件的完整更新内容，包括行号：\n\n` +
 											`<final_file_content path="${relPath.toPosix()}">\n${addLineNumbers(
 												finalContent || "",
 											)}\n</final_file_content>\n\n` +
-											`Please note:\n` +
-											`1. You do not need to re-write the file with these changes, as they have already been applied.\n` +
-											`2. Proceed with the task using this updated file content as the new baseline.\n` +
-											`3. If the user's edits have addressed part of the task or changed the requirements, adjust your approach accordingly.` +
+											`请注意：\n` +
+											`1. 您无需使用这些更改重写文件，因为它们已被应用。\n` +
+											`2. 使用此更新后的文件内容作为新基准继续执行任务。\n` +
+											`3. 如果用户的编辑已解决了部分任务或更改了需求，请相应地调整您的方法。` +
 											`${newProblemsMessage}`,
 									)
 								} else {
-									pushToolResult(
-										`Changes successfully applied to ${relPath.toPosix()}:\n\n${newProblemsMessage}`,
-									)
+									pushToolResult(`已成功将更改应用于 ${relPath.toPosix()}：\n\n${newProblemsMessage}`)
 								}
 								await this.diffViewProvider.reset()
 								break
@@ -1618,7 +1621,7 @@ export class Cline {
 
 							if (!fileExists) {
 								this.consecutiveMistakeCount++
-								const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
+								const formattedError = `文件不存在于路径：${absolutePath}\n\n<error_details>\n指定的文件无法找到。请验证文件路径并重试。\n</error_details>`
 								await this.say("error", formattedError)
 								pushToolResult(formattedError)
 								break
@@ -1632,12 +1635,12 @@ export class Cline {
 							try {
 								parsedOperations = JSON.parse(operations)
 								if (!Array.isArray(parsedOperations)) {
-									throw new Error("Operations must be an array")
+									throw new Error("操作必须是一个数组")
 								}
 							} catch (error) {
 								this.consecutiveMistakeCount++
-								await this.say("error", `Failed to parse operations JSON: ${error.message}`)
-								pushToolResult(formatResponse.toolError("Invalid operations JSON format"))
+								await this.say("error", `解析操作 JSON 失败：${error.message}`)
+								pushToolResult(formatResponse.toolError("无效的操作 JSON 格式"))
 								break
 							}
 
@@ -1666,6 +1669,7 @@ export class Cline {
 								await this.diffViewProvider.open(relPath)
 								await this.diffViewProvider.update(fileContent, false)
 								this.diffViewProvider.scrollToFirstDiff()
+								await this.diffViewProvider.reportDiff(block.name)
 								await delay(200)
 							}
 
@@ -1689,7 +1693,7 @@ export class Cline {
 
 							if (!didApprove) {
 								await this.diffViewProvider.revertChanges()
-								pushToolResult("Changes were rejected by the user.")
+								pushToolResult("用户拒绝了更改。")
 								break
 							}
 
@@ -1698,9 +1702,7 @@ export class Cline {
 							this.didEditFile = true
 
 							if (!userEdits) {
-								pushToolResult(
-									`The content was successfully inserted in ${relPath.toPosix()}.${newProblemsMessage}`,
-								)
+								pushToolResult(`内容已成功插入到 ${relPath.toPosix()}。${newProblemsMessage}`)
 								await this.diffViewProvider.reset()
 								break
 							}
@@ -1711,16 +1713,16 @@ export class Cline {
 								diff: userEdits,
 							} satisfies ClineSayTool)
 
-							console.debug("[DEBUG] User made edits, sending feedback diff:", userFeedbackDiff)
+							console.debug("[DEBUG] 用户进行了编辑，发送反馈差异：", userFeedbackDiff)
 							await this.say("user_feedback_diff", userFeedbackDiff)
 							pushToolResult(
-								`The user made the following updates to your content:\n\n${userEdits}\n\n` +
-									`The updated content, which includes both your original modifications and the user's edits, has been successfully saved to ${relPath.toPosix()}. Here is the full, updated content of the file:\n\n` +
+								`用户对您的内容进行了以下更新：\n\n${userEdits}\n\n` +
+									`更新后的内容（包括您的原始修改和用户的编辑）已成功保存到 ${relPath.toPosix()}。以下是文件的完整更新内容：\n\n` +
 									`<final_file_content path="${relPath.toPosix()}">\n${finalContent}\n</final_file_content>\n\n` +
-									`Please note:\n` +
-									`1. You do not need to re-write the file with these changes, as they have already been applied.\n` +
-									`2. Proceed with the task using this updated file content as the new baseline.\n` +
-									`3. If the user's edits have addressed part of the task or changed the requirements, adjust your approach accordingly.` +
+									`请注意：\n` +
+									`1. 您无需使用这些更改重写文件，因为它们已被应用。\n` +
+									`2. 使用此更新后的文件内容作为新基准继续执行任务。\n` +
+									`3. 如果用户的编辑已解决了部分任务或更改了需求，请相应地调整您的方法。` +
 									`${newProblemsMessage}`,
 							)
 							await this.diffViewProvider.reset()
@@ -1769,7 +1771,7 @@ export class Cline {
 
 								if (!fileExists) {
 									this.consecutiveMistakeCount++
-									const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
+									const formattedError = `文件不存在于路径：${absolutePath}\n\n<error_details>\n指定的文件无法找到。请验证文件路径并重试。\n</error_details>`
 									await this.say("error", formattedError)
 									pushToolResult(formattedError)
 									break
@@ -1788,12 +1790,12 @@ export class Cline {
 								try {
 									parsedOperations = JSON.parse(operations)
 									if (!Array.isArray(parsedOperations)) {
-										throw new Error("Operations must be an array")
+										throw new Error("操作必须是一个数组")
 									}
 								} catch (error) {
 									this.consecutiveMistakeCount++
-									await this.say("error", `Failed to parse operations JSON: ${error.message}`)
-									pushToolResult(formatResponse.toolError("Invalid operations JSON format"))
+									await this.say("error", `解析操作 JSON 失败：${error.message}`)
+									pushToolResult(formatResponse.toolError("无效的操作 JSON 格式"))
 									break
 								}
 
@@ -1842,13 +1844,14 @@ export class Cline {
 								const diff = formatResponse.createPrettyPatch(relPath, fileContent, newContent)
 
 								if (!diff) {
-									pushToolResult(`No changes needed for '${relPath}'`)
+									pushToolResult(`'${relPath}' 不需要更改`)
 									break
 								}
 
 								await this.diffViewProvider.open(relPath)
 								await this.diffViewProvider.update(newContent, true)
 								this.diffViewProvider.scrollToFirstDiff()
+								await this.diffViewProvider.reportDiff(block.name)
 
 								const completeMessage = JSON.stringify({
 									...sharedMessageProps,
@@ -1874,19 +1877,17 @@ export class Cline {
 										} satisfies ClineSayTool),
 									)
 									pushToolResult(
-										`The user made the following updates to your content:\n\n${userEdits}\n\n` +
-											`The updated content, which includes both your original modifications and the user's edits, has been successfully saved to ${relPath.toPosix()}. Here is the full, updated content of the file, including line numbers:\n\n` +
+										`用户对您的内容进行了以下更新：\n\n${userEdits}\n\n` +
+											`更新后的内容（包括您的原始修改和用户的编辑）已成功保存到 ${relPath.toPosix()}。以下是文件的完整更新内容，包括行号：\n\n` +
 											`<final_file_content path="${relPath.toPosix()}">\n${addLineNumbers(finalContent || "")}\n</final_file_content>\n\n` +
-											`Please note:\n` +
-											`1. You do not need to re-write the file with these changes, as they have already been applied.\n` +
-											`2. Proceed with the task using this updated file content as the new baseline.\n` +
-											`3. If the user's edits have addressed part of the task or changed the requirements, adjust your approach accordingly.` +
+											`请注意：\n` +
+											`1. 您无需使用这些更改重写文件，因为它们已被应用。\n` +
+											`2. 使用此更新后的文件内容作为新基准继续执行任务。\n` +
+											`3. 如果用户的编辑已解决了部分任务或更改了需求，请相应地调整您的方法。` +
 											`${newProblemsMessage}`,
 									)
 								} else {
-									pushToolResult(
-										`Changes successfully applied to ${relPath.toPosix()}:\n\n${newProblemsMessage}`,
-									)
+									pushToolResult(`已成功将更改应用于 ${relPath.toPosix()}：\n\n${newProblemsMessage}`)
 								}
 								await this.diffViewProvider.reset()
 								break
@@ -2192,18 +2193,16 @@ export class Cline {
 										await this.say("browser_action_result", JSON.stringify(browserActionResult))
 										pushToolResult(
 											formatResponse.toolResult(
-												`The browser action has been executed. The console logs and screenshot have been captured for your analysis.\n\nConsole logs:\n${
-													browserActionResult.logs || "(No new logs)"
-												}\n\n(REMEMBER: if you need to proceed to using non-\`browser_action\` tools or launch a new browser, you MUST first close this browser. For example, if after analyzing the logs and screenshot you need to edit a file, you must first close the browser before you can use the write_to_file tool.)`,
+												`浏览器操作已执行。已捕获控制台日志和屏幕截图供您分析。\n\n控制台日志：\n${
+													browserActionResult.logs || "(无新日志)"
+												}\n\n(请记住：如果您需要继续使用非 \`browser_action\` 工具或启动新的浏览器，则必须先关闭此浏览器。例如，如果您在分析日志和屏幕截图后需要编辑文件，则必须先关闭浏览器，然后才能使用 write_to_file 工具。)`,
 												browserActionResult.screenshot ? [browserActionResult.screenshot] : [],
 											),
 										)
 										break
 									case "close":
 										pushToolResult(
-											formatResponse.toolResult(
-												`The browser has been closed. You may now proceed to using other tools.`,
-											),
+											formatResponse.toolResult(`浏览器已关闭。现在您可以继续使用其他工具。`),
 										)
 										break
 								}
@@ -2292,7 +2291,7 @@ export class Cline {
 										this.consecutiveMistakeCount++
 										await this.say(
 											"error",
-											`Roo tried to use ${tool_name} with an invalid JSON argument. Retrying...`,
+											`AIxCoding 尝试使用无效的 JSON 参数调用 ${tool_name}。正在重试...`,
 										)
 										pushToolResult(
 											formatResponse.toolError(
@@ -2460,15 +2459,15 @@ export class Cline {
 									(await this.providerRef.deref()?.getState())?.customModes,
 								)
 								if (!targetMode) {
-									pushToolResult(formatResponse.toolError(`Invalid mode: ${mode_slug}`))
+									pushToolResult(formatResponse.toolError(`模式无效：${mode_slug}`))
 									break
 								}
 
-								// Check if already in requested mode
+								// 检查是否已处于请求的模式
 								const currentMode =
 									(await this.providerRef.deref()?.getState())?.mode ?? defaultModeSlug
 								if (currentMode === mode_slug) {
-									pushToolResult(`Already in ${targetMode.name} mode.`)
+									pushToolResult(`已处于 ${targetMode.name} 模式。`)
 									break
 								}
 
@@ -2489,9 +2488,9 @@ export class Cline {
 									await provider.handleModeSwitch(mode_slug)
 								}
 								pushToolResult(
-									`Successfully switched from ${getModeBySlug(currentMode)?.name ?? currentMode} mode to ${
+									`已成功从 ${getModeBySlug(currentMode)?.name ?? currentMode} 模式切换到 ${
 										targetMode.name
-									} mode${reason ? ` because: ${reason}` : ""}.`,
+									} 模式${reason ? `，原因：${reason}` : ""}.`,
 								)
 								await delay(500) // delay to allow mode change to take effect before next tool is executed
 								break
@@ -2533,7 +2532,7 @@ export class Cline {
 									(await this.providerRef.deref()?.getState())?.customModes,
 								)
 								if (!targetMode) {
-									pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`))
+									pushToolResult(formatResponse.toolError(`模式无效：${mode}`))
 									break
 								}
 
@@ -2554,13 +2553,9 @@ export class Cline {
 								if (provider) {
 									await provider.handleModeSwitch(mode)
 									await provider.initClineWithTask(message)
-									pushToolResult(
-										`Successfully created new task in ${targetMode.name} mode with message: ${message}`,
-									)
+									pushToolResult(`已成功在 ${targetMode.name} 模式下使用消息创建新任务：${message}`)
 								} else {
-									pushToolResult(
-										formatResponse.toolError("Failed to create new task: provider not available"),
-									)
+									pushToolResult(formatResponse.toolError("无法创建新任务：提供程序不可用"))
 								}
 								break
 							}
@@ -2685,12 +2680,12 @@ export class Cline {
 								}
 								toolResults.push({
 									type: "text",
-									text: `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`,
+									text: `用户已提供有关结果的反馈。请考虑他们的输入以继续任务，然后再次尝试完成。\n<feedback>\n${text}\n</feedback>`,
 								})
 								toolResults.push(...formatResponse.imageBlocks(images))
 								this.userMessageContent.push({
 									type: "text",
-									text: `${toolDescription()} Result:`,
+									text: `${toolDescription()} 结果:`,
 								})
 								this.userMessageContent.push(...toolResults)
 
@@ -2752,8 +2747,8 @@ export class Cline {
 			const { response, text, images } = await this.ask(
 				"mistake_limit_reached",
 				this.api.getModel().id.includes("claude")
-					? `This may indicate a failure in his thought process or inability to use a tool properly, which can be mitigated with some user guidance (e.g. "Try breaking down the task into smaller steps").`
-					: "uses complex prompts and iterative task execution that may be challenging for less capable models. For best results, it's recommended to use Claude 3.5 Sonnet for its advanced agentic coding capabilities.",
+					? `这可能表明其思考过程中存在错误或无法正确使用工具，可以通过一些用户指导来缓解（例如“尝试将任务分解为更小的步骤”）。`
+					: "使用复杂的提示和迭代任务执行，这对于能力较弱的模型可能具有挑战性。为了获得最佳结果，建议使用 Claude 3.5 Sonnet，因为它具有先进的代理编码能力。",
 			)
 			if (response === "messageResponse") {
 				userContent.push(
@@ -2936,17 +2931,17 @@ export class Cline {
 					}
 
 					if (this.didRejectTool) {
-						// userContent has a tool rejection, so interrupt the assistant's response to present the user's feedback
-						assistantMessage += "\n\n[Response interrupted by user feedback]"
-						// this.userMessageContentReady = true // instead of setting this premptively, we allow the present iterator to finish and set userMessageContentReady when its ready
+						// 用户拒绝了工具，因此中断助手的响应以呈现用户的反馈
+						assistantMessage += "\n\n[用户反馈中断了响应]"
+						// this.userMessageContentReady = true // 我们不预先设置此项，而是允许当前迭代器完成并在准备好时设置 userMessageContentReady
 						break
 					}
 
-					// PREV: we need to let the request finish for openrouter to get generation details
-					// UPDATE: it's better UX to interrupt the request at the cost of the api cost not being retrieved
+					// 之前：我们需要让请求完成以使 openrouter 获取生成详细信息
+					// 更新：以 API 成本未被检索为代价中断请求可以提供更好的用户体验
 					if (this.didAlreadyUseTool) {
 						assistantMessage +=
-							"\n\n[Response interrupted by a tool use result. Only one tool may be used at a time and should be placed at the end of the message.]"
+							"\n\n[工具使用结果中断了响应。一次只能使用一个工具，并且应将其放在消息的末尾。]"
 						break
 					}
 				}
@@ -3025,11 +3020,11 @@ export class Cline {
 				// if there's no assistant_responses, that means we got no text or tool_use content blocks from API which we should assume is an error
 				await this.say(
 					"error",
-					"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
+					"意外的 API 响应：语言模型未提供任何助手消息。这可能表明 API 或模型输出存在问题。",
 				)
 				await this.addToApiConversationHistory({
 					role: "assistant",
-					content: [{ type: "text", text: "Failure: I did not provide a response." }],
+					content: [{ type: "text", text: "失败：我没有提供响应。" }],
 				})
 			}
 

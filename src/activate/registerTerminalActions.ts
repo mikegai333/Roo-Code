@@ -3,11 +3,11 @@ import { ClineProvider } from "../core/webview/ClineProvider"
 import { TerminalManager } from "../integrations/terminal/TerminalManager"
 
 const TERMINAL_COMMAND_IDS = {
-	ADD_TO_CONTEXT: "aixcoding-agent.terminalAddToContext", // 添加到上下文命令 ID
-	FIX: "aixcoding-agent.terminalFixCommand", // 终端修复命令 ID
-	FIX_IN_CURRENT_TASK: "aixcoding-agent.terminalFixCommandInCurrentTask", // 在当前任务中修复命令 ID
-	EXPLAIN: "aixcoding-agent.terminalExplainCommand", // 终端解释命令 ID
-	EXPLAIN_IN_CURRENT_TASK: "aixcoding-agent.terminalExplainCommandInCurrentTask", // 在当前任务中解释命令 ID
+	ADD_TO_CONTEXT: "aixcoding.terminalAddToContext", // 添加到上下文命令 ID
+	FIX: "aixcoding.terminalFixCommand", // 终端修复命令 ID
+	FIX_IN_CURRENT_TASK: "aixcoding.terminalFixCommandInCurrentTask", // 在当前任务中修复命令 ID
+	EXPLAIN: "aixcoding.terminalExplainCommand", // 终端解释命令 ID
+	EXPLAIN_IN_CURRENT_TASK: "aixcoding.terminalExplainCommandInCurrentTask", // 在当前任务中解释命令 ID
 } as const
 
 export const registerTerminalActions = (context: vscode.ExtensionContext) => {

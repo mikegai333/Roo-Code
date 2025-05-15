@@ -9,7 +9,7 @@ coverage/
 
 # Builds
 bin/
-aixcoding-agent-*.vsix
+aixcoding-*.vsix
 
 # Local prompts and rules
 /local-prompts

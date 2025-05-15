@@ -19,6 +19,7 @@ import { FileInteractionCache } from "./extension/file-interaction"
 import { getLineBreakCount } from "./webview/utils"
 import path from "path"
 import { delayExecution } from "./extension/utils"
+import { initializeConfiguration } from "./api/aixcoding"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -34,13 +35,15 @@ let extensionContext: vscode.ExtensionContext
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
 export function activate(context: vscode.ExtensionContext) {
+	initializeConfiguration(context)
+	vscode.commands.executeCommand("setContext", "newVersion", context.globalState.get("newVersion"))
 	extensionContext = context
-	outputChannel = vscode.window.createOutputChannel("Roo-Code")
+	outputChannel = vscode.window.createOutputChannel("AIxCoding")
 	context.subscriptions.push(outputChannel)
-	outputChannel.appendLine("Roo-Code extension activated")
+	outputChannel.appendLine("AIxCoding extension activated")
 
 	// Get default commands from configuration.
-	const defaultCommands = vscode.workspace.getConfiguration("aixcoding-agent").get<string[]>("allowedCommands") || []
+	const defaultCommands = vscode.workspace.getConfiguration("aixcoding").get<string[]>("allowedCommands") || []
 
 	// Initialize global state if not already set.
 	if (!context.globalState.get("allowedCommands")) {
@@ -105,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const completionProvider = new CompletionProvider(statusBar, fileInteractionCache, templateProvider, context)
 	templateProvider.init()
 	statusBar.text = "AIxCoding"
-	statusBar.command = "aixcoding-agent.toggleCompletion"
+	statusBar.command = "aixcoding.toggleCompletion"
 	updateStatusBar()
 	statusBar.show()
 	context.subscriptions.push(
@@ -113,12 +116,12 @@ export function activate(context: vscode.ExtensionContext) {
 	)
 
 	// 停止补全代码
-	const stopCompletion = vscode.commands.registerCommand("aixcoding-agent.stopCompletion", () => {
+	const stopCompletion = vscode.commands.registerCommand("aixcoding.stopCompletion", () => {
 		completionProvider.abortCompletion()
 	})
 
 	// 禁用/开启代码补全
-	const toggleCompletion = vscode.commands.registerCommand("aixcoding-agent.toggleCompletion", async () => {
+	const toggleCompletion = vscode.commands.registerCommand("aixcoding.toggleCompletion", async () => {
 		const currentState = context.globalState.get("enableCompletion", false)
 		completionProvider.abortCompletion()
 		await context.globalState.update("enableCompletion", !currentState)
@@ -181,7 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// 扫描选中的文件
 	const lintSelected = vscode.commands.registerCommand(
-		"aixcoding-agent.lintSelected",
+		"aixcoding.lintSelected",
 		async (currentFile, selectedFiles) => {
 			startLinting(
 				"1",
@@ -190,20 +193,20 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	)
 	// 扫描当前文件
-	const lintCurrent = vscode.commands.registerCommand("aixcoding-agent.lintCurrent", async (currentFile) => {
+	const lintCurrent = vscode.commands.registerCommand("aixcoding.lintCurrent", async (currentFile) => {
 		startLinting("2", currentFile.fsPath)
 	})
 	// 扫描整个工程
-	const lintProject = vscode.commands.registerCommand("aixcoding-agent.lintProject", async () => {
+	const lintProject = vscode.commands.registerCommand("aixcoding.lintProject", async () => {
 		startLinting("0", null)
 	})
 	// 清空所有问题
-	const clearProblems = vscode.commands.registerCommand("aixcoding-agent.clearDiagnostics", async () => {
+	const clearProblems = vscode.commands.registerCommand("aixcoding.clearDiagnostics", async () => {
 		clearDiagnostics()
 	})
 
 	// 执行 git 版本比较
-	const gitVersionCompare = vscode.commands.registerCommand("aixcoding-agent.gitVersionCompare", async () => {
+	const gitVersionCompare = vscode.commands.registerCommand("aixcoding.gitVersionCompare", async () => {
 		let gitVersionComparer = new GitVersionComparer()
 		gitVersionComparer.compareAndExport()
 	})
@@ -221,7 +224,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export async function deactivate() {
-	outputChannel.appendLine("Roo-Code extension deactivated")
+	outputChannel.appendLine("AIxCoding extension deactivated")
 	// Clean up MCP server manager
 	await McpServerManager.cleanup(extensionContext)
 }

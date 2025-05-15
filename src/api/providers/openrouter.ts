@@ -35,7 +35,7 @@ export class OpenRouterHandler implements ApiHandler, SingleCompletionHandler {
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 
 		const defaultHeaders = {
-			"HTTP-Referer": "https://github.com/RooVetGit/aixcoding-agent",
+			"HTTP-Referer": "https://github.com/RooVetGit/aixcoding",
 			"X-Title": "AIxCoding Agent",
 		}
 

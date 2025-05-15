@@ -103,7 +103,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		diffEnabled: false,
 		checkpointsEnabled: false,
 		fuzzyMatchThreshold: 1.0,
-		preferredLanguage: "English",
+		preferredLanguage: "Simplified Chinese",
 		writeDelayMs: 1000,
 		browserViewportSize: "900x600",
 		screenshotQuality: 75,

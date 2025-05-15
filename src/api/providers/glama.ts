@@ -90,7 +90,7 @@ export class GlamaHandler implements ApiHandler, SingleCompletionHandler {
 						labels: [
 							{
 								key: "app",
-								value: "vscode.bocsoft.aixcoding-agent",
+								value: "vscode.bocsoft.aixcoding",
 							},
 						],
 					}),

@@ -14,15 +14,15 @@ suite("AIxCoding Agent Extension", () => {
 		const startTime = Date.now()
 
 		const expectedCommands = [
-			"aixcoding-agent.plusButtonClicked",
-			"aixcoding-agent.mcpButtonClicked",
-			"aixcoding-agent.historyButtonClicked",
-			"aixcoding-agent.popoutButtonClicked",
-			"aixcoding-agent.settingsButtonClicked",
-			"aixcoding-agent.openInNewTab",
-			"aixcoding-agent.explainCode",
-			"aixcoding-agent.fixCode",
-			"aixcoding-agent.improveCode",
+			"aixcoding.plusButtonClicked",
+			"aixcoding.mcpButtonClicked",
+			"aixcoding.historyButtonClicked",
+			"aixcoding.popoutButtonClicked",
+			"aixcoding.settingsButtonClicked",
+			"aixcoding.openInNewTab",
+			"aixcoding.explainCode",
+			"aixcoding.fixCode",
+			"aixcoding.improveCode",
 		]
 
 		while (Date.now() - startTime < timeout) {

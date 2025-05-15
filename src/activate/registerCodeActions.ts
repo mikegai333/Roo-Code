@@ -29,7 +29,15 @@ export const registerCodeActions = (context: vscode.ExtensionContext) => {
 		"例如：关注性能优化", // 输入占位符：例如：关注性能优化
 	)
 
+	registerCodeActionPair(context, COMMAND_IDS.CHECK, "CHECK")
+
+	registerCodeActionPair(context, COMMAND_IDS.COMMENTS, "COMMENTS")
+
+	registerCodeActionPair(context, COMMAND_IDS.TEST, "TEST")
+
 	registerCodeAction(context, COMMAND_IDS.ADD_TO_CONTEXT, "ADD_TO_CONTEXT") // 添加到上下文命令
+
+	console.log("context.subscriptions", context.subscriptions)
 }
 
 const registerCodeAction = (
@@ -43,7 +51,8 @@ const registerCodeAction = (
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(command, async (...args: any[]) => {
-			if (inputPrompt) {
+			const newVersion = context.globalState.get("newVersion")
+			if (inputPrompt && newVersion) {
 				userInput = await vscode.window.showInputBox({
 					prompt: inputPrompt, // 输入提示
 					placeHolder: inputPlaceholder, // 输入占位符

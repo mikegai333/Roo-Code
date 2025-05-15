@@ -40,7 +40,7 @@ import { CustomSupportPrompts, supportPrompt } from "../../shared/support-prompt
 import { ACTION_NAMES } from "../CodeActionProvider"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
 import { ApiProviders } from "../../common/types"
-import { getTemplates } from "../../api/aixcoding"
+import { getTemplates, reportPluginUsage } from "../../api/aixcoding"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -145,8 +145,8 @@ export const GlobalFileNames = {
 }
 
 export class ClineProvider implements vscode.WebviewViewProvider {
-	public static readonly sideBarId = "aixcoding-agent.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
-	public static readonly tabPanelId = "aixcoding-agent.TabPanelProvider"
+	public static readonly sideBarId = "aixcoding.SidebarProvider" // used in package.json as the view's id. This value cannot be changed due to how vscode caches views based on their id, and updating the id would break existing instances of the extension.
+	public static readonly tabPanelId = "aixcoding.TabPanelProvider"
 	private static activeInstances: Set<ClineProvider> = new Set()
 	private disposables: vscode.Disposable[] = []
 	private view?: vscode.WebviewView | vscode.WebviewPanel
@@ -232,7 +232,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 
 		// If no visible provider, try to show the sidebar view
 		if (!visibleProvider) {
-			await vscode.commands.executeCommand("aixcoding-agent.SidebarProvider.focus")
+			await vscode.commands.executeCommand("aixcoding.SidebarProvider.focus")
 			// Wait briefly for the view to become visible
 			await delay(100)
 			visibleProvider = ClineProvider.getVisibleInstance()
@@ -629,10 +629,12 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	private setWebviewMessageListener(webview: vscode.Webview) {
 		webview.onDidReceiveMessage(
 			async (message: WebviewMessage) => {
-				console.log(message.type)
 				switch (message.type) {
 					case "getTemplateList":
 						this.getTemplateList()
+						break
+					case "reportPluginUsage":
+						reportPluginUsage(message.value)
 						break
 					case "webviewDidLaunch":
 						// Load custom modes first
@@ -952,7 +954,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.context.globalState.update("allowedCommands", message.commands)
 						// Also update workspace settings
 						await vscode.workspace
-							.getConfiguration("aixcoding-agent")
+							.getConfiguration("aixcoding")
 							.update("allowedCommands", message.commands, vscode.ConfigurationTarget.Global)
 						break
 					case "openMcpSettings": {
@@ -1247,6 +1249,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						break
 					case "newVersion":
 						await this.updateGlobalState("newVersion", message.bool)
+						vscode.commands.executeCommand("setContext", "newVersion", message.bool)
 						await this.postStateToWebview()
 						break
 					case "enhancementApiConfigId":
@@ -1278,7 +1281,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 										}
 									}
 								}
-
+								console.log(222222222, listApiConfigMeta, enhancementApiConfigId, configToUse)
 								const enhancedPrompt = await singleCompletionHandler(
 									configToUse,
 									supportPrompt.create(
@@ -1295,7 +1298,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 									text: enhancedPrompt,
 								})
 							} catch (error) {
-								console.log(error)
+								let errorContent = `Error enhancing prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`
+								console.log(errorContent)
 								this.outputChannel.appendLine(
 									`Error enhancing prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
 								)
@@ -1626,11 +1630,12 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	}
 	// 初始化AIxCoding配置
 	private async initConfig(config: any) {
-		const { apiKey, baseApi, reportApi } = {
-			apiKey: "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",
-			baseApi: "https://openrouter.ai",
-			reportApi: "https://openrouter.ai",
-		} //config
+		const { apiKey, baseApi, reportApi } = config
+		// {
+		// 	apiKey: "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",
+		// 	baseApi: "https://openrouter.ai",
+		// 	reportApi: "https://openrouter.ai",
+		// }
 		await this.updateGlobalState("baseApi", baseApi)
 		await this.updateGlobalState("reportApi", reportApi)
 		await this.updateGlobalState("baseApi", baseApi)
@@ -1644,16 +1649,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					apiProvider: "openai",
 					openAiBaseUrl: openAiBaseUrl,
 					openAiApiKey: apiKey,
-					// "openAiModelId": "deepseek-r1-chat-v1.0",
-					openAiModelId: "anthropic/claude-3.5-sonnet",
+					openAiModelId: "deepseek-r1-chat-v1.0",
+					// openAiModelId: "anthropic/claude-3.5-sonnet",
 					id: "ktfvsw1xwl",
 				},
 				qwen: {
 					apiProvider: "openai",
 					openAiBaseUrl: openAiBaseUrl,
 					openAiApiKey: apiKey,
-					// "openAiModelId": "qwencoder-model-chat-v1.0",
-					openAiModelId: "qwen/qwq-32b",
+					openAiModelId: "qwencoder-model-chat-v1.0",
+					// openAiModelId: "qwen/qwq-32b",
 					id: "nwmcw0x6wcq",
 				},
 			},
@@ -2492,8 +2497,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			newVersion,
 		} = await this.getState()
 
-		const allowedCommands =
-			vscode.workspace.getConfiguration("aixcoding-agent").get<string[]>("allowedCommands") || []
+		const allowedCommands = vscode.workspace.getConfiguration("aixcoding").get<string[]>("allowedCommands") || []
 		//   console.log('apiConfiguration', apiConfiguration)
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
@@ -2521,7 +2525,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			soundVolume: soundVolume ?? 0.5,
 			browserViewportSize: browserViewportSize ?? "900x600",
 			screenshotQuality: screenshotQuality ?? 75,
-			preferredLanguage: preferredLanguage ?? "English",
+			preferredLanguage: preferredLanguage ?? "Simplified Chinese",
 			writeDelayMs: writeDelayMs ?? 1000,
 			terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
 			fuzzyMatchThreshold: fuzzyMatchThreshold ?? 1.0,
@@ -2877,7 +2881,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						tr: "Turkish",
 					}
 					// Return mapped language or default to English
-					return langMap[vscodeLang.split("-")[0]] ?? "English"
+					return langMap[vscodeLang.split("-")[0]] ?? "Simplified Chinese"
 				})(),
 			mcpEnabled: mcpEnabled ?? true,
 			enableMcpServerCreation: enableMcpServerCreation ?? true,

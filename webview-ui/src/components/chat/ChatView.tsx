@@ -361,6 +361,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const handlePrimaryButtonClick = useCallback(
 		(text?: string, images?: string[]) => {
 			const trimmedInput = text?.trim()
+			console.log("clineAsk", clineAsk, "trimmedInput", trimmedInput)
 			switch (clineAsk) {
 				case "api_req_failed":
 				case "command":
@@ -880,12 +881,12 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
 
 	const placeholderText = useMemo(() => {
-		const baseText = task ? "输入消息..." : "输入你的任务..."
+		const baseText = "" //task ? "输入消息..." : "输入你的任务..."
 		const contextText = `(@ 添加上下文, ${newVersion ? "/ 切换模式," : ""} # 加载模板`
 		const imageText = shouldDisableImages ? "" : ", 按住 Shift 拖入图片"
-		const helpText = imageText ? `\n${contextText}${imageText})` : `\n${contextText})`
+		const helpText = imageText ? `${contextText}${imageText})` : `${contextText})`
 		return baseText + helpText
-	}, [task, shouldDisableImages, newVersion])
+	}, [shouldDisableImages, newVersion])
 
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage | ClineMessage[]) => {
@@ -969,6 +970,10 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		(val: boolean) => {
 			setNewVersion(val)
 			vscode.postMessage({ type: "newVersion", bool: val })
+			vscode.postMessage({
+				type: "mode",
+				text: val ? "code" : "ask",
+			})
 		},
 		[setNewVersion],
 	)
@@ -1173,19 +1178,19 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 						gap: "8px",
 						padding: "0 8px 8px",
 					}}>
-					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+					<VSCodeButton onClick={() => runCommand("aixcoding.explainCode")}>
 						解释代码
 						<span slot="start" className="codicon codicon-question"></span>
 					</VSCodeButton>
-					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+					<VSCodeButton onClick={() => runCommand("aixcoding.checkCode")}>
 						检查代码
 						<span slot="start" className="codicon codicon-symbol-property"></span>
 					</VSCodeButton>
-					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+					<VSCodeButton onClick={() => runCommand("aixcoding.addComments")}>
 						生成注释
 						<span slot="start" className="codicon codicon-diff-added"></span>
 					</VSCodeButton>
-					<VSCodeButton onClick={() => runCommand("aixcoding-agent.explainCode")}>
+					<VSCodeButton onClick={() => runCommand("aixcoding.addTest")}>
 						编写测试
 						<span slot="start" className="codicon codicon-vm-connect"></span>
 					</VSCodeButton>

@@ -25,7 +25,7 @@ const McpEnabledToggle = () => {
 					color: "var(--vscode-descriptionForeground)",
 				}}>
 				启用后，AIxCoding 将能够与 MCP 服务器交互以提供高级功能。如果你不使用
-				MCP，可以禁用此功能以减少令牌使用量。
+				MCP，可以禁用此功能以减少Token使用量。
 			</p>
 		</div>
 	)

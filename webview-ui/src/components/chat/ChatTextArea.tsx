@@ -83,7 +83,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					if (message.text) {
 						setInputValue(message.text)
 					}
-					setIsEnhancingPrompt(false)
+					// setIsEnhancingPrompt(false)
 				} else if (message.type === "commitSearchResults") {
 					const commits = message.commits.map((commit: any) => ({
 						type: ContextMenuOptionType.Git,
@@ -112,7 +112,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [justDeletedSpaceAfterMention, setJustDeletedSpaceAfterMention] = useState(false)
 		const [intendedCursorPosition, setIntendedCursorPosition] = useState<number | null>(null)
 		const contextMenuContainerRef = useRef<HTMLDivElement>(null)
-		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
+		// const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
 		const [isFocused, setIsFocused] = useState(false)
 
 		// Fetch git commits when Git is selected or when typing a hash
@@ -126,22 +126,22 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 		}, [selectedType, searchQuery])
 
-		const handleEnhancePrompt = useCallback(() => {
-			if (!textAreaDisabled) {
-				const trimmedInput = inputValue.trim()
-				if (trimmedInput) {
-					setIsEnhancingPrompt(true)
-					const message = {
-						type: "enhancePrompt" as const,
-						text: trimmedInput,
-					}
-					vscode.postMessage(message)
-				} else {
-					const promptDescription = `"提示词增强"按钮通过补充上下文、优化表述或提供改写建议来提升您的提示词质量。输入提示词后再次点击该按钮，即可查看优化后的效果演示。`
-					setInputValue(promptDescription)
-				}
-			}
-		}, [inputValue, textAreaDisabled, setInputValue])
+		// const handleEnhancePrompt = useCallback(() => {
+		// 	if (!textAreaDisabled) {
+		// 		const trimmedInput = inputValue.trim()
+		// 		if (trimmedInput) {
+		// 			setIsEnhancingPrompt(true)
+		// 			const message = {
+		// 				type: "enhancePrompt" as const,
+		// 				text: trimmedInput,
+		// 			}
+		// 			vscode.postMessage(message)
+		// 		} else {
+		// 			const promptDescription = `"提示词增强"按钮通过补充上下文、优化表述或提供改写建议来提升您的提示词质量。输入提示词后再次点击该按钮，即可查看优化后的效果演示。`
+		// 			setInputValue(promptDescription)
+		// 		}
+		// 	}
+		// }, [inputValue, textAreaDisabled, setInputValue])
 
 		const queryItems = useMemo(() => {
 			return [
@@ -752,7 +752,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							onHeightChange?.(height)
 						}}
 						placeholder={placeholderText}
-						minRows={newVersion ? 3 : 1}
+						minRows={1}
 						maxRows={15}
 						autoFocus={true}
 						style={{
@@ -937,7 +937,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							alignItems: "center",
 							gap: "12px",
 						}}>
-						<div style={{ display: "flex", alignItems: "center" }}>
+						{/* <div style={{ display: "flex", alignItems: "center" }}>
 							{isEnhancingPrompt ? (
 								<span
 									className="codicon codicon-loading codicon-modifier-spin"
@@ -960,7 +960,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									style={{ fontSize: 16.5 }}
 								/>
 							)}
-						</div>
+						</div> */}
 						{/* <span
 							className={`input-icon-button ${
 								shouldDisableImages ? "disabled" : ""

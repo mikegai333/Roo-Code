@@ -146,7 +146,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								</div>
 								<div style={{ fontSize: "0.85em", color: "var(--vscode-descriptionForeground)" }}>
 									<span>
-										令牌: ↑{formatLargeNumber(item.tokensIn || 0)} ↓
+										Tokens: ↑{formatLargeNumber(item.tokensIn || 0)} ↓
 										{formatLargeNumber(item.tokensOut || 0)}
 									</span>
 									{!!item.cacheWrites && (

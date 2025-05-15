@@ -19,26 +19,26 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 
 const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOptions) => {
 	return {
-		"aixcoding-agent.plusButtonClicked": async () => {
+		"aixcoding.plusButtonClicked": async () => {
 			await provider.clearTask()
 			await provider.postStateToWebview()
 			await provider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
 		},
-		"aixcoding-agent.mcpButtonClicked": () => {
+		"aixcoding.mcpButtonClicked": () => {
 			provider.postMessageToWebview({ type: "action", action: "mcpButtonClicked" })
 		},
-		"aixcoding-agent.promptsButtonClicked": () => {
+		"aixcoding.promptsButtonClicked": () => {
 			provider.postMessageToWebview({ type: "action", action: "promptsButtonClicked" })
 		},
-		"aixcoding-agent.popoutButtonClicked": () => openClineInNewTab({ context, outputChannel }),
-		"aixcoding-agent.openInNewTab": () => openClineInNewTab({ context, outputChannel }),
-		"aixcoding-agent.settingsButtonClicked": () => {
+		"aixcoding.popoutButtonClicked": () => openClineInNewTab({ context, outputChannel }),
+		"aixcoding.openInNewTab": () => openClineInNewTab({ context, outputChannel }),
+		"aixcoding.settingsButtonClicked": () => {
 			provider.postMessageToWebview({ type: "action", action: "settingsButtonClicked" })
 		},
-		"aixcoding-agent.historyButtonClicked": () => {
+		"aixcoding.historyButtonClicked": () => {
 			provider.postMessageToWebview({ type: "action", action: "historyButtonClicked" })
 		},
-		"aixcoding-agent.helpButtonClicked": () => {
+		"aixcoding.helpButtonClicked": () => {
 			vscode.env.openExternal(vscode.Uri.parse("http://22.189.54.139"))
 		},
 	}

@@ -62,7 +62,7 @@ describe("RequestyHandler", () => {
 				baseURL: "https://router.requesty.ai/v1",
 				apiKey: defaultOptions.requestyApiKey,
 				defaultHeaders: {
-					"HTTP-Referer": "https://github.com/RooVetGit/aixcoding-agent",
+					"HTTP-Referer": "https://github.com/RooVetGit/aixcoding",
 					"X-Title": "AIxCoding Agent",
 				},
 			})

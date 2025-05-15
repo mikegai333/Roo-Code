@@ -1247,7 +1247,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 								fontWeight: 500,
 							}}>
 							Note: This is a very experimental integration and may not work as expected. Please report
-							any issues to the Roo-Code GitHub repository.
+							any issues to the AIxCoding GitHub repository.
 						</p>
 					</div>
 				</div>
@@ -1422,13 +1422,13 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 }
 
 export function getGlamaAuthUrl(uriScheme?: string) {
-	const callbackUrl = `${uriScheme || "vscode"}://bocsoft.aixcoding-agent/glama`
+	const callbackUrl = `${uriScheme || "vscode"}://bocsoft.aixcoding/glama`
 
 	return `https://glama.ai/oauth/authorize?callback_url=${encodeURIComponent(callbackUrl)}`
 }
 
 export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://bocsoft.aixcoding-agent/openrouter`
+	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://bocsoft.aixcoding/openrouter`
 }
 
 export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration) {

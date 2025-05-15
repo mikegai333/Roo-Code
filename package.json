@@ -1,9 +1,9 @@
 {
-	"name": "aixcoding-agent",
+	"name": "aixcoding",
 	"displayName": "AIxCoding",
-	"description": "A VS Code plugin that enhances coding with AI-powered automation, multi-model support, and experimental features.",
+	"description": "一个基于大模型的智能编码VS Code插件",
 	"publisher": "bocsoft",
-	"version": "3.3.19",
+	"version": "3.0.0",
 	"icon": "assets/icons/logo.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -13,13 +13,9 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Roo Vet"
+		"name": "bocsoft"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/RooVetGit/Roo-Code"
-	},
-	"homepage": "https://github.com/RooVetGit/Roo-Code",
+	"homepage": "http://22.189.54.139",
 	"categories": [
 		"AI",
 		"Chat",
@@ -29,20 +25,12 @@
 		"Testing"
 	],
 	"keywords": [
-		"cline",
-		"claude",
 		"dev",
 		"mcp",
-		"openrouter",
 		"coding",
 		"agent",
-		"autonomous",
-		"chatgpt",
-		"sonnet",
 		"ai",
-		"llama",
-		"AIxCoding",
-		"roocode"
+		"AIxCoding"
 	],
 	"activationEvents": [
 		"onLanguage",
@@ -53,152 +41,167 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "aixcoding-agent-ActivityBar",
+					"id": "aixcoding-ActivityBar",
 					"title": "AIxCoding",
 					"icon": "assets/icons/logo.png"
 				}
 			]
 		},
 		"views": {
-			"aixcoding-agent-ActivityBar": [
+			"aixcoding-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "aixcoding-agent.SidebarProvider",
+					"id": "aixcoding.SidebarProvider",
 					"name": ""
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "aixcoding-agent.plusButtonClicked",
+				"command": "aixcoding.plusButtonClicked",
 				"title": "新建任务",
 				"icon": "$(add)"
 			},
 			{
-				"command": "aixcoding-agent.promptsButtonClicked",
+				"command": "aixcoding.promptsButtonClicked",
 				"title": "提示",
 				"icon": "$(notebook)"
 			},
 			{
-				"command": "aixcoding-agent.mcpButtonClicked",
+				"command": "aixcoding.mcpButtonClicked",
 				"title": "MCP 服务器",
 				"icon": "$(server)"
 			},
 			{
-				"command": "aixcoding-agent.historyButtonClicked",
+				"command": "aixcoding.historyButtonClicked",
 				"title": "历史记录",
 				"icon": "$(history)"
 			},
 			{
-				"command": "aixcoding-agent.popoutButtonClicked",
+				"command": "aixcoding.popoutButtonClicked",
 				"title": "在编辑器中打开",
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "aixcoding-agent.settingsButtonClicked",
+				"command": "aixcoding.settingsButtonClicked",
 				"title": "设置",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "aixcoding-agent.helpButtonClicked",
+				"command": "aixcoding.helpButtonClicked",
 				"title": "文档",
 				"icon": "$(question)"
 			},
 			{
-				"command": "aixcoding-agent.openInNewTab",
+				"command": "aixcoding.openInNewTab",
 				"title": "在新标签页中打开",
 				"category": "AIxCoding"
 			},
 			{
-				"command": "aixcoding-agent.explainCode",
+				"command": "aixcoding.explainCode",
 				"title": "AIxCoding: 解释代码",
 				"category": "AIxCoding"
 			},
 			{
-				"command": "aixcoding-agent.fixCode",
+				"command": "aixcoding.fixCode",
 				"title": "AIxCoding: 修复代码",
 				"category": "AIxCoding"
 			},
 			{
-				"command": "aixcoding-agent.improveCode",
+				"command": "aixcoding.improveCode",
 				"title": "AIxCoding: 改进代码",
 				"category": "AIxCoding"
 			},
 			{
-				"command": "aixcoding-agent.addToContext",
+				"command": "aixcoding.addToContext",
 				"title": "AIxCoding: 添加到上下文",
 				"category": "AIxCoding"
 			},
 			{
-				"command": "aixcoding-agent.terminalAddToContext",
+				"command": "aixcoding.checkCode",
+				"title": "AIxCoding: 检查代码",
+				"category": "AIxCoding"
+			},
+			{
+				"command": "aixcoding.addComments",
+				"title": "AIxCoding: 生成注释",
+				"category": "AIxCoding"
+			},
+			{
+				"command": "aixcoding.addTest",
+				"title": "AIxCoding: 编写测试",
+				"category": "AIxCoding"
+			},
+			{
+				"command": "aixcoding.terminalAddToContext",
 				"title": "AIxCoding: 将终端内容添加到上下文",
 				"category": "Terminal"
 			},
 			{
-				"command": "aixcoding-agent.terminalFixCommand",
+				"command": "aixcoding.terminalFixCommand",
 				"title": "AIxCoding: 修复此命令",
 				"category": "Terminal"
 			},
 			{
-				"command": "aixcoding-agent.terminalExplainCommand",
+				"command": "aixcoding.terminalExplainCommand",
 				"title": "AIxCoding: 解释此命令",
 				"category": "Terminal"
 			},
 			{
-				"command": "aixcoding-agent.terminalFixCommandInCurrentTask",
+				"command": "aixcoding.terminalFixCommandInCurrentTask",
 				"title": "AIxCoding: 修复此命令 (当前任务)",
 				"category": "Terminal"
 			},
 			{
-				"command": "aixcoding-agent.terminalExplainCommandInCurrentTask",
+				"command": "aixcoding.terminalExplainCommandInCurrentTask",
 				"title": "AIxCoding: 解释此命令 (当前任务)",
 				"category": "Terminal"
 			},
 			{
-				"command": "aixcoding-agent.stopCompletion",
+				"command": "aixcoding.stopCompletion",
 				"title": "停止补全"
 			},
 			{
-				"command": "aixcoding-agent.lintProject",
+				"command": "aixcoding.lintProject",
 				"title": "扫描工程"
 			},
 			{
-				"command": "aixcoding-agent.lintSelected",
+				"command": "aixcoding.lintSelected",
 				"title": "扫描选中文件"
 			},
 			{
-				"command": "aixcoding-agent.lintCurrent",
+				"command": "aixcoding.lintCurrent",
 				"title": "扫描当前文件"
 			},
 			{
-				"command": "aixcoding-agent.clearDiagnostics",
+				"command": "aixcoding.clearDiagnostics",
 				"title": "清空问题"
 			},
 			{
-				"command": "aixcoding-agent.gitVersionCompare",
+				"command": "aixcoding.gitVersionCompare",
 				"title": "执行git版本比较"
 			}
 		],
 		"menus": {
 			"AIxCodingTool": [
 				{
-					"command": "aixcoding-agent.lintProject",
+					"command": "aixcoding.lintProject",
 					"group": "AIxCodingLint@1"
 				},
 				{
-					"command": "aixcoding-agent.lintSelected",
+					"command": "aixcoding.lintSelected",
 					"group": "AIxCodingLint@2"
 				},
 				{
-					"command": "aixcoding-agent.lintCurrent",
+					"command": "aixcoding.lintCurrent",
 					"group": "AIxCodingLint@3"
 				},
 				{
-					"command": "aixcoding-agent.clearDiagnostics",
+					"command": "aixcoding.clearDiagnostics",
 					"group": "AIxCodingLint@4"
 				},
 				{
-					"command": "aixcoding-agent.gitVersionCompare",
+					"command": "aixcoding.gitVersionCompare",
 					"group": "AIxCodingLintConfig@1"
 				}
 			],
@@ -211,83 +214,98 @@
 			],
 			"editor/context": [
 				{
-					"command": "aixcoding-agent.explainCode",
+					"command": "aixcoding.explainCode",
 					"when": "editorHasSelection",
 					"group": "AIxCoding@1"
 				},
 				{
-					"command": "aixcoding-agent.fixCode",
-					"when": "editorHasSelection",
+					"command": "aixcoding.fixCode",
+					"when": "editorHasSelection && newVersion",
 					"group": "AIxCoding@2"
 				},
 				{
-					"command": "aixcoding-agent.improveCode",
-					"when": "editorHasSelection",
+					"command": "aixcoding.improveCode",
+					"when": "editorHasSelection && newVersion",
 					"group": "AIxCoding@3"
 				},
 				{
-					"command": "aixcoding-agent.addToContext",
-					"when": "editorHasSelection",
+					"command": "aixcoding.addToContext",
+					"when": "editorHasSelection && newVersion",
 					"group": "AIxCoding@4"
+				},
+				{
+					"command": "aixcoding.checkCode",
+					"when": "editorHasSelection && !newVersion",
+					"group": "AIxCoding@5"
+				},
+				{
+					"command": "aixcoding.addComments",
+					"when": "editorHasSelection && !newVersion",
+					"group": "AIxCoding@6"
+				},
+				{
+					"command": "aixcoding.addTest",
+					"when": "editorHasSelection && !newVersion",
+					"group": "AIxCoding@7"
 				}
 			],
 			"terminal/context": [
 				{
-					"command": "aixcoding-agent.terminalAddToContext",
+					"command": "aixcoding.terminalAddToContext",
 					"group": "AIxCoding@1"
 				},
 				{
-					"command": "aixcoding-agent.terminalFixCommand",
+					"command": "aixcoding.terminalFixCommand",
 					"group": "AIxCoding@2"
 				},
 				{
-					"command": "aixcoding-agent.terminalExplainCommand",
+					"command": "aixcoding.terminalExplainCommand",
 					"group": "AIxCoding@3"
 				},
 				{
-					"command": "aixcoding-agent.terminalFixCommandInCurrentTask",
+					"command": "aixcoding.terminalFixCommandInCurrentTask",
 					"group": "AIxCoding@5"
 				},
 				{
-					"command": "aixcoding-agent.terminalExplainCommandInCurrentTask",
+					"command": "aixcoding.terminalExplainCommandInCurrentTask",
 					"group": "AIxCoding@6"
 				}
 			],
 			"view/title": [
 				{
-					"command": "aixcoding-agent.plusButtonClicked",
+					"command": "aixcoding.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == aixcoding-agent.SidebarProvider"
+					"when": "view == aixcoding.SidebarProvider"
 				},
 				{
-					"command": "aixcoding-agent.promptsButtonClicked",
+					"command": "aixcoding.promptsButtonClicked",
 					"group": "navigation@2",
-					"when": "view == aixcoding-agent.SidebarProvider"
+					"when": "view == aixcoding.SidebarProvider"
 				},
 				{
-					"command": "aixcoding-agent.mcpButtonClicked",
+					"command": "aixcoding.mcpButtonClicked",
 					"group": "navigation@3",
-					"when": "view == aixcoding-agent.SidebarProvider"
+					"when": "view == aixcoding.SidebarProvider"
 				},
 				{
-					"command": "aixcoding-agent.historyButtonClicked",
+					"command": "aixcoding.historyButtonClicked",
 					"group": "navigation@4",
-					"when": "view == aixcoding-agent.SidebarProvider"
+					"when": "view == aixcoding.SidebarProvider"
 				},
 				{
-					"command": "aixcoding-agent.popoutButtonClicked",
+					"command": "aixcoding.popoutButtonClicked",
 					"group": "navigation@5",
-					"when": "view == aixcoding-agent.SidebarProvider"
+					"when": "view == aixcoding.SidebarProvider"
 				},
 				{
-					"command": "aixcoding-agent.settingsButtonClicked",
+					"command": "aixcoding.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == aixcoding-agent.SidebarProvider"
+					"when": "view == aixcoding.SidebarProvider"
 				},
 				{
-					"command": "aixcoding-agent.helpButtonClicked",
+					"command": "aixcoding.helpButtonClicked",
 					"group": "navigation@7",
-					"when": "view == aixcoding-agent.SidebarProvider"
+					"when": "view == aixcoding.SidebarProvider"
 				}
 			]
 		},
@@ -300,7 +318,7 @@
 		"configuration": {
 			"title": "AIxCoding",
 			"properties": {
-				"aixcoding-agent.allowedCommands": {
+				"aixcoding.allowedCommands": {
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -315,7 +333,7 @@
 					],
 					"description": "Commands that can be auto-executed when 'Always approve execute operations' is enabled"
 				},
-				"aixcoding-agent.vsCodeLmModelSelector": {
+				"aixcoding.vsCodeLmModelSelector": {
 					"type": "object",
 					"properties": {
 						"vendor": {
@@ -384,6 +402,8 @@
 		"delay": "^6.0.0",
 		"diff": "^5.2.0",
 		"diff-match-patch": "^1.0.5",
+		"eslint-plugin-vue": "^10.0.0",
+		"eslint-visitor-keys": "^4.2.0",
 		"espree": "^10.3.0",
 		"fast-deep-equal": "^3.1.3",
 		"fastest-levenshtein": "^1.0.16",

@@ -158,7 +158,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._position = position
 		this._nonce = this._nonce + 1
 		this._statusBar.text = "$(loading~spin) AI×Coding"
-		// this._statusBar.command = "aixcoding-agent.stopCompletion";
+		// this._statusBar.command = "aixcoding.stopCompletion";
 
 		this._parser = await getParser(document.uri.fsPath)
 		try {

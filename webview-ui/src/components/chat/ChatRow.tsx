@@ -604,8 +604,8 @@ export const ChatRowContent = ({
 				case "api_req_finished":
 					return null // we should never see this message type
 				case "text":
-					if (message.text?.includes("</think>")) {
-						const regex = /<think>(.*?)<\/think>(.*)/s
+					if (message.text?.includes("<think>")) {
+						const regex = /<think>(.*?)(?:<\/think>|$)(.*)/s
 						const match = message.text?.match(regex)
 						let thinkingContent = ""
 						let answerContent = ""

@@ -83,16 +83,16 @@ const ApiConfigManager = ({
 		resetRenameState()
 	}, [currentApiConfigName])
 
-	const handleAdd = () => {
-		resetCreateState()
-		setIsCreating(true)
-	}
+	// const handleAdd = () => {
+	// 	resetCreateState()
+	// 	setIsCreating(true)
+	// }
 
-	const handleStartRename = () => {
-		setIsRenaming(true)
-		setInputValue(currentApiConfigName || "")
-		setError(null)
-	}
+	// const handleStartRename = () => {
+	// 	setIsRenaming(true)
+	// 	setInputValue(currentApiConfigName || "")
+	// 	setError(null)
+	// }
 
 	const handleCancel = () => {
 		resetRenameState()
@@ -131,14 +131,14 @@ const ApiConfigManager = ({
 		resetCreateState()
 	}
 
-	const handleDelete = () => {
-		if (!currentApiConfigName || !listApiConfigMeta || listApiConfigMeta.length <= 1) return
+	// const handleDelete = () => {
+	// 	if (!currentApiConfigName || !listApiConfigMeta || listApiConfigMeta.length <= 1) return
 
-		// Let the extension handle both deletion and selection
-		onDeleteConfig(currentApiConfigName)
-	}
+	// 	// Let the extension handle both deletion and selection
+	// 	onDeleteConfig(currentApiConfigName)
+	// }
 
-	const isOnlyProfile = listApiConfigMeta?.length === 1
+	// const isOnlyProfile = listApiConfigMeta?.length === 1
 
 	return (
 		<div style={{ marginBottom: 5 }}>
@@ -229,7 +229,7 @@ const ApiConfigManager = ({
 									label: config.name,
 								}))}
 							/>
-							<VSCodeButton
+							{/* <VSCodeButton
 								appearance="icon"
 								onClick={handleAdd}
 								title="添加配置文件"
@@ -241,8 +241,8 @@ const ApiConfigManager = ({
 									minWidth: "28px",
 								}}>
 								<span className="codicon codicon-add" />
-							</VSCodeButton>
-							{currentApiConfigName && (
+							</VSCodeButton> */}
+							{/* {currentApiConfigName && (
 								<>
 									<VSCodeButton
 										appearance="icon"
@@ -272,16 +272,16 @@ const ApiConfigManager = ({
 										<span className="codicon codicon-trash" />
 									</VSCodeButton>
 								</>
-							)}
+							)} */}
 						</div>
-						<p
+						{/* <p
 							style={{
 								fontSize: "12px",
 								margin: "5px 0 12px",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
 							保存不同的 API 配置，以便在提供程序和设置之间快速切换
-						</p>
+						</p> */}
 					</>
 				)}
 

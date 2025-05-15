@@ -82,7 +82,7 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 			}
 
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+			const requestOptions: OpenRouterChatCompletionParams = {
 				model: modelId,
 				temperature:
 					this.options.modelTemperature ??
@@ -90,18 +90,16 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 				messages: convertedMessages,
 				stream: true as const,
 				stream_options: { include_usage: true },
+				telemetry,
 			}
 			if (this.options.includeMaxTokens) {
 				requestOptions.max_tokens = modelInfo.maxTokens
 			}
 
 			const stream = await this.client.chat.completions.create(requestOptions)
-			let fullContent = ""
+
 			for await (const chunk of stream) {
 				let delta = chunk.choices[0]?.delta ?? {}
-				fullContent = fullContent + delta.content
-
-				console.log("delta\n", fullContent)
 				if (delta.content) {
 					yield {
 						type: "text",

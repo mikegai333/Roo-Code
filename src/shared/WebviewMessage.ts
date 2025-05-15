@@ -98,6 +98,7 @@ export interface WebviewMessage {
 		| "newVersion"
 		| "initConfig"
 		| "runCommand"
+		| "reportPluginUsage"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse
