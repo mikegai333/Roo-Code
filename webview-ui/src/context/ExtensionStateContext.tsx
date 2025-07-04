@@ -87,6 +87,9 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setBaseApi: (value: string) => void
 	setTemplateList: (value: any) => void
 	setNewVersion: (value: boolean) => void
+	enableCompletion: boolean
+	completionMode: string
+	setCompletionMode: (value: string) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -127,7 +130,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		baseApi: "http://22.189.54.139/aicoding",
 		apiConfiguration: {},
 		templateList: [],
-		newVersion: false,
+		newVersion: true,
+		completionMode: '0'
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -383,6 +387,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setBaseApi: (value) => setState((prevState) => ({ ...prevState, baseApi: value })),
 		setTemplateList: (value) => setState((prevState) => ({ ...prevState, templateList: value })),
 		setNewVersion: (value) => setState((prevState) => ({ ...prevState, newVersion: value })),
+		setCompletionMode: (value) => setState((prevState) => ({ ...prevState, completionMode: value })),
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

@@ -13,7 +13,7 @@ export const TOOL_DISPLAY_NAMES = {
 	search_files: "搜索文件",
 	list_files: "列出文件",
 	list_code_definition_names: "列出定义",
-	browser_action: "使用浏览器",
+	// browser_action: "使用浏览器",
 	use_mcp_tool: "使用 MCP 工具",
 	access_mcp_resource: "访问 MCP 资源",
 	ask_followup_question: "提出问题",
@@ -30,9 +30,9 @@ export const TOOL_GROUPS: Record<string, ToolGroupConfig> = {
 	edit: {
 		tools: ["write_to_file", "apply_diff", "insert_content", "search_and_replace"],
 	},
-	browser: {
-		tools: ["browser_action"],
-	},
+	// browser: {
+	// 	tools: ["browser_action"],
+	// },
 	command: {
 		tools: ["execute_command"],
 	},
@@ -71,7 +71,7 @@ export function getToolOptions(toolConfig: string | readonly [ToolName, ...any[]
 export const GROUP_DISPLAY_NAMES: Record<ToolGroup, string> = {
 	read: "读取文件",
 	edit: "编辑文件",
-	browser: "使用浏览器",
+	// browser: "使用浏览器",
 	command: "运行命令",
 	mcp: "使用 MCP",
 }

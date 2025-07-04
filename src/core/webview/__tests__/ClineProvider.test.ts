@@ -356,6 +356,7 @@ describe("ClineProvider", () => {
 			baseApi: "",
 			templateList: [],
 			newVersion: false,
+			completionMode: '0'
 		}
 
 		const message: ExtensionMessage = {

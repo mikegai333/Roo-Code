@@ -133,6 +133,8 @@ type GlobalStateKey =
 	| "baseApi"
 	| "openAiApiKey"
 	| "newVersion"
+	| "completionMode"
+	| "enableCompletion"
 
 export const GlobalFileNames = {
 	apiConversationHistory: "api_conversation_history.json",
@@ -140,7 +142,7 @@ export const GlobalFileNames = {
 	glamaModels: "glama_models.json",
 	openRouterModels: "openrouter_models.json",
 	requestyModels: "requesty_models.json",
-	mcpSettings: "cline_mcp_settings.json",
+	mcpSettings: "aixcoding_mcp_settings.json",
 	unboundModels: "unbound_models.json",
 }
 
@@ -1252,6 +1254,14 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						vscode.commands.executeCommand("setContext", "newVersion", message.bool)
 						await this.postStateToWebview()
 						break
+					case "enableCompletion":
+						await this.updateGlobalState("enableCompletion", message.bool)
+						await this.postStateToWebview()
+						break
+					case "completionMode":
+						await this.updateGlobalState("completionMode", message.text)
+						await this.postStateToWebview()
+						break
 					case "enhancementApiConfigId":
 						await this.updateGlobalState("enhancementApiConfigId", message.text)
 						await this.postStateToWebview()
@@ -1596,6 +1606,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	 * @param newMode The mode to switch to
 	 */
 	public async handleModeSwitch(newMode: Mode) {
+		vscode.commands.executeCommand("setContext", "newVersion", newMode!=='ask' )
 		await this.updateGlobalState("mode", newMode)
 
 		// Load the saved API config for the new mode if it exists
@@ -1627,6 +1638,15 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		}
 
 		await this.postStateToWebview()
+	}
+
+	// 处理新旧版本切换
+	public async handleVersionSwitch(newVersion: boolean) {
+		await this.updateGlobalState("newVersion", newVersion)
+		this.postStateToWebview() 
+		vscode.commands.executeCommand("setContext", "newVersion", newVersion)
+		const mode = newVersion ? 'code' : 'ask'
+		this.handleModeSwitch(mode as Mode)
 	}
 	// 初始化AIxCoding配置
 	private async initConfig(config: any) {
@@ -2495,6 +2515,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			enableCompletion,
 			templateList,
 			newVersion,
+			completionMode,
 		} = await this.getState()
 
 		const allowedCommands = vscode.workspace.getConfiguration("aixcoding").get<string[]>("allowedCommands") || []
@@ -2529,8 +2550,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			writeDelayMs: writeDelayMs ?? 1000,
 			terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
 			fuzzyMatchThreshold: fuzzyMatchThreshold ?? 1.0,
-			mcpEnabled: mcpEnabled ?? true,
-			enableMcpServerCreation: enableMcpServerCreation ?? true,
+			mcpEnabled: mcpEnabled ?? false,
+			enableMcpServerCreation: enableMcpServerCreation ?? false,
 			alwaysApproveResubmit: alwaysApproveResubmit ?? false,
 			requestDelaySeconds: requestDelaySeconds ?? 10,
 			rateLimitSeconds: rateLimitSeconds ?? 0,
@@ -2548,7 +2569,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			baseApi: baseApi ?? "",
 			enableCompletion: enableCompletion ?? false,
 			templateList: templateList ?? [],
-			newVersion: newVersion ?? false,
+			newVersion: newVersion ?? true,
+			completionMode: completionMode ?? "0",
+
 		}
 	}
 
@@ -2687,6 +2710,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			reportApi,
 			baseApi,
 			newVersion,
+			enableCompletion,
+			completionMode
 		] = await Promise.all([
 			this.getGlobalState("apiProvider") as Promise<ApiProvider | undefined>,
 			this.getGlobalState("apiModelId") as Promise<string | undefined>,
@@ -2771,6 +2796,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("reportApi") as Promise<string | undefined>,
 			this.getGlobalState("baseApi") as Promise<string | undefined>,
 			this.getGlobalState("newVersion") as Promise<boolean | undefined>,
+			this.getGlobalState("enableCompletion") as Promise<string | undefined>,
+			this.getGlobalState("completionMode") as Promise<string | undefined>,
 		])
 
 		let apiProvider: ApiProvider
@@ -2855,34 +2882,34 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
 			mode: mode ?? defaultModeSlug,
 			preferredLanguage:
-				preferredLanguage ??
-				(() => {
-					// Get VSCode's locale setting
-					const vscodeLang = vscode.env.language
-					// Map VSCode locale to our supported languages
-					const langMap: { [key: string]: string } = {
-						en: "English",
-						ar: "Arabic",
-						"pt-br": "Brazilian Portuguese",
-						cs: "Czech",
-						fr: "French",
-						de: "German",
-						hi: "Hindi",
-						hu: "Hungarian",
-						it: "Italian",
-						ja: "Japanese",
-						ko: "Korean",
-						pl: "Polish",
-						pt: "Portuguese",
-						ru: "Russian",
-						"zh-cn": "Simplified Chinese",
-						es: "Spanish",
-						"zh-tw": "Traditional Chinese",
-						tr: "Turkish",
-					}
-					// Return mapped language or default to English
-					return langMap[vscodeLang.split("-")[0]] ?? "Simplified Chinese"
-				})(),
+				preferredLanguage ??  "Simplified Chinese",
+				// (() => {
+				// 	// Get VSCode's locale setting
+				// 	const vscodeLang = vscode.env.language
+				// 	// Map VSCode locale to our supported languages
+				// 	const langMap: { [key: string]: string } = {
+				// 		en: "English",
+				// 		ar: "Arabic",
+				// 		"pt-br": "Brazilian Portuguese",
+				// 		cs: "Czech",
+				// 		fr: "French",
+				// 		de: "German",
+				// 		hi: "Hindi",
+				// 		hu: "Hungarian",
+				// 		it: "Italian",
+				// 		ja: "Japanese",
+				// 		ko: "Korean",
+				// 		pl: "Polish",
+				// 		pt: "Portuguese",
+				// 		ru: "Russian",
+				// 		"zh-cn": "Simplified Chinese",
+				// 		es: "Spanish",
+				// 		"zh-tw": "Traditional Chinese",
+				// 		tr: "Turkish",
+				// 	}
+				// 	// Return mapped language or default to English
+				// 	return langMap[vscodeLang.split("-")[0]] ?? "Simplified Chinese"
+				// })(),
 			mcpEnabled: mcpEnabled ?? true,
 			enableMcpServerCreation: enableMcpServerCreation ?? true,
 			alwaysApproveResubmit: alwaysApproveResubmit ?? false,
@@ -2902,6 +2929,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			enableCompletion: false,
 			templateList: [],
 			newVersion,
+			completionMode
 		}
 	}
 

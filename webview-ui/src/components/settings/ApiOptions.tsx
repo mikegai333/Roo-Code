@@ -134,6 +134,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 
 	return (
 		<div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+			{import.meta.env.DEV &&(
 			<div className="dropdown-container">
 				<label htmlFor="api-provider">
 					<span style={{ fontWeight: 500 }}>API 提供者</span>
@@ -170,7 +171,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						{ value: "requesty", label: "Requesty" },
 					]}
 				/>
-			</div>
+			</div>)}
 
 			{selectedProvider === "anthropic" && (
 				<div>

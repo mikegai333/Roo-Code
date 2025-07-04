@@ -463,7 +463,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 							color: "var(--vscode-descriptionForeground)",
 							marginBottom: "12px",
 						}}>
-						点击 + 创建一个新的自定义模式，或者在聊天中创建一个！
+						点击 + 创建一个新的自定义模式。
 					</div>
 
 					<div
@@ -549,7 +549,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								marginBottom: "4px",
 							}}>
 							<div style={{ fontWeight: "bold" }}>角色定义</div>
-							{!findModeBySlug(mode, customModes) && (
+							{(
 								<VSCodeButton
 									appearance="icon"
 									onClick={() => {
@@ -564,7 +564,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								</VSCodeButton>
 							)}
 						</div>
-						{findModeBySlug(mode, customModes) && (
+						{(
 							<div
 								style={{
 									fontSize: "13px",
@@ -575,7 +575,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 							</div>
 						)}
 
-						{findModeBySlug(mode, customModes) && (
+						{(
 							<VSCodeTextArea
 								value={(() => {
 									const customMode = findModeBySlug(mode, customModes)
@@ -751,7 +751,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 					</>
 
 					{/* Role definition for both built-in and custom modes */}
-					{findModeBySlug(mode, customModes) && (
+					{(
 						<div style={{ marginBottom: "8px" }}>
 							<div
 								style={{
@@ -853,14 +853,14 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 						</div>
 					)}
 				</div>
-				{false && (
+				{true && (
 					<div
 						style={{
 							paddingBottom: "40px",
 							marginBottom: "20px",
 							borderBottom: "1px solid var(--vscode-input-border)",
 						}}>
-						<div style={{ display: "flex", gap: "8px" }}>
+						{/* <div style={{ display: "flex", gap: "8px" }}>
 							<VSCodeButton
 								appearance="primary"
 								onClick={() => {
@@ -887,7 +887,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								data-testid="copy-prompt-button">
 								<span className="codicon codicon-copy"></span>
 							</VSCodeButton>
-						</div>
+						</div> */}
 					</div>
 				)}
 

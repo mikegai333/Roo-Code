@@ -10,6 +10,8 @@ const getFileContext = (fileContextEnabled: boolean, context: string, language: 
 	return { heading: header ?? "", fileContext }
 }
 
+
+
 export const getFimPromptTemplateLLama = ({
 	context,
 	header,
@@ -34,7 +36,7 @@ export const getDefaultFimPromptTemplate = ({
 	return `<PRE> ${fileContext}\n${heading}${prefix} <SUF> ${suffix} <MID>`
 }
 
-export const getFimPromptTemplateDeepseek = ({
+export const getFimPromptTemplateDeepseek = async ({
 	context,
 	header,
 	fileContextEnabled,
@@ -43,6 +45,15 @@ export const getFimPromptTemplateDeepseek = ({
 }: FimPromptTemplate) => {
 	const { prefix, suffix } = prefixSuffix
 	const { fileContext, heading } = getFileContext(fileContextEnabled, context, language, header)
+	// const [snippetPayload, workspaceDirs] = await Promise.all([
+    //     getAllSnippets({
+    //       helper,
+    //       ide: this.ide,
+    //       getDefinitionsFromLsp: this.getDefinitionsFromLsp,
+    //       contextRetrievalService: this.contextRetrievalService,
+    //     }),
+    //     this.ide.getWorkspaceDirs(),
+    //   ]);
 	return `<｜fim▁begin｜>${fileContext}\n${heading}${prefix}<｜fim▁hole｜>${suffix}<｜fim▁end｜>`
 }
 

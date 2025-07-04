@@ -57,7 +57,12 @@ import { TwinnyProvider } from "../provider-manager"
 import { getNodeAtPosition, getParser } from "../parser-utils"
 import { telemetry } from "../../common/constants"
 import { v4 as uuidv4 } from "uuid"
-import { getConfig } from "../../lint"
+import { VsCodeIde } from "../util/VsCodeIde"
+import { getAllSnippets } from "../snippets"
+import { HelperVars } from "../util/HelperVars"
+import { ContextRetrievalService } from "../snippets/ContextRetrievalService"
+import { TabAutocompleteOptions } from "../util"
+import { renderPrompt } from "../snippets/template"
 
 export class CompletionProvider implements InlineCompletionItemProvider {
 	private _config = workspace.getConfiguration("aixcoding.main.config")
@@ -98,12 +103,14 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	private _isAborted = false
 	private _globalState
 	private _secretState
+	private contextRetrievalService: ContextRetrievalService;
 
 	constructor(
 		statusBar: StatusBarItem,
 		fileInteractionCache: FileInteractionCache,
 		templateProvider: TemplateProvider,
 		extentionContext: ExtensionContext,
+		private ide: VsCodeIde
 	) {
 		this._extensionContext = extentionContext
 		this._abortController = null
@@ -117,6 +124,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._globalState = extentionContext.globalState
 		this._secretState = extentionContext.secrets
 		this._autoSuggestEnabled = extentionContext.globalState.get("enableCompletion", false)
+		this.contextRetrievalService = new ContextRetrievalService(this.ide)
 	}
 
 	public async provideInlineCompletionItems(
@@ -126,7 +134,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	): Promise<InlineCompletionItem[] | InlineCompletionList | null | undefined> {
 		this._isAborted = false
 		const editor = window.activeTextEditor
-
+		
 		const isLastCompletionAccepted = this._acceptedLastCompletion && !this.enableSubsequentCompletions
 
 		this._prefixSuffix = getPrefixSuffix(this._numLineContext, document, position)
@@ -267,7 +275,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			}
 
 			if (
-				!this._multilineCompletionsEnabled &&
+				!(this._globalState.get('completionMode')==='1') &&
 				this._chunkCount >= MIN_COMPLETION_CHUNKS &&
 				LINE_BREAK_REGEX.test(this._completion.trimStart())
 			) {
@@ -285,7 +293,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 			const isMultilineCompletionRequired =
 				!this._isMultilineCompletion &&
-				this._multilineCompletionsEnabled &&
+				!(this._globalState.get('completionMode')==='1') &&
 				this._chunkCount >= MIN_COMPLETION_CHUNKS &&
 				LINE_BREAK_REGEX.test(this._completion.trimStart())
 			if (isMultilineCompletionRequired) {
@@ -435,31 +443,56 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 		const documentLanguage = this._document.languageId
 		const fileInteractionContext = await this.getFileInteractionContext()
-
-		if (provider.fimTemplate === FIM_TEMPLATE_FORMAT.custom) {
-			const systemMessage = await this._templateProvider.readSystemMessageTemplate("fim-system.hbs")
-
-			const fimTemplate = await this._templateProvider.renderTemplate<FimTemplateData>("fim", {
-				prefix: prefixSuffix.prefix,
-				suffix: prefixSuffix.suffix,
-				systemMessage,
-				context: fileInteractionContext,
-				fileName: this._document.uri.fsPath,
-			})
-
-			if (fimTemplate) {
-				this._usingFimTemplate = true
-				return fimTemplate
+		if(!this._document || this._document?.isUntitled) {
+			if (provider.fimTemplate === FIM_TEMPLATE_FORMAT.custom) {
+				const systemMessage = await this._templateProvider.readSystemMessageTemplate("fim-system.hbs")
+	
+				const fimTemplate = await this._templateProvider.renderTemplate<FimTemplateData>("fim", {
+					prefix: prefixSuffix.prefix,
+					suffix: prefixSuffix.suffix,
+					systemMessage,
+					context: fileInteractionContext,
+					fileName: this._document.uri.fsPath,
+				})
+	
+				if (fimTemplate) {
+					this._usingFimTemplate = true
+					return fimTemplate
+				}
 			}
+			const prompt = getFimPrompt(provider.modelName, provider.fimTemplate || FIM_TEMPLATE_FORMAT.automatic, {
+				context: fileInteractionContext || "",
+				prefixSuffix,
+				header: this.getPromptHeader(documentLanguage, this._document.uri),
+				fileContextEnabled: this._fileContextEnabled,
+				language: documentLanguage,
+			})
+			return prompt
+		} else {
+			const option: TabAutocompleteOptions = {maxPromptTokens: 8000}
+			const helper = await HelperVars.create(
+				prefixSuffix,
+				this._document,
+				this.ide,
+				option,
+				provider.modelName
+			  );
+			const [snippetPayload, workspaceDirs] = await Promise.all([
+				getAllSnippets({
+				  helper,
+				  ide: this.ide,
+				//   getDefinitionsFromLsp: this.getDefinitionsFromLsp,
+				  contextRetrievalService: this.contextRetrievalService,
+				}),
+				this.ide.getWorkspaceDirs(),
+			  ]);
+			  const { prompt, prefix, suffix, completionOptions } = renderPrompt({
+				snippetPayload,
+				workspaceDirs,
+				helper,
+			  });
+			  return prompt
 		}
-
-		return getFimPrompt(provider.modelName, provider.fimTemplate || FIM_TEMPLATE_FORMAT.automatic, {
-			context: fileInteractionContext || "",
-			prefixSuffix,
-			header: this.getPromptHeader(documentLanguage, this._document.uri),
-			fileContextEnabled: this._fileContextEnabled,
-			language: documentLanguage,
-		})
 	}
 
 	private getProvider = () => {

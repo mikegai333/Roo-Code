@@ -57,12 +57,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			listApiConfigMeta,
 			customModes,
 			templateList,
-			newVersion,
 		} = useExtensionState()
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		useEffect(() => {
 			vscode.postMessage({ type: "getTemplateList" })
 		}, [])
+
 		const [showDropdown, setShowDropdown] = useState(false)
 		// Close dropdown when clicking outside
 		useEffect(() => {
@@ -397,12 +397,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				const newCursorPosition = e.target.selectionStart
 				setInputValue(newValue)
 				setCursorPosition(newCursorPosition)
-				let showMenu = false
-				if (!newVersion && newValue.startsWith("/")) {
-					showMenu = false
-				} else {
-					showMenu = shouldShowContextMenu(newValue, newCursorPosition)
-				}
+				let showMenu = shouldShowContextMenu(newValue, newCursorPosition)
 				setShowContextMenu(showMenu)
 				if (showMenu) {
 					if (newValue.startsWith("/")) {
@@ -432,7 +427,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setSelectedMenuIndex(-1)
 				}
 			},
-			[setInputValue, newVersion],
+			[setInputValue],
 		)
 
 		useEffect(() => {
@@ -592,22 +587,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			pointerEvents: "none" as const,
 			opacity: textAreaDisabled ? 0.5 : 0.8,
 		}
-
-		const [deepseek, setDeepseek] = useState(false)
-		const changeDeepseek = useCallback((val: boolean) => {
-			setDeepseek(val)
-			if (val) {
-				vscode.postMessage({
-					type: "loadApiConfiguration",
-					text: "deepseek-r1",
-				})
-			} else {
-				vscode.postMessage({
-					type: "loadApiConfiguration",
-					text: "qwen",
-				})
-			}
-		}, [])
 
 		return (
 			<div
@@ -804,28 +783,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						marginTop: "auto",
 						paddingTop: "2px",
 					}}>
-					{!newVersion && (
-						<div
-							style={{
-								border: "1px solid rgba(85, 193, 255, .8)",
-								background: deepseek ? "rgba(85, 193, 255, .3)" : "",
-								cursor: "pointer",
-								display: "flex",
-								padding: "3px",
-							}}
-							onClick={() => changeDeepseek(!deepseek)}>
-							<span
-								className="codicon codicon-check"
-								style={
-									{
-										// color: "var(--vscode-input-foreground)",
-									}
-								}
-							/>
-							深度思考
-						</div>
-					)}
-					{newVersion && (
+					{(
 						<div
 							style={{
 								display: "flex",

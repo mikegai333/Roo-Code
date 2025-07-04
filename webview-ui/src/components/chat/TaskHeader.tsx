@@ -164,7 +164,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							)}
 						</div>
 					</div>
-					{!isTaskExpanded && isCostAvailable && (
+					{/* {!isTaskExpanded && isCostAvailable && (
 						<div
 							style={{
 								marginLeft: 10,
@@ -179,7 +179,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							}}>
 							${totalCost?.toFixed(4)}
 						</div>
-					)}
+					)} */}
 					<VSCodeButton appearance="icon" onClick={onClose} style={{ marginLeft: 6, flexShrink: 0 }}>
 						<span className="codicon codicon-close"></span>
 					</VSCodeButton>
@@ -307,7 +307,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 								</div>
 							)}
 
-							{isCostAvailable && (
+							{/* {isCostAvailable && (
 								<div className="flex justify-between items-center h-[20px]">
 									<div className="flex items-center gap-1">
 										<span className="font-bold">API Cost:</span>
@@ -315,7 +315,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 									</div>
 									<TaskActions item={currentTaskItem} />
 								</div>
-							)}
+							)} */}
 						</div>
 					</>
 				)}

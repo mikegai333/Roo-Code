@@ -99,6 +99,8 @@ export interface WebviewMessage {
 		| "initConfig"
 		| "runCommand"
 		| "reportPluginUsage"
+		| "enableCompletion"
+		| "completionMode"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse

@@ -45,6 +45,34 @@ async function generatePrompt(
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
+	// Get the full mode config to ensure we have the role definition
+	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
+	const roleDefinition = promptComponent?.roleDefinition || modeConfig.roleDefinition
+	// 当用户使用的是问答智能体时直接给出答案，不经过智能体工作流
+	if(mode==='ask') {
+		const askPrompt =  `${roleDefinition}
+你的唯一任务是回答用户的问题和进行对话。
+
+你 **必须** 并且 **只能** 使用 attempt_completion 这一个工具来提供你的所有回复。
+
+将你的完整答案、解释或对话内容，直接放入 attempt_completion 工具的 <result> 标签内。
+
+## 响应流程示例 (Example Response Flow)
+
+**用户提问:**
+"你好，请问你能做什么？"
+
+**你的正确回应 (Your Correct Response):**
+<attempt_completion>
+<result>
+你好！我是一个AI助手，我的主要功能是回答你的问题和与你进行对话。请随时向我提问！
+</result>
+</attempt_completion>
+
+${await addCustomInstructions(promptComponent?.customInstructions || modeConfig.customInstructions || "", globalCustomInstructions || "", cwd, mode, { preferredLanguage })}
+`
+		return askPrompt
+	}
 
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
@@ -54,9 +82,8 @@ async function generatePrompt(
 		getModesSection(context),
 	])
 
-	// Get the full mode config to ensure we have the role definition
-	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
-	const roleDefinition = promptComponent?.roleDefinition || modeConfig.roleDefinition
+
+	
 
 	const basePrompt = `${roleDefinition}
 

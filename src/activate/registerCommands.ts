@@ -12,6 +12,13 @@ export type RegisterCommandOptions = {
 export const registerCommands = (options: RegisterCommandOptions) => {
 	const { context, outputChannel } = options
 
+	try {
+    	registerCopyBufferService(context);
+	} catch (e: any) {
+		//Non-critical error, it needs to be intercepted and not prevent the extension from starting
+		console.log("Error registering CopyBufferService: ", e);
+	}
+
 	for (const [command, callback] of Object.entries(getCommandsMap(options))) {
 		context.subscriptions.push(vscode.commands.registerCommand(command, callback))
 	}
@@ -40,6 +47,13 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		},
 		"aixcoding.helpButtonClicked": () => {
 			vscode.env.openExternal(vscode.Uri.parse("http://22.189.54.139"))
+		},
+		"aixcoding.versionSwitchButtonClicked": () => {
+			const provider = ClineProvider.getVisibleInstance()
+			if (provider) {
+				provider.handleVersionSwitch(!context.globalState.get("newVersion"))
+			}
+
 		},
 	}
 }
@@ -84,3 +98,43 @@ const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterComman
 	await delay(100)
 	await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
 }
+
+// 监听编辑器复制事件
+const registerCopyBufferService = (
+	context: vscode.ExtensionContext,
+  ) => {
+	const typeDisposable = vscode.commands.registerCommand(
+	  "editor.action.clipboardCopyAction",
+	  async (arg) => doCopy(typeDisposable),
+	);
+  
+	async function doCopy(typeDisposable: any) {
+	  typeDisposable.dispose(); // must dispose to avoid endless loops
+  
+	  await vscode.commands.executeCommand("editor.action.clipboardCopyAction");
+  
+	  const clipboardText = await vscode.env.clipboard.readText();
+
+	  console.log(clipboardText)
+  
+	//   if (clipboardText) {
+	// 	core.invoke("clipboardCache/add", {
+	// 	  content: clipboardText,
+	// 	});
+	//   }
+  
+	  await context.workspaceState.update("aixcoding.copyBuffer", {
+		text: clipboardText,
+		copiedAt: new Date().toISOString(),
+	  });
+  
+	  // re-register to continue intercepting copy commands
+	  typeDisposable = vscode.commands.registerCommand(
+		"editor.action.clipboardCopyAction",
+		async () => doCopy(typeDisposable),
+	  );
+	  context.subscriptions.push(typeDisposable);
+	}
+  
+	context.subscriptions.push(typeDisposable);
+  };

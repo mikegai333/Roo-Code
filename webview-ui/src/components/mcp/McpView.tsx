@@ -57,22 +57,14 @@ const McpView = ({ onDone }: McpViewProps) => {
 						marginBottom: "10px",
 						marginTop: "5px",
 					}}>
-					{" "}
-					{/* <VSCodeLink href="https://github.com/modelcontextprotocol" style={{ display: "inline" }}> */}
-					模型上下文协议
-					{/* </VSCodeLink>{" "} */}
-					可以与本地运行的 MCP 服务器进行通信，提供额外的工具和资源来扩展 AIxCoding 的功能。你可以使用{" "}
-					{/* <VSCodeLink href="https://github.com/modelcontextprotocol/servers" style={{ display: "inline" }}> */}
-					社区制作的服务器
-					{/* </VSCodeLink>{" "} */}
-					或者让 AIxCoding 为你的工作流程创建新的工具（例如："添加一个获取最新 npm 文档的工具"）。
+					Model Context Protocol 支持与本地MCP服务通信，提供扩展功能。
 				</div>
 
 				<McpEnabledToggle />
 
 				{mcpEnabled && (
 					<>
-						<div style={{ marginBottom: 15 }}>
+						{/* <div style={{ marginBottom: 15 }}>
 							<VSCodeCheckbox
 								checked={enableMcpServerCreation}
 								onChange={(e: any) => {
@@ -88,9 +80,9 @@ const McpView = ({ onDone }: McpViewProps) => {
 									color: "var(--vscode-descriptionForeground)",
 								}}>
 								启用后，AIxCoding 可以通过类似"添加新工具到..."的命令帮助你创建新的 MCP
-								服务器。如果你不需要创建 MCP 服务器，可以禁用此功能以减少 Roo 的令牌使用量。
+								服务器。如果你不需要创建 MCP 服务器，可以禁用此功能以减少Token使用量。
 							</p>
-						</div>
+						</div> */}
 
 						{/* Server List */}
 						{servers.length > 0 && (

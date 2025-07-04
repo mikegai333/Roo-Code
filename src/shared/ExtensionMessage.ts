@@ -52,6 +52,7 @@ export interface ExtensionMessage {
 		| "templateList"
 		| "getTemplateList"
 		| "newVersion"
+		| "completionMode"
 	text?: string
 	action?:
 		| "chatButtonClicked"
@@ -139,7 +140,8 @@ export interface ExtensionState {
 	reportApi: string
 	baseApi: string
 	templateList: any
-	newVersion: boolean
+	newVersion: boolean,
+	completionMode: string
 }
 
 export interface ClineMessage {

@@ -145,7 +145,7 @@ export class Cline {
 		this.fuzzyMatchThreshold = fuzzyMatchThreshold ?? 1.0
 		this.providerRef = new WeakRef(provider)
 		this.diffViewProvider = new DiffViewProvider(cwd)
-		this.checkpointsEnabled = enableCheckpoints ?? false
+		this.checkpointsEnabled = false
 
 		if (historyItem) {
 			this.taskId = historyItem.id
@@ -2787,6 +2787,7 @@ export class Cline {
 		const [parsedUserContent, environmentDetails] = await this.loadContext(userContent, includeFileDetails)
 		userContent = parsedUserContent
 		// add environment details as its own text block, separate from tool results
+		// TODO: 在问答智能体中去掉环境信息
 		userContent.push({ type: "text", text: environmentDetails })
 
 		await this.addToApiConversationHistory({ role: "user", content: userContent })

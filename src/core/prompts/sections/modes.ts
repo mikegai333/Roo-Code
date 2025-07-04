@@ -6,7 +6,7 @@ import { modes, ModeConfig } from "../../../shared/modes"
 export async function getModesSection(context: vscode.ExtensionContext): Promise<string> {
 	const settingsDir = path.join(context.globalStorageUri.fsPath, "settings")
 	await fs.mkdir(settingsDir, { recursive: true })
-	const customModesPath = path.join(settingsDir, "cline_custom_modes.json")
+	const customModesPath = path.join(settingsDir, "aixcoding_custom_modes.json")
 
 	return `====
 

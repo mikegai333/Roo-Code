@@ -56,8 +56,6 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		setMode,
 		autoApprovalEnabled,
 		alwaysAllowModeSwitch,
-		newVersion,
-		setNewVersion,
 	} = useExtensionState()
 
 	//const task = messages.length > 0 ? (messages[0].say === "task" ? messages[0] : undefined) : undefined) : undefined
@@ -882,11 +880,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	const placeholderText = useMemo(() => {
 		const baseText = "" //task ? "输入消息..." : "输入你的任务..."
-		const contextText = `(@ 添加上下文, ${newVersion ? "/ 切换模式," : ""} # 加载模板`
+		const contextText = `(@ 添加上下文, / 切换模式, # 加载模板`
 		const imageText = shouldDisableImages ? "" : ", 按住 Shift 拖入图片"
 		const helpText = imageText ? `${contextText}${imageText})` : `${contextText})`
 		return baseText + helpText
-	}, [shouldDisableImages, newVersion])
+	}, [shouldDisableImages])
 
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage | ClineMessage[]) => {
@@ -966,17 +964,6 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		writeDelayMs,
 		isWriteToolAction,
 	])
-	const saveNewVersion = useCallback(
-		(val: boolean) => {
-			setNewVersion(val)
-			vscode.postMessage({ type: "newVersion", bool: val })
-			vscode.postMessage({
-				type: "mode",
-				text: val ? "code" : "ask",
-			})
-		},
-		[setNewVersion],
-	)
 	const runCommand = (val: string) => {
 		vscode.postMessage({ type: "runCommand", text: val })
 	}
@@ -1026,10 +1013,6 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 								flexWrap: "wrap",
 							}}>
 							<h2>欢迎！我是AIxCoding！</h2>
-							<VSCodeButton onClick={() => saveNewVersion(!newVersion)}>
-								{newVersion ? "返回旧版" : "体验新版"}
-								{!newVersion && <span slot="start" className="codicon codicon-sparkle"></span>}
-							</VSCodeButton>
 						</div>
 						<p>
 							作为您的智能研发助手，我能快速高效地帮您完成代码补全、代码解释、单测生成等任务，同时还可以提供代码优化建议、流程图生成、问题排查支持等功能。
@@ -1037,7 +1020,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 							您可以在设置中切换模型和调整参数，欢迎访问我们的官网获取更多帮助和资源。
 						</p>
 					</div>
-					{taskHistory.length > 0 && newVersion && <HistoryPreview showHistoryView={showHistoryView} />}
+					{taskHistory.length > 0 && <HistoryPreview showHistoryView={showHistoryView} />}
 				</div>
 			)}
 
@@ -1056,7 +1039,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			//    This ensures it takes its natural height when there's space
 			//    but becomes scrollable when the viewport is too small
 			*/}
-			{!task && newVersion && (
+			{!task && (
 				<AutoApproveMenu
 					style={{
 						marginBottom: -2,
@@ -1167,10 +1150,10 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 						scrollToBottomAuto()
 					}
 				}}
-				mode={newVersion ? mode : "ask"}
+				mode={mode}
 				setMode={setMode}
 			/>
-			{!newVersion && (
+			{(mode === "ask") && (
 				<div
 					style={{
 						display: "grid",

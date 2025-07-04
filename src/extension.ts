@@ -20,6 +20,7 @@ import { getLineBreakCount } from "./webview/utils"
 import path from "path"
 import { delayExecution } from "./extension/utils"
 import { initializeConfiguration } from "./api/aixcoding"
+import { VsCodeIde } from "./extension/util/VsCodeIde"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -36,7 +37,7 @@ let extensionContext: vscode.ExtensionContext
 // Your extension is activated the very first time the command is executed.
 export function activate(context: vscode.ExtensionContext) {
 	initializeConfiguration(context)
-	vscode.commands.executeCommand("setContext", "newVersion", context.globalState.get("newVersion"))
+	vscode.commands.executeCommand("setContext", "newVersion", context.globalState.get("mode") !== 'ask')
 	extensionContext = context
 	outputChannel = vscode.window.createOutputChannel("AIxCoding")
 	context.subscriptions.push(outputChannel)
@@ -105,7 +106,14 @@ export function activate(context: vscode.ExtensionContext) {
 	const templateDir = path.join(os.homedir(), ".aixcoding/templates") as string
 	const templateProvider = new TemplateProvider(templateDir)
 	const fileInteractionCache = new FileInteractionCache()
-	const completionProvider = new CompletionProvider(statusBar, fileInteractionCache, templateProvider, context)
+	const ide = new VsCodeIde(context)
+	vscode.workspace.onDidSaveTextDocument(async (event) => {
+		ide.updateLastFileSaveTimestamp();
+		// this.core.invoke("files/changed", {
+		//   uris: [event.uri.toString()],
+		// });
+	  });
+	const completionProvider = new CompletionProvider(statusBar, fileInteractionCache, templateProvider, context, ide)
 	templateProvider.init()
 	statusBar.text = "AIxCoding"
 	statusBar.command = "aixcoding.toggleCompletion"

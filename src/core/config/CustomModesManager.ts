@@ -45,7 +45,7 @@ export class CustomModesManager {
 
 	async getCustomModesFilePath(): Promise<string> {
 		const settingsDir = await this.ensureSettingsDirectoryExists()
-		const filePath = path.join(settingsDir, "cline_custom_modes.json")
+		const filePath = path.join(settingsDir, "aixcoding_custom_modes.json")
 		const fileExists = await fileExistsAtPath(filePath)
 		if (!fileExists) {
 			await this.queueWrite(async () => {
@@ -62,7 +62,7 @@ export class CustomModesManager {
 				if (arePathsEqual(document.uri.fsPath, settingsPath)) {
 					const content = await fs.readFile(settingsPath, "utf-8")
 					const errorMessage =
-						"Invalid custom modes format. Please ensure your settings follow the correct JSON format."
+						"自定义模式格式无效。请确保您的设置遵循正确的 JSON 格式以及包含完整的模式信息。"
 					let config: any
 					try {
 						config = JSON.parse(content)

@@ -1,4 +1,4 @@
-import { VSCodeButton, VSCodeCheckbox, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeCheckbox, VSCodeLink, VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useState } from "react"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { validateApiConfiguration, validateModelId } from "../../utils/validate"
@@ -67,9 +67,10 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 		setExperimentEnabled,
 		alwaysAllowModeSwitch,
 		setAlwaysAllowModeSwitch,
-
-		// enableCompletion,
-		// setEnableCompletion,
+		enableCompletion,
+		setEnableCompletion,
+		completionMode,
+		setCompletionMode
 	} = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [modelIdErrorMessage, setModelIdErrorMessage] = useState<string | undefined>(undefined)
@@ -127,6 +128,8 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 			vscode.postMessage({ type: "soundEnabled", bool: soundEnabled })
 			vscode.postMessage({ type: "reportApi", text: reportApi } as any)
 			vscode.postMessage({ type: "baseApi", text: baseApi } as any)
+			vscode.postMessage({ type: "enableCompletion", text: enableCompletion } as any)
+			vscode.postMessage({ type: "completionMode", text: completionMode } as any)
 			onDone()
 		}
 	}
@@ -250,6 +253,26 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 						</VSCodeTextField>
 					</div>
 				</div>
+
+				<div style={{ marginBottom: 40 }}>
+					<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 15px 0" }}>代码补全设置</h3>
+					{/* <div style={{ marginBottom: 15 }}>
+						<VSCodeCheckbox
+							checked={enableCompletion}
+							onChange={(e: any) => setEnableCompletion(e.target.checked)}>
+							<span style={{ fontWeight: "500" }}>是否启用自动补全</span>
+						</VSCodeCheckbox>
+					</div> */}
+					<div style={{ marginBottom: 15 }}>
+						<VSCodeDropdown
+							value={completionMode}
+							onChange={(e: any) => setCompletionMode(e.detail?.target?.value || e.target?.value)}
+							style={{ width: "100%" }}>
+								<VSCodeOption key="0" value="0">行补全</VSCodeOption>
+								<VSCodeOption key="1" value="1">块补全</VSCodeOption>
+						</VSCodeDropdown>
+					</div>
+				</div>
 				<div style={{ marginBottom: 40 }}>
 					<h3 style={{ color: "var(--vscode-foreground)", margin: "0 0 15px 0" }}>代码扫描设置</h3>
 					<div style={{ marginBottom: 15 }}>
@@ -331,7 +354,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 						)}
 					</div>
 
-					<div style={{ marginBottom: 15 }}>
+					{/* <div style={{ marginBottom: 15 }}>
 						<VSCodeCheckbox
 							checked={alwaysAllowBrowser}
 							onChange={(e: any) => setAlwaysAllowBrowser(e.target.checked)}>
@@ -342,7 +365,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							<br />
 							注意：仅当模型支持计算机使用时才适用
 						</p>
-					</div>
+					</div> */}
 
 					<div style={{ marginBottom: 15 }}>
 						<VSCodeCheckbox

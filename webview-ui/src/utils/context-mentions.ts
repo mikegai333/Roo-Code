@@ -195,7 +195,7 @@ export function getContextMenuOptions(
 
 		return [
 			{ type: ContextMenuOptionType.Problems },
-			{ type: ContextMenuOptionType.URL },
+			// { type: ContextMenuOptionType.URL },
 			{ type: ContextMenuOptionType.Folder },
 			{ type: ContextMenuOptionType.File },
 			{ type: ContextMenuOptionType.Git },
