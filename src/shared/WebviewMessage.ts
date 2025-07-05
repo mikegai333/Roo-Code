@@ -124,6 +124,7 @@ export interface WebviewMessage {
 	timeout?: number
 	payload?: WebViewMessagePayload
 	initConfig?: any
+	args?: any[]
 }
 
 export const checkoutDiffPayloadSchema = z.object({

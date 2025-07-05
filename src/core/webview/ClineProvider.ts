@@ -171,7 +171,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		this.customModesManager = new CustomModesManager(this.context, async () => {
 			await this.postStateToWebview()
 		})
-
+		if (this.context.globalState.get("openAiApiKey")) {
+			this.loadConfig()
+		}
 		// Initialize MCP Hub through the singleton manager
 		McpServerManager.getInstance(this.context, this)
 			.then((hub) => {
@@ -1606,7 +1608,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	 * @param newMode The mode to switch to
 	 */
 	public async handleModeSwitch(newMode: Mode) {
-		vscode.commands.executeCommand("setContext", "newVersion", newMode!=='ask' )
+		vscode.commands.executeCommand("setContext", "newVersion", newMode !== "ask")
 		await this.updateGlobalState("mode", newMode)
 
 		// Load the saved API config for the new mode if it exists
@@ -1643,24 +1645,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	// 处理新旧版本切换
 	public async handleVersionSwitch(newVersion: boolean) {
 		await this.updateGlobalState("newVersion", newVersion)
-		this.postStateToWebview() 
+		this.postStateToWebview()
 		vscode.commands.executeCommand("setContext", "newVersion", newVersion)
-		const mode = newVersion ? 'code' : 'ask'
+		const mode = newVersion ? "code" : "ask"
 		this.handleModeSwitch(mode as Mode)
 	}
-	// 初始化AIxCoding配置
-	private async initConfig(config: any) {
-		const { apiKey, baseApi, reportApi } = config
-		// {
-		// 	apiKey: "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",
-		// 	baseApi: "https://openrouter.ai",
-		// 	reportApi: "https://openrouter.ai",
-		// }
-		await this.updateGlobalState("baseApi", baseApi)
-		await this.updateGlobalState("reportApi", reportApi)
-		await this.updateGlobalState("baseApi", baseApi)
-		await this.storeSecret("openAiApiKey", apiKey)
-		await this.updateGlobalState("openAiApiKey", apiKey)
+
+	// 加载配置文件
+	private async loadConfig() {
+		const baseApi = this.context.globalState.get("baseApi") as string
+		const apiKey = this.context.globalState.get("openAiApiKey") as string
 		const openAiBaseUrl = `${baseApi}/api/v1`
 		const defaultConfig: ApiConfigData = {
 			currentApiConfigName: "qwen",
@@ -1681,13 +1675,19 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					// openAiModelId: "qwen/qwq-32b",
 					id: "nwmcw0x6wcq",
 				},
+				qwenvl: {
+					apiProvider: "openai",
+					openAiBaseUrl: openAiBaseUrl,
+					openAiApiKey: apiKey,
+					openAiModelId: "qwenvl",
+					// openAiModelId: "qwen/qwq-32b",
+					id: "nwmcw0x6wc0",
+				},
 			},
 			modeApiConfigs: {
 				code: "nwmcw0x6wcq",
 			},
 		}
-		// await this.configManager.saveConfig('deepseek-r1', {...apiConfig, openAiModelId: "deepseek-r1-chat-v1.0"})
-		// await this.configManager.saveConfig('qwen', {...apiConfig, openAiModelId: "qwencoder-model-chat-v1.0"})
 		await this.configManager.writeConfig(defaultConfig)
 		await this.handleModeSwitch("ask" as Mode)
 		const listApiConfig = await this.configManager.listConfig()
@@ -1699,17 +1699,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		])
 
 		await this.postStateToWebview()
-
-		// await this.configManager.loadConfig("qwen")
-		// const { mode } = await this.getState()
-		// if (mode) {
-		// 	const currentApiConfigName = await this.getGlobalState("currentApiConfigName")
-		// 	const listApiConfig = await this.configManager.listConfig()
-		// 	const config = listApiConfig?.find((c) => c.name === currentApiConfigName)
-		// 	if (config?.id) {
-		// 		await this.configManager.setModeConfig(mode, config.id)
-		// 	}
-		// }
+	}
+	// 初始化AIxCoding配置
+	private async initConfig(config: any) {
+		const { apiKey, baseApi, reportApi } = config
+		await this.updateGlobalState("baseApi", baseApi)
+		await this.updateGlobalState("reportApi", reportApi)
+		await this.updateGlobalState("baseApi", baseApi)
+		await this.storeSecret("openAiApiKey", apiKey)
+		await this.updateGlobalState("openAiApiKey", apiKey)
+		this.loadConfig()
 	}
 
 	private async updateApiConfiguration(apiConfiguration: ApiConfiguration) {
@@ -2571,7 +2570,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			templateList: templateList ?? [],
 			newVersion: newVersion ?? true,
 			completionMode: completionMode ?? "0",
-
 		}
 	}
 
@@ -2711,7 +2709,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			baseApi,
 			newVersion,
 			enableCompletion,
-			completionMode
+			completionMode,
 		] = await Promise.all([
 			this.getGlobalState("apiProvider") as Promise<ApiProvider | undefined>,
 			this.getGlobalState("apiModelId") as Promise<string | undefined>,
@@ -2881,35 +2879,34 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			writeDelayMs: writeDelayMs ?? 1000,
 			terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
 			mode: mode ?? defaultModeSlug,
-			preferredLanguage:
-				preferredLanguage ??  "Simplified Chinese",
-				// (() => {
-				// 	// Get VSCode's locale setting
-				// 	const vscodeLang = vscode.env.language
-				// 	// Map VSCode locale to our supported languages
-				// 	const langMap: { [key: string]: string } = {
-				// 		en: "English",
-				// 		ar: "Arabic",
-				// 		"pt-br": "Brazilian Portuguese",
-				// 		cs: "Czech",
-				// 		fr: "French",
-				// 		de: "German",
-				// 		hi: "Hindi",
-				// 		hu: "Hungarian",
-				// 		it: "Italian",
-				// 		ja: "Japanese",
-				// 		ko: "Korean",
-				// 		pl: "Polish",
-				// 		pt: "Portuguese",
-				// 		ru: "Russian",
-				// 		"zh-cn": "Simplified Chinese",
-				// 		es: "Spanish",
-				// 		"zh-tw": "Traditional Chinese",
-				// 		tr: "Turkish",
-				// 	}
-				// 	// Return mapped language or default to English
-				// 	return langMap[vscodeLang.split("-")[0]] ?? "Simplified Chinese"
-				// })(),
+			preferredLanguage: preferredLanguage ?? "Simplified Chinese",
+			// (() => {
+			// 	// Get VSCode's locale setting
+			// 	const vscodeLang = vscode.env.language
+			// 	// Map VSCode locale to our supported languages
+			// 	const langMap: { [key: string]: string } = {
+			// 		en: "English",
+			// 		ar: "Arabic",
+			// 		"pt-br": "Brazilian Portuguese",
+			// 		cs: "Czech",
+			// 		fr: "French",
+			// 		de: "German",
+			// 		hi: "Hindi",
+			// 		hu: "Hungarian",
+			// 		it: "Italian",
+			// 		ja: "Japanese",
+			// 		ko: "Korean",
+			// 		pl: "Polish",
+			// 		pt: "Portuguese",
+			// 		ru: "Russian",
+			// 		"zh-cn": "Simplified Chinese",
+			// 		es: "Spanish",
+			// 		"zh-tw": "Traditional Chinese",
+			// 		tr: "Turkish",
+			// 	}
+			// 	// Return mapped language or default to English
+			// 	return langMap[vscodeLang.split("-")[0]] ?? "Simplified Chinese"
+			// })(),
 			mcpEnabled: mcpEnabled ?? true,
 			enableMcpServerCreation: enableMcpServerCreation ?? true,
 			alwaysApproveResubmit: alwaysApproveResubmit ?? false,
@@ -2929,7 +2926,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			enableCompletion: false,
 			templateList: [],
 			newVersion,
-			completionMode
+			completionMode,
 		}
 	}
 

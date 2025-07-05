@@ -1133,7 +1133,11 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					)}
 				</>
 			)}
-
+			{!task && (
+				<span style={{ marginInline: "1rem", marginTop: "10px", fontSize: "12px" }}>
+					现已支持智能问答、编码智能体、架构智能体
+				</span>
+			)}
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}
@@ -1153,7 +1157,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				mode={mode}
 				setMode={setMode}
 			/>
-			{(mode === "ask") && (
+			{mode === "ask" && (
 				<div
 					style={{
 						display: "grid",

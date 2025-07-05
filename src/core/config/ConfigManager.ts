@@ -29,6 +29,14 @@ export class ConfigManager {
 				openAiModelId: "qwencoder-model-chat-v1.0",
 				id: "nwmcw0x6wcq",
 			},
+			qwenvl: {
+				apiProvider: "openai",
+				openAiBaseUrl: "",
+				openAiApiKey: "apiKey",
+				openAiModelId: "qwenvl",
+				// openAiModelId: "qwen/qwq-32b",
+				id: "nwmcw0x6wc0",
+			},
 		},
 		modeApiConfigs: {
 			code: "nwmcw0x6wcq",

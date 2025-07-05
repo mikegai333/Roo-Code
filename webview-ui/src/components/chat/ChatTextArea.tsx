@@ -50,14 +50,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		},
 		ref,
 	) => {
-		const {
-			filePaths,
-			openedTabs,
-			currentApiConfigName,
-			listApiConfigMeta,
-			customModes,
-			templateList,
-		} = useExtensionState()
+		const { filePaths, openedTabs, currentApiConfigName, listApiConfigMeta, customModes, templateList } =
+			useExtensionState()
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		useEffect(() => {
 			vscode.postMessage({ type: "getTemplateList" })
@@ -702,6 +696,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							zIndex: 1,
 						}}
 					/>
+
 					<DynamicTextArea
 						ref={(el) => {
 							if (typeof ref === "function") {
@@ -783,7 +778,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						marginTop: "auto",
 						paddingTop: "2px",
 					}}>
-					{(
+					{
 						<div
 							style={{
 								display: "flex",
@@ -887,7 +882,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</div>
 							</div>
 						</div>
-					)}
+					}
 
 					<div
 						style={{
