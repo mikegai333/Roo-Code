@@ -1705,7 +1705,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		const { apiKey, baseApi, reportApi } = config
 		await this.updateGlobalState("baseApi", baseApi)
 		await this.updateGlobalState("reportApi", reportApi)
-		await this.updateGlobalState("baseApi", baseApi)
 		await this.storeSecret("openAiApiKey", apiKey)
 		await this.updateGlobalState("openAiApiKey", apiKey)
 		this.loadConfig()
