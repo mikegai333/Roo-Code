@@ -292,7 +292,7 @@ export class Cline {
 		// If this Cline instance was aborted by the provider, then the only thing keeping us alive is a promise still running in the background, in which case we don't want to send its result to the webview as it is attached to a new instance of Cline now. So we can safely ignore the result of any active promises, and this class will be deallocated. (Although we set Cline = undefined in provider, that simply removes the reference to this instance, but the instance is still alive until this promise resolves or rejects.)
 		if (this.abort) {
 			throw new Error("instance aborted")
-		}
+		}z
 		let askTs: number
 		if (partial !== undefined) {
 			const lastMessage = this.clineMessages.at(-1)
