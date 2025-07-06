@@ -460,8 +460,8 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		vscode.postMessage({ type: "selectImages" })
 	}, [])
 
-	const shouldDisableImages = true
-	//!selectedModelInfo.supportsImages || textAreaDisabled || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
+	const shouldDisableImages =
+		!selectedModelInfo.supportsImages || textAreaDisabled || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
 
 	const handleMessage = useCallback(
 		(e: MessageEvent) => {
@@ -965,7 +965,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		isWriteToolAction,
 	])
 	const runCommand = (val: string) => {
-		vscode.postMessage({ type: "runCommand", text: val })
+		vscode.postMessage({ type: "runCommand", values: { command: `${val}InCurrentTask`, userInput: inputValue } })
 	}
 
 	return (

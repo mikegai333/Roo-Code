@@ -51,8 +51,9 @@ const registerCodeAction = (
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(command, async (...args: any[]) => {
-			const newVersion = context.globalState.get("newVersion")
-			if (inputPrompt && newVersion) {
+			if (args.length === 1 && args[0].userInput !== undefined) {
+				userInput = args[0].userInput || ""
+			} else if (inputPrompt) {
 				userInput = await vscode.window.showInputBox({
 					prompt: inputPrompt, // 输入提示
 					placeHolder: inputPlaceholder, // 输入占位符

@@ -632,6 +632,12 @@ export const openAiNativeModels = {
 		inputPrice: 0.15,
 		outputPrice: 0.6,
 	},
+	// "qwenvl": {
+	// 	maxTokens: 16_384,
+	// 	contextWindow: 128_000,
+	// 	supportsImages: true,
+	// 	supportsPromptCache: false,
+	// },
 } as const satisfies Record<string, ModelInfo>
 
 // DeepSeek

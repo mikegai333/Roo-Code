@@ -914,13 +914,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								/>
 							)}
 						</div> */}
-						{/* <span
+						<span
 							className={`input-icon-button ${
 								shouldDisableImages ? "disabled" : ""
 							} codicon codicon-device-camera`}
 							onClick={() => !shouldDisableImages && onSelectImages()}
 							style={{ fontSize: 16.5 }}
-						/> */}
+						/>
 						<span
 							className={`input-icon-button ${textAreaDisabled ? "disabled" : ""} codicon codicon-send`}
 							onClick={() => !textAreaDisabled && onSend()}

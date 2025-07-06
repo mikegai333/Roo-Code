@@ -43,23 +43,23 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 		label: "解释代码",
 		description:
 			"获取代码片段、函数或整个文件的详细解释。有助于理解复杂的代码或学习新的模式。可在代码操作（编辑器中的灯泡图标）和编辑器上下文菜单（右键单击选定的代码）中使用。",
-		template: `请解释文件 @/\${filePath}中的以下代码:
+		template: `请解释文件 @/\${filePath} 中的以下代码
 \${userInput}
 
 \`\`\`
 \${selectedText}
 \`\`\`
 
-Please provide a clear and concise explanation of what this code does, including:
-1. The purpose and functionality
-2. Key components and their interactions
-3. Important patterns or techniques used`,
+请提供清晰简洁的代码用途说明，包括：
+目的和功能
+关键组件及其交互
+使用的重要模式或技术`,
 	},
 	FIX: {
 		label: "修复问题",
 		description:
 			"获取有关识别和解决错误、错误或代码质量问题的帮助。提供修复问题的分步指南。可在代码操作（编辑器中的灯泡图标）和编辑器上下文菜单（右键单击选定的代码）中使用。",
-		template: `Fix any issues in the following code from file path @/\${filePath}
+		template: `修复文件路径 @/\${filePath} 中以下代码中的所有问题
 \${diagnosticText}
 \${userInput}
 
@@ -67,30 +67,30 @@ Please provide a clear and concise explanation of what this code does, including
 \${selectedText}
 \`\`\`
 
-Please:
-1. Address all detected problems listed above (if any)
-2. Identify any other potential bugs or issues
-3. Provide corrected code
-4. Explain what was fixed and why`,
+请：
+1.解决上述列出的所有已检测问题（如果有的话）
+2.识别其他潜在的错误或问题
+3.提供修正后的代码
+4.解释修复了什么以及修复的原因`,
 	},
 	IMPROVE: {
 		label: "改进代码",
 		description:
 			"接收有关代码优化、更佳实践和架构改进的建议，同时保持功能。可在代码操作（编辑器中的灯泡图标）和编辑器上下文菜单（右键单击选定的代码）中使用。",
-		template: `Improve the following code from file path @/\${filePath}:
+		template: `优化文件 @/\${filePath} 中以下代码
 \${userInput}
 
 \`\`\`
 \${selectedText}
 \`\`\`
 
-Please suggest improvements for:
-1. Code readability and maintainability
-2. Performance optimization
-3. Best practices and patterns
-4. Error handling and edge cases
+请提出以下方面的改进建议：
 
-Provide the improved code along with explanations for each enhancement.`,
+1.代码的可读性和可维护性
+2.性能优化
+3.最佳实践和设计模式
+4.错误处理和边界情况
+5.请提供改进后的代码，并对每项改进进行解释。`,
 	},
 	ADD_TO_CONTEXT: {
 		label: "添加到上下文",
@@ -106,7 +106,7 @@ Provide the improved code along with explanations for each enhancement.`,
 		description:
 			"将终端输出添加到您当前的任务或对话中。有助于提供命令输出或日志。可在终端上下文菜单（右键单击选定的终端内容）中使用。",
 		template: `\${userInput}
-Terminal output:
+终端输出:
 \`\`\`
 \${terminalContent}
 \`\`\``,
@@ -115,35 +115,35 @@ Terminal output:
 		label: "修复终端命令",
 		description: "获取有关修复失败或需要改进的终端命令的帮助。可在终端上下文菜单（右键单击选定的终端内容）中使用。",
 		template: `\${userInput}
-Fix this terminal command:
+修复这个终端命令:
 \`\`\`
 \${terminalContent}
 \`\`\`
 
-Please:
-1. Identify any issues in the command
-2. Provide the corrected command
-3. Explain what was fixed and why`,
+请：
+1.识别命令中的任何问题
+2.提供修正后的命令
+3.解释修复了什么以及修复的原因`,
 	},
 	TERMINAL_EXPLAIN: {
 		label: "解释终端命令",
 		description: "获取有关终端命令及其输出的详细解释。可在终端上下文菜单（右键单击选定的终端内容）中使用。",
 		template: `\${userInput}
-Explain this terminal command:
+解释这个终端命令:
 \`\`\`
 \${terminalContent}
 \`\`\`
 
-Please provide:
-1. What the command does
-2. Explanation of each part/flag
-3. Expected output and behavior`,
+请提供：
+1.该命令的功能描述
+2.每个部分或参数的解释
+3.预期的输出和行为`,
 	},
 
 	CHECK: {
 		label: "检查代码",
 		description: "允许您选中代码后，让 AIxCoding 针对此代码查找问题。",
-		template: `检查以下文件 @/\${filePath}中的代码:
+		template: `检查以下文件 @/\${filePath} 中代码存在的问题
 \${userInput}
 
 \`\`\`
@@ -156,7 +156,7 @@ Please provide:
 	COMMENTS: {
 		label: "生成注释",
 		description: "允许您选中代码后，让 AIxCoding 针对此代码添加注释。",
-		template: `请为文件@/\${filePath}中的代码添加注释，代码如下:
+		template: `请为文件@/\${filePath} 中的代码添加注释
 \${userInput}
 
 \`\`\`
@@ -169,7 +169,7 @@ Please provide:
 	TEST: {
 		label: "编写测试",
 		description: "允许您选中代码后，让 AIxCoding 针对此代码提供测试案例。",
-		template: `请为文件 @/\${filePath}中的代码生成测试案例，代码如下:
+		template: `请为文件 @/\${filePath} 中的代码生成测试案例
 \${userInput}
 
 \`\`\`

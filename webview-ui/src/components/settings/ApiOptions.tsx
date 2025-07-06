@@ -134,44 +134,45 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 
 	return (
 		<div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-			{import.meta.env.DEV &&(
-			<div className="dropdown-container">
-				<label htmlFor="api-provider">
-					<span style={{ fontWeight: 500 }}>API 提供者</span>
-				</label>
-				<Dropdown
-					id="api-provider"
-					value={selectedProvider}
-					onChange={(value: unknown) => {
-						handleInputChange(
-							"apiProvider",
-							true,
-						)({
-							target: {
-								value: (value as DropdownOption).value,
-							},
-						})
-					}}
-					style={{ minWidth: 130, position: "relative", zIndex: DROPDOWN_Z_INDEX + 1 }}
-					options={[
-						{ value: "openrouter", label: "OpenRouter" },
-						{ value: "anthropic", label: "Anthropic" },
-						{ value: "gemini", label: "Google Gemini" },
-						{ value: "deepseek", label: "DeepSeek" },
-						{ value: "openai-native", label: "OpenAI" },
-						{ value: "openai", label: "AIxCoding" },
-						{ value: "vertex", label: "GCP Vertex AI" },
-						{ value: "bedrock", label: "AWS Bedrock" },
-						{ value: "glama", label: "Glama" },
-						{ value: "vscode-lm", label: "VS Code LM API" },
-						{ value: "mistral", label: "Mistral" },
-						{ value: "lmstudio", label: "LM Studio" },
-						{ value: "ollama", label: "Ollama" },
-						{ value: "unbound", label: "Unbound" },
-						{ value: "requesty", label: "Requesty" },
-					]}
-				/>
-			</div>)}
+			{import.meta.env.DEV && (
+				<div className="dropdown-container">
+					<label htmlFor="api-provider">
+						<span style={{ fontWeight: 500 }}>API 提供者</span>
+					</label>
+					<Dropdown
+						id="api-provider"
+						value={selectedProvider}
+						onChange={(value: unknown) => {
+							handleInputChange(
+								"apiProvider",
+								true,
+							)({
+								target: {
+									value: (value as DropdownOption).value,
+								},
+							})
+						}}
+						style={{ minWidth: 130, position: "relative", zIndex: DROPDOWN_Z_INDEX + 1 }}
+						options={[
+							{ value: "openrouter", label: "OpenRouter" },
+							{ value: "anthropic", label: "Anthropic" },
+							{ value: "gemini", label: "Google Gemini" },
+							{ value: "deepseek", label: "DeepSeek" },
+							{ value: "openai-native", label: "OpenAI" },
+							{ value: "openai", label: "AIxCoding" },
+							{ value: "vertex", label: "GCP Vertex AI" },
+							{ value: "bedrock", label: "AWS Bedrock" },
+							{ value: "glama", label: "Glama" },
+							{ value: "vscode-lm", label: "VS Code LM API" },
+							{ value: "mistral", label: "Mistral" },
+							{ value: "lmstudio", label: "LM Studio" },
+							{ value: "ollama", label: "Ollama" },
+							{ value: "unbound", label: "Unbound" },
+							{ value: "requesty", label: "Requesty" },
+						]}
+					/>
+				</div>
+			)}
 
 			{selectedProvider === "anthropic" && (
 				<div>
@@ -1435,7 +1436,7 @@ export function getOpenRouterAuthUrl(uriScheme?: string) {
 export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration) {
 	const provider = apiConfiguration?.apiProvider || "anthropic"
 	const modelId = apiConfiguration?.apiModelId
-
+	console.log(66666666, apiConfiguration)
 	const getProviderData = (models: Record<string, ModelInfo>, defaultId: string) => {
 		let selectedModelId: string
 		let selectedModelInfo: ModelInfo

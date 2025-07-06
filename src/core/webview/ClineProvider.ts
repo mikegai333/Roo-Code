@@ -814,7 +814,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.postStateToWebview()
 						break
 					case "runCommand":
-						await vscode.commands.executeCommand(message.text || "")
+						await vscode.commands.executeCommand(message.values?.command, {
+							userInput: message.values?.userInput,
+						})
 						break
 					case "customInstructions":
 						await this.updateCustomInstructions(message.text)
@@ -1682,6 +1684,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					openAiModelId: "qwenvl",
 					// openAiModelId: "qwen/qwq-32b",
 					id: "nwmcw0x6wc0",
+					// openAiCustomModelInfo: {
+					// 	supportsImages: true,
+					// }
 				},
 			},
 			modeApiConfigs: {
