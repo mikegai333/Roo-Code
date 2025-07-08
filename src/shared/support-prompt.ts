@@ -45,11 +45,9 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 			"获取代码片段、函数或整个文件的详细解释。有助于理解复杂的代码或学习新的模式。可在代码操作（编辑器中的灯泡图标）和编辑器上下文菜单（右键单击选定的代码）中使用。",
 		template: `请解释文件 @/\${filePath} 中的以下代码
 \${userInput}
-
 \`\`\`
 \${selectedText}
 \`\`\`
-
 请提供清晰简洁的代码用途说明，包括：
 目的和功能
 关键组件及其交互
@@ -62,11 +60,9 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 		template: `修复文件路径 @/\${filePath} 中以下代码中的所有问题
 \${diagnosticText}
 \${userInput}
-
 \`\`\`
 \${selectedText}
 \`\`\`
-
 请：
 1.解决上述列出的所有已检测问题（如果有的话）
 2.识别其他潜在的错误或问题
@@ -79,13 +75,10 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 			"接收有关代码优化、更佳实践和架构改进的建议，同时保持功能。可在代码操作（编辑器中的灯泡图标）和编辑器上下文菜单（右键单击选定的代码）中使用。",
 		template: `优化文件 @/\${filePath} 中以下代码
 \${userInput}
-
 \`\`\`
 \${selectedText}
 \`\`\`
-
 请提出以下方面的改进建议：
-
 1.代码的可读性和可维护性
 2.性能优化
 3.最佳实践和设计模式
@@ -119,7 +112,6 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 \`\`\`
 \${terminalContent}
 \`\`\`
-
 请：
 1.识别命令中的任何问题
 2.提供修正后的命令
@@ -133,7 +125,6 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 \`\`\`
 \${terminalContent}
 \`\`\`
-
 请提供：
 1.该命令的功能描述
 2.每个部分或参数的解释
@@ -145,11 +136,9 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 		description: "允许您选中代码后，让 AIxCoding 针对此代码查找问题。",
 		template: `检查以下文件 @/\${filePath} 中代码存在的问题
 \${userInput}
-
 \`\`\`
 \${selectedText}
 \`\`\`
-
 对以上代码的风格、缺陷、安全隐患、逻辑进行复查，提供改进意见，并给出改进后的代码：`,
 	},
 
@@ -158,11 +147,9 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 		description: "允许您选中代码后，让 AIxCoding 针对此代码添加注释。",
 		template: `请为文件@/\${filePath} 中的代码添加注释
 \${userInput}
-
 \`\`\`
 \${selectedText}
 \`\`\`
-
 `,
 	},
 
@@ -171,11 +158,9 @@ const supportPromptConfigs: Record<string, SupportPromptConfig> = {
 		description: "允许您选中代码后，让 AIxCoding 针对此代码提供测试案例。",
 		template: `请为文件 @/\${filePath} 中的代码生成测试案例
 \${userInput}
-
 \`\`\`
 \${selectedText}
 \`\`\`
-
 `,
 	},
 } as const

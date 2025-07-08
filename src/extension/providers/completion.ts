@@ -103,14 +103,14 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	private _isAborted = false
 	private _globalState
 	private _secretState
-	private contextRetrievalService: ContextRetrievalService;
+	private contextRetrievalService: ContextRetrievalService
 
 	constructor(
 		statusBar: StatusBarItem,
 		fileInteractionCache: FileInteractionCache,
 		templateProvider: TemplateProvider,
 		extentionContext: ExtensionContext,
-		private ide: VsCodeIde
+		private ide: VsCodeIde,
 	) {
 		this._extensionContext = extentionContext
 		this._abortController = null
@@ -134,7 +134,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	): Promise<InlineCompletionItem[] | InlineCompletionList | null | undefined> {
 		this._isAborted = false
 		const editor = window.activeTextEditor
-		
+
 		const isLastCompletionAccepted = this._acceptedLastCompletion && !this.enableSubsequentCompletions
 
 		this._prefixSuffix = getPrefixSuffix(this._numLineContext, document, position)
@@ -157,6 +157,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			getIsMiddleOfString() ||
 			!triggerCompletion()
 		) {
+			this._acceptedLastCompletion = false
+			this._lastCompletionMultiline = false
 			// this._statusBar.text = "$(check) AI×Coding";
 			return
 		}
@@ -275,7 +277,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			}
 
 			if (
-				!(this._globalState.get('completionMode')==='1') &&
+				!(this._globalState.get("completionMode") === "1") &&
 				this._chunkCount >= MIN_COMPLETION_CHUNKS &&
 				LINE_BREAK_REGEX.test(this._completion.trimStart())
 			) {
@@ -293,7 +295,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 			const isMultilineCompletionRequired =
 				!this._isMultilineCompletion &&
-				!(this._globalState.get('completionMode')==='1') &&
+				!(this._globalState.get("completionMode") === "1") &&
 				this._chunkCount >= MIN_COMPLETION_CHUNKS &&
 				LINE_BREAK_REGEX.test(this._completion.trimStart())
 			if (isMultilineCompletionRequired) {
@@ -443,10 +445,10 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 		const documentLanguage = this._document.languageId
 		const fileInteractionContext = await this.getFileInteractionContext()
-		if(!this._document || this._document?.isUntitled) {
+		if (!this._document || this._document?.isUntitled) {
 			if (provider.fimTemplate === FIM_TEMPLATE_FORMAT.custom) {
 				const systemMessage = await this._templateProvider.readSystemMessageTemplate("fim-system.hbs")
-	
+
 				const fimTemplate = await this._templateProvider.renderTemplate<FimTemplateData>("fim", {
 					prefix: prefixSuffix.prefix,
 					suffix: prefixSuffix.suffix,
@@ -454,7 +456,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 					context: fileInteractionContext,
 					fileName: this._document.uri.fsPath,
 				})
-	
+
 				if (fimTemplate) {
 					this._usingFimTemplate = true
 					return fimTemplate
@@ -469,29 +471,23 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			})
 			return prompt
 		} else {
-			const option: TabAutocompleteOptions = {maxPromptTokens: 8000}
-			const helper = await HelperVars.create(
-				prefixSuffix,
-				this._document,
-				this.ide,
-				option,
-				provider.modelName
-			  );
+			const option: TabAutocompleteOptions = { maxPromptTokens: 8000 }
+			const helper = await HelperVars.create(prefixSuffix, this._document, this.ide, option, provider.modelName)
 			const [snippetPayload, workspaceDirs] = await Promise.all([
 				getAllSnippets({
-				  helper,
-				  ide: this.ide,
-				//   getDefinitionsFromLsp: this.getDefinitionsFromLsp,
-				  contextRetrievalService: this.contextRetrievalService,
+					helper,
+					ide: this.ide,
+					//   getDefinitionsFromLsp: this.getDefinitionsFromLsp,
+					contextRetrievalService: this.contextRetrievalService,
 				}),
 				this.ide.getWorkspaceDirs(),
-			  ]);
-			  const { prompt, prefix, suffix, completionOptions } = renderPrompt({
+			])
+			const { prompt, prefix, suffix, completionOptions } = renderPrompt({
 				snippetPayload,
 				workspaceDirs,
 				helper,
-			  });
-			  return prompt
+			})
+			return prompt
 		}
 	}
 

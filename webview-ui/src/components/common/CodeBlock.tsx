@@ -89,6 +89,7 @@ const StyledMarkdown = styled.div<{ forceWrap: boolean }>`
 	li,
 	ol,
 	ul {
+		padding-inline: 10px;
 		line-height: 1.5;
 	}
 `

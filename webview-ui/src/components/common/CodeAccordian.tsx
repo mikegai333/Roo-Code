@@ -102,11 +102,12 @@ const CodeAccordian = ({
 				<div
 					//className="code-block-scrollable" this doesn't seem to be necessary anymore, on silicon macs it shows the native mac scrollbar instead of the vscode styled one
 					style={{
-						overflowX: "auto",
-						overflowY: "hidden",
+						overflowY: "auto",
+						overflowX: "hidden",
 						maxWidth: "100%",
 					}}>
 					<CodeBlock
+						forceWrap={true}
 						source={`${"```"}${diff !== undefined ? "diff" : inferredLanguage}\n${(
 							code ??
 							diff ??

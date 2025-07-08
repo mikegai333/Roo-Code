@@ -1668,6 +1668,11 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					openAiModelId: "deepseek-r1-chat-v1.0",
 					// openAiModelId: "anthropic/claude-3.5-sonnet",
 					id: "ktfvsw1xwl",
+					openAiCustomModelInfo: {
+						supportsImages: false,
+						contextWindow: 128_000,
+						supportsPromptCache: false,
+					},
 				},
 				qwen: {
 					apiProvider: "openai",
@@ -1676,18 +1681,25 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					openAiModelId: "qwencoder-model-chat-v1.0",
 					// openAiModelId: "qwen/qwq-32b",
 					id: "nwmcw0x6wcq",
+					openAiCustomModelInfo: {
+						supportsImages: false,
+						contextWindow: 128_000,
+						supportsPromptCache: false,
+					},
 				},
-				qwenvl: {
-					apiProvider: "openai",
-					openAiBaseUrl: openAiBaseUrl,
-					openAiApiKey: apiKey,
-					openAiModelId: "qwenvl",
-					// openAiModelId: "qwen/qwq-32b",
-					id: "nwmcw0x6wc0",
-					// openAiCustomModelInfo: {
-					// 	supportsImages: true,
-					// }
-				},
+				// qwenvl: {
+				// 	apiProvider: "openai",
+				// 	openAiBaseUrl: openAiBaseUrl,
+				// 	openAiApiKey: apiKey,
+				// 	openAiModelId: "qwenvl",
+				// 	// openAiModelId: "qwen/qwq-32b",
+				// 	id: "nwmcw0x6wc0",
+				// 	openAiCustomModelInfo: {
+				// 		supportsImages: true,
+				// 		contextWindow: 128_000,
+				// 		supportsPromptCache: false,
+				// 	}
+				// },
 			},
 			modeApiConfigs: {
 				code: "nwmcw0x6wcq",

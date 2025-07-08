@@ -162,8 +162,8 @@ export function getContextMenuOptions(
 	const workingChanges: ContextMenuQueryItem = {
 		type: ContextMenuOptionType.Git,
 		value: "git-changes",
-		label: "Working changes",
-		description: "Current uncommitted changes",
+		label: "工作区变更",
+		description: "当前未提交的变更",
 		icon: "$(git-commit)",
 	}
 

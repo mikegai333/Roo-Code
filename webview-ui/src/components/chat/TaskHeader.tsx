@@ -145,7 +145,10 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							flexGrow: 1,
 							minWidth: 0, // This allows the div to shrink below its content size
 						}}
-						onClick={() => setIsTaskExpanded(!isTaskExpanded)}>
+						onClick={() => {
+							setIsTaskExpanded(!isTaskExpanded)
+							setIsTextExpanded(!isTextExpanded)
+						}}>
 						<div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
 							<span className={`codicon codicon-chevron-${isTaskExpanded ? "down" : "right"}`}></span>
 						</div>

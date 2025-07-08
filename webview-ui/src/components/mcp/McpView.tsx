@@ -64,7 +64,7 @@ const McpView = ({ onDone }: McpViewProps) => {
 
 				{mcpEnabled && (
 					<>
-						{/* <div style={{ marginBottom: 15 }}>
+						<div style={{ marginBottom: 15 }}>
 							<VSCodeCheckbox
 								checked={enableMcpServerCreation}
 								onChange={(e: any) => {
@@ -82,7 +82,7 @@ const McpView = ({ onDone }: McpViewProps) => {
 								启用后，AIxCoding 可以通过类似"添加新工具到..."的命令帮助你创建新的 MCP
 								服务器。如果你不需要创建 MCP 服务器，可以禁用此功能以减少Token使用量。
 							</p>
-						</div> */}
+						</div>
 
 						{/* Server List */}
 						{servers.length > 0 && (

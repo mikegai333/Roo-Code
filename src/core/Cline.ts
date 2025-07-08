@@ -2748,7 +2748,7 @@ export class Cline {
 				"mistake_limit_reached",
 				this.api.getModel().id.includes("claude")
 					? `这可能表明其思考过程中存在错误或无法正确使用工具，可以通过一些用户指导来缓解（例如“尝试将任务分解为更小的步骤”）。`
-					: "使用复杂的提示和迭代任务执行，这对于能力较弱的模型可能具有挑战性。为了获得最佳结果，建议使用 Claude 3.5 Sonnet，因为它具有先进的代理编码能力。",
+					: "使用复杂的提示和迭代任务执行，这对于能力较弱的模型可能具有挑战性。请尝试更换模型或使用更简单的提示。",
 			)
 			if (response === "messageResponse") {
 				userContent.push(
