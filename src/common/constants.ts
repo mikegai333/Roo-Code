@@ -37,7 +37,6 @@ export const telemetry = {
 	ideVersion: vscode.version,
 	pluginVersion: version,
 	projectName: vscode.workspace.name,
-	fileName: (vscode.window.activeTextEditor?.document?.fileName?.match(/[^/]+$/) || [])[0],
 }
 
 export const EVENT_NAME = {

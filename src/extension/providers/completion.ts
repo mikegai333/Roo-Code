@@ -63,6 +63,7 @@ import { HelperVars } from "../util/HelperVars"
 import { ContextRetrievalService } from "../snippets/ContextRetrievalService"
 import { TabAutocompleteOptions } from "../util"
 import { renderPrompt } from "../snippets/template"
+import * as path from "path"
 
 export class CompletionProvider implements InlineCompletionItemProvider {
 	private _config = workspace.getConfiguration("aixcoding.main.config")
@@ -202,7 +203,9 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 					const provider = this.getProvider()
 					if (!provider) return
 					const request = this.buildStreamRequest(prompt, provider)
-					let newTelemetry = { ...telemetry, requestId: uuidv4() }
+					const filename = this._document ? path.basename(this._document.fileName) : ""
+					let newTelemetry = { ...telemetry, requestId: uuidv4(), filename }
+					console.log("newTelemetry", newTelemetry)
 					let requestBody = { ...request.body, telemetry: newTelemetry }
 					this._requestId = newTelemetry.requestId
 					try {
