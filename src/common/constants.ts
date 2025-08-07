@@ -31,7 +31,14 @@ export const MAX_EMPTY_COMPLETION_CHARS = 250
 const packageJson = require("../../package.json")
 const version = packageJson.version
 console.log("当前插件版本:", version)
-export const telemetry = {
+export interface telemetry {
+	name: string
+	ideName: string
+	ideVersion: string
+	pluginVersion: string
+	projectName: string | undefined
+}
+export const telemetry: telemetry = {
 	name: os.userInfo().username,
 	ideName: vscode.env.appName,
 	ideVersion: vscode.version,

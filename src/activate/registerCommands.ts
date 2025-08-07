@@ -13,10 +13,10 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 	const { context, outputChannel } = options
 
 	try {
-    	registerCopyBufferService(context);
+		registerCopyBufferService(context)
 	} catch (e: any) {
 		//Non-critical error, it needs to be intercepted and not prevent the extension from starting
-		console.log("Error registering CopyBufferService: ", e);
+		console.log("Error registering CopyBufferService: ", e)
 	}
 
 	for (const [command, callback] of Object.entries(getCommandsMap(options))) {
@@ -53,7 +53,6 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			if (provider) {
 				provider.handleVersionSwitch(!context.globalState.get("newVersion"))
 			}
-
 		},
 	}
 }
@@ -100,41 +99,39 @@ const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterComman
 }
 
 // 监听编辑器复制事件
-const registerCopyBufferService = (
-	context: vscode.ExtensionContext,
-  ) => {
-	const typeDisposable = vscode.commands.registerCommand(
-	  "editor.action.clipboardCopyAction",
-	  async (arg) => doCopy(typeDisposable),
-	);
-  
-	async function doCopy(typeDisposable: any) {
-	  typeDisposable.dispose(); // must dispose to avoid endless loops
-  
-	  await vscode.commands.executeCommand("editor.action.clipboardCopyAction");
-  
-	  const clipboardText = await vscode.env.clipboard.readText();
+const registerCopyBufferService = (context: vscode.ExtensionContext) => {
+	let disposable: vscode.Disposable
 
-	  console.log(clipboardText)
-  
-	//   if (clipboardText) {
-	// 	core.invoke("clipboardCache/add", {
-	// 	  content: clipboardText,
-	// 	});
-	//   }
-  
-	  await context.workspaceState.update("aixcoding.copyBuffer", {
-		text: clipboardText,
-		copiedAt: new Date().toISOString(),
-	  });
-  
-	  // re-register to continue intercepting copy commands
-	  typeDisposable = vscode.commands.registerCommand(
-		"editor.action.clipboardCopyAction",
-		async () => doCopy(typeDisposable),
-	  );
-	  context.subscriptions.push(typeDisposable);
+	const handler = async () => {
+		// 必须先注销当前的监听器，避免无限循环
+		if (disposable) {
+			disposable.dispose()
+		}
+
+		// 执行原始的复制命令，将选中文本复制到剪贴板
+		await vscode.commands.executeCommand("editor.action.clipboardCopyAction")
+
+		// 从剪贴板读取内容
+		const clipboardText = await vscode.env.clipboard.readText()
+
+		console.log("Copied text:", clipboardText)
+
+		// 如果剪贴板有内容，则更新 workspaceState
+		if (clipboardText) {
+			await context.workspaceState.update("aixcoding.copyBuffer", {
+				text: clipboardText,
+				copiedAt: new Date().toISOString(),
+			})
+		}
+		// 重新注册命令，以监听下一次复制操作
+		register()
 	}
-  
-	context.subscriptions.push(typeDisposable);
-  };
+
+	const register = () => {
+		disposable = vscode.commands.registerCommand("editor.action.clipboardCopyAction", handler)
+		context.subscriptions.push(disposable)
+	}
+
+	// 首次注册
+	register()
+}
