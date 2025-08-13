@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 export enum AlternativeNotebookFormat {
-	json = 'json',
-	xml = 'xml',
-	text = 'text'
+	json = "json",
+	xml = "xml",
+	text = "text",
 }

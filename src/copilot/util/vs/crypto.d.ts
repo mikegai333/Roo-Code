@@ -10,7 +10,6 @@
 // in nodejs. Therefore it's OK to spell out its typings here
 
 declare global {
-
 	/**
 	 * This Web Crypto API interface provides a number of low-level cryptographic functions. It is accessed via the Crypto.subtle properties available in a window context (via Window.crypto).
 	 * Available only in secure contexts.
@@ -25,7 +24,7 @@ declare global {
 		// /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/deriveKey) */
 		// deriveKey(algorithm: AlgorithmIdentifier | EcdhKeyDeriveParams | HkdfParams | Pbkdf2Params, baseKey: CryptoKey, derivedKeyType: AlgorithmIdentifier | AesDerivedKeyParams | HmacImportParams | HkdfParams | Pbkdf2Params, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey>;
 		/** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/digest) */
-		digest(algorithm: { name: string } | string, data: ArrayBufferView | ArrayBuffer): Promise<ArrayBuffer>;
+		digest(algorithm: { name: string } | string, data: ArrayBufferView | ArrayBuffer): Promise<ArrayBuffer>
 		// /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/encrypt) */
 		// encrypt(algorithm: AlgorithmIdentifier | RsaOaepParams | AesCtrParams | AesCbcParams | AesGcmParams, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer>;
 		// /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/SubtleCrypto/exportKey) */
@@ -61,25 +60,24 @@ declare global {
 		 *
 		 * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Crypto/subtle)
 		 */
-		readonly subtle: SubtleCrypto;
+		readonly subtle: SubtleCrypto
 		/**
 		 * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Crypto/getRandomValues)
 		 */
-		getRandomValues<T extends ArrayBufferView | null>(array: T): T;
+		getRandomValues<T extends ArrayBufferView | null>(array: T): T
 		/**
 		 * Available only in secure contexts.
 		 *
 		 * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Crypto/randomUUID)
 		 */
-		randomUUID(): `${string}-${string}-${string}-${string}-${string}`;
+		randomUUID(): `${string}-${string}-${string}-${string}-${string}`
 	}
 
 	var Crypto: {
-		prototype: Crypto;
-		new(): Crypto;
-	};
+		prototype: Crypto
+		new (): Crypto
+	}
 
-	var crypto: Crypto;
-
+	var crypto: Crypto
 }
-export { }
+export {}

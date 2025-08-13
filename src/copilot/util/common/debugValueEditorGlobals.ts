@@ -4,26 +4,26 @@
  *--------------------------------------------------------------------------------------------*/
 
 export interface IDebugValueEditorGlobals {
-	$$debugValueEditor_run: (args: any) => void;
-	$$debugValueEditor_properties: readonly any[];
+	$$debugValueEditor_run: (args: any) => void
+	$$debugValueEditor_properties: readonly any[]
 
-	$$debugValueEditor_debugChannels: Record</* name of the debug channel */ string, DebugChannel>;
+	$$debugValueEditor_debugChannels: Record</* name of the debug channel */ string, DebugChannel>
 
-	$$debugValueEditor_refresh?: (body: string) => void;
+	$$debugValueEditor_refresh?: (body: string) => void
 }
 
-type DebugChannel = (host: IHost) => IRequestHandler;
+type DebugChannel = (host: IHost) => IRequestHandler
 
 interface IHost {
-	sendNotification: (data: unknown) => void;
+	sendNotification: (data: unknown) => void
 }
 
 interface IRequestHandler {
-	handleRequest: (data: unknown) => unknown;
+	handleRequest: (data: unknown) => unknown
 }
 
 export interface IPlaygroundRunnerGlobals {
 	$$playgroundRunner_data: {
-		currentPath: string[];
-	};
+		currentPath: string[]
+	}
 }

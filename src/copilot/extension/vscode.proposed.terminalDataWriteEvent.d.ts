@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/78502
 	//
 	// This API is still proposed but we don't intent on promoting it to stable due to problems
@@ -14,11 +13,11 @@ declare module 'vscode' {
 		/**
 		 * The {@link Terminal} for which the data was written.
 		 */
-		readonly terminal: Terminal;
+		readonly terminal: Terminal
 		/**
 		 * The data being written.
 		 */
-		readonly data: string;
+		readonly data: string
 	}
 
 	namespace window {
@@ -27,6 +26,6 @@ declare module 'vscode' {
 		 * In other words, this provides access to the raw data stream from the process running
 		 * within the terminal, including VT sequences.
 		 */
-		export const onDidWriteTerminalData: Event<TerminalDataWriteEvent>;
+		export const onDidWriteTerminalData: Event<TerminalDataWriteEvent>
 	}
 }

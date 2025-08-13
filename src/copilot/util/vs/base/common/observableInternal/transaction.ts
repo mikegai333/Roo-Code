@@ -5,9 +5,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { handleBugIndicatingErrorRecovery, IObservable, IObserver, ITransaction } from './base';
-import { getFunctionName } from './debugName';
-import { getLogger } from './logging/logging';
+import { handleBugIndicatingErrorRecovery, IObservable, IObserver, ITransaction } from "./base"
+import { getFunctionName } from "./debugName"
+import { getLogger } from "./logging/logging"
 
 /**
  * Starts a transaction in which many observables can be changed at once.
@@ -16,100 +16,110 @@ import { getLogger } from './logging/logging';
  */
 
 export function transaction(fn: (tx: ITransaction) => void, getDebugName?: () => string): void {
-	const tx = new TransactionImpl(fn, getDebugName);
+	const tx = new TransactionImpl(fn, getDebugName)
 	try {
-		fn(tx);
+		fn(tx)
 	} finally {
-		tx.finish();
+		tx.finish()
 	}
 }
-let _globalTransaction: ITransaction | undefined = undefined;
+let _globalTransaction: ITransaction | undefined = undefined
 
 export function globalTransaction(fn: (tx: ITransaction) => void) {
 	if (_globalTransaction) {
-		fn(_globalTransaction);
+		fn(_globalTransaction)
 	} else {
-		const tx = new TransactionImpl(fn, undefined);
-		_globalTransaction = tx;
+		const tx = new TransactionImpl(fn, undefined)
+		_globalTransaction = tx
 		try {
-			fn(tx);
+			fn(tx)
 		} finally {
-			tx.finish(); // During finish, more actions might be added to the transaction.
+			tx.finish() // During finish, more actions might be added to the transaction.
 
 			// Which is why we only clear the global transaction after finish.
-			_globalTransaction = undefined;
+			_globalTransaction = undefined
 		}
 	}
 }
 /** @deprecated */
 
-export async function asyncTransaction(fn: (tx: ITransaction) => Promise<void>, getDebugName?: () => string): Promise<void> {
-	const tx = new TransactionImpl(fn, getDebugName);
+export async function asyncTransaction(
+	fn: (tx: ITransaction) => Promise<void>,
+	getDebugName?: () => string,
+): Promise<void> {
+	const tx = new TransactionImpl(fn, getDebugName)
 	try {
-		await fn(tx);
+		await fn(tx)
 	} finally {
-		tx.finish();
+		tx.finish()
 	}
 }
 /**
  * Allows to chain transactions.
  */
 
-export function subtransaction(tx: ITransaction | undefined, fn: (tx: ITransaction) => void, getDebugName?: () => string): void {
+export function subtransaction(
+	tx: ITransaction | undefined,
+	fn: (tx: ITransaction) => void,
+	getDebugName?: () => string,
+): void {
 	if (!tx) {
-		transaction(fn, getDebugName);
+		transaction(fn, getDebugName)
 	} else {
-		fn(tx);
+		fn(tx)
 	}
-} export class TransactionImpl implements ITransaction {
-	private _updatingObservers: { observer: IObserver; observable: IObservable<any> }[] | null = [];
+}
+export class TransactionImpl implements ITransaction {
+	private _updatingObservers: { observer: IObserver; observable: IObservable<any> }[] | null = []
 
-	constructor(public readonly _fn: Function, private readonly _getDebugName?: () => string) {
-		getLogger()?.handleBeginTransaction(this);
+	constructor(
+		public readonly _fn: Function,
+		private readonly _getDebugName?: () => string,
+	) {
+		getLogger()?.handleBeginTransaction(this)
 	}
 
 	public getDebugName(): string | undefined {
 		if (this._getDebugName) {
-			return this._getDebugName();
+			return this._getDebugName()
 		}
-		return getFunctionName(this._fn);
+		return getFunctionName(this._fn)
 	}
 
 	public updateObserver(observer: IObserver, observable: IObservable<any>): void {
 		if (!this._updatingObservers) {
 			// This happens when a transaction is used in a callback or async function.
 			// If an async transaction is used, make sure the promise awaits all users of the transaction (e.g. no race).
-			handleBugIndicatingErrorRecovery('Transaction already finished!');
+			handleBugIndicatingErrorRecovery("Transaction already finished!")
 			// Error recovery
-			transaction(tx => {
-				tx.updateObserver(observer, observable);
-			});
-			return;
+			transaction((tx) => {
+				tx.updateObserver(observer, observable)
+			})
+			return
 		}
 
 		// When this gets called while finish is active, they will still get considered
-		this._updatingObservers.push({ observer, observable });
-		observer.beginUpdate(observable);
+		this._updatingObservers.push({ observer, observable })
+		observer.beginUpdate(observable)
 	}
 
 	public finish(): void {
-		const updatingObservers = this._updatingObservers;
+		const updatingObservers = this._updatingObservers
 		if (!updatingObservers) {
-			handleBugIndicatingErrorRecovery('transaction.finish() has already been called!');
-			return;
+			handleBugIndicatingErrorRecovery("transaction.finish() has already been called!")
+			return
 		}
 
 		for (let i = 0; i < updatingObservers.length; i++) {
-			const { observer, observable } = updatingObservers[i];
-			observer.endUpdate(observable);
+			const { observer, observable } = updatingObservers[i]
+			observer.endUpdate(observable)
 		}
 		// Prevent anyone from updating observers from now on.
-		this._updatingObservers = null;
-		getLogger()?.handleEndTransaction(this);
+		this._updatingObservers = null
+		getLogger()?.handleEndTransaction(this)
 	}
 
 	public debugGetUpdatingObservers() {
-		return this._updatingObservers;
+		return this._updatingObservers
 	}
 }
-

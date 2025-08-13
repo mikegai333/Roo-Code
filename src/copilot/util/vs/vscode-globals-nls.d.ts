@@ -29,14 +29,14 @@ declare global {
 	 *
 	 * Instead of accessing this global variable directly, use function getNLSMessages.
 	 */
-	var _VSCODE_NLS_MESSAGES: string[];
+	var _VSCODE_NLS_MESSAGES: string[]
 	/**
 	 * The actual language of the NLS messages (e.g. 'en', de' or 'pt-br').
 	 *
 	 * Instead of accessing this global variable directly, use function getNLSLanguage.
 	 */
-	var _VSCODE_NLS_LANGUAGE: string | undefined;
+	var _VSCODE_NLS_LANGUAGE: string | undefined
 }
 
 // fake export to make global work
-export { }
+export {}

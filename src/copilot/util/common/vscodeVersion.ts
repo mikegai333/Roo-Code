@@ -9,6 +9,6 @@
  * @returns The sanitized version of VS Code i.e. 1.77
  */
 export function sanitizeVSCodeVersion(vsCodeVersion: string): string {
-	const splitVersion = vsCodeVersion.split('.');
-	return `${splitVersion[0]}.${splitVersion[1]}`;
+	const splitVersion = vsCodeVersion.split(".")
+	return `${splitVersion[0]}.${splitVersion[1]}`
 }

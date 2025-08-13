@@ -3,34 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/145234
 
 	export interface TerminalExecutedCommand {
 		/**
 		 * The {@link Terminal} the command was executed in.
 		 */
-		terminal: Terminal;
+		terminal: Terminal
 		/**
 		 * The full command line that was executed, including both the command and the arguments.
 		 */
-		commandLine: string | undefined;
+		commandLine: string | undefined
 		/**
 		 * The current working directory that was reported by the shell. This will be a {@link Uri}
 		 * if the string reported by the shell can reliably be mapped to the connected machine.
 		 */
-		cwd: Uri | string | undefined;
+		cwd: Uri | string | undefined
 		/**
 		 * The exit code reported by the shell.
 		 */
-		exitCode: number | undefined;
+		exitCode: number | undefined
 		/**
 		 * The output of the command when it has finished executing. This is the plain text shown in
 		 * the terminal buffer and does not include raw escape sequences. Depending on the shell
 		 * setup, this may include the command line as part of the output.
 		 */
-		output: string | undefined;
+		output: string | undefined
 	}
 
 	export namespace window {
@@ -43,6 +42,6 @@ declare module 'vscode' {
 		 *
 		 * @deprecated Use {@link window.onDidStartTerminalShellExecution}
 		 */
-		export const onDidExecuteTerminalCommand: Event<TerminalExecutedCommand>;
+		export const onDidExecuteTerminalCommand: Event<TerminalExecutedCommand>
 	}
 }

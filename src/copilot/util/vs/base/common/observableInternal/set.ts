@@ -5,74 +5,72 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { observableValueOpts, IObservable, ITransaction } from '../observable';
-
+import { observableValueOpts, IObservable, ITransaction } from "../observable"
 
 export class ObservableSet<T> {
+	private readonly _data = new Set<T>()
 
-	private readonly _data = new Set<T>();
+	private _obs = observableValueOpts({ equalsFn: () => false }, this)
 
-	private _obs = observableValueOpts({ equalsFn: () => false }, this);
-
-	readonly observable: IObservable<ObservableSet<T>> = this._obs;
+	readonly observable: IObservable<ObservableSet<T>> = this._obs
 
 	get size(): number {
-		return this._data.size;
+		return this._data.size
 	}
 
 	has(value: T): boolean {
-		return this._data.has(value);
+		return this._data.has(value)
 	}
 
 	add(value: T, tx?: ITransaction): this {
-		const hadValue = this._data.has(value);
+		const hadValue = this._data.has(value)
 		if (!hadValue) {
-			this._data.add(value);
-			this._obs.set(this, tx);
+			this._data.add(value)
+			this._obs.set(this, tx)
 		}
-		return this;
+		return this
 	}
 
 	delete(value: T, tx?: ITransaction): boolean {
-		const result = this._data.delete(value);
+		const result = this._data.delete(value)
 		if (result) {
-			this._obs.set(this, tx);
+			this._obs.set(this, tx)
 		}
-		return result;
+		return result
 	}
 
 	clear(tx?: ITransaction): void {
 		if (this._data.size > 0) {
-			this._data.clear();
-			this._obs.set(this, tx);
+			this._data.clear()
+			this._obs.set(this, tx)
 		}
 	}
 
 	forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void {
 		this._data.forEach((value, value2, _set) => {
-			callbackfn.call(thisArg, value, value2, this as any);
-		});
+			callbackfn.call(thisArg, value, value2, this as any)
+		})
 	}
 
 	*entries(): IterableIterator<[T, T]> {
 		for (const value of this._data) {
-			yield [value, value];
+			yield [value, value]
 		}
 	}
 
 	*keys(): IterableIterator<T> {
-		yield* this._data.keys();
+		yield* this._data.keys()
 	}
 
 	*values(): IterableIterator<T> {
-		yield* this._data.values();
+		yield* this._data.values()
 	}
 
 	[Symbol.iterator](): IterableIterator<T> {
-		return this.values();
+		return this.values()
 	}
 
 	get [Symbol.toStringTag](): string {
-		return 'ObservableSet';
+		return "ObservableSet"
 	}
 }

@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type LanguageId = string & { _brand: 'languageId' };
+export type LanguageId = string & { _brand: "languageId" }
 
 export namespace LanguageId {
-	export const PlainText = create('plaintext');
+	export const PlainText = create("plaintext")
 
 	export function create(value: string): LanguageId {
-		return value as LanguageId;
+		return value as LanguageId
 	}
 }

@@ -6,7 +6,7 @@
 export async function createRequestHMAC(hmacSecret: string | undefined): Promise<string | undefined> {
 	// If we don't have the right env variables this could happen
 	if (!hmacSecret) {
-		return undefined;
+		return undefined
 	}
 
 	const key = await crypto.subtle.importKey(
@@ -14,28 +14,28 @@ export async function createRequestHMAC(hmacSecret: string | undefined): Promise
 		new TextEncoder().encode(hmacSecret),
 		{ name: "HMAC", hash: "SHA-256" },
 		false,
-		["sign"]
-	);
+		["sign"],
+	)
 
-	const current = Math.floor(Date.now() / 1000).toString();
-	const textEncoder = new TextEncoder();
-	const data = textEncoder.encode(current);
+	const current = Math.floor(Date.now() / 1000).toString()
+	const textEncoder = new TextEncoder()
+	const data = textEncoder.encode(current)
 
-	const signature = await crypto.subtle.sign("HMAC", key, data);
-	const signatureArray = Array.from(new Uint8Array(signature));
-	const signatureHex = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
+	const signature = await crypto.subtle.sign("HMAC", key, data)
+	const signatureArray = Array.from(new Uint8Array(signature))
+	const signatureHex = signatureArray.map((b) => b.toString(16).padStart(2, "0")).join("")
 
-	return `${current}.${signatureHex}`;
+	return `${current}.${signatureHex}`
 }
 
 export async function createSha256Hash(data: string | Uint8Array): Promise<string> {
-	const dataUint8 = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-	const hashBuffer = await crypto.subtle.digest('SHA-256', dataUint8);
-	const hashArray = new Uint8Array(hashBuffer);
-	let hashHex = '';
+	const dataUint8 = typeof data === "string" ? new TextEncoder().encode(data) : data
+	const hashBuffer = await crypto.subtle.digest("SHA-256", dataUint8)
+	const hashArray = new Uint8Array(hashBuffer)
+	let hashHex = ""
 	for (const byte of hashArray) {
-		hashHex += byte.toString(16).padStart(2, '0');
+		hashHex += byte.toString(16).padStart(2, "0")
 	}
 
-	return hashHex;
+	return hashHex
 }

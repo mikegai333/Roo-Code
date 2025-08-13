@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
+declare module "vscode" {
 	// @alexr00 https://github.com/microsoft/vscode/issues/204484
 
 	export interface CommentController {
@@ -18,6 +18,6 @@ declare module 'vscode' {
 		 * in the CommentController that most recently had focus or, when a different CommentController's
 		 * thread has most recently had focus, undefined.
 		 */
-		readonly activeCommentThread: CommentThread | undefined;
+		readonly activeCommentThread: CommentThread | undefined
 	}
 }

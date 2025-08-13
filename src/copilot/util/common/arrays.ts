@@ -7,28 +7,31 @@
  * Counts the number of elements in an array that satisfy a given predicate.
  */
 export function count<T>(array: T[], predicate: (value: T) => boolean): number {
-	let count = 0;
+	let count = 0
 	for (const value of array) {
 		if (predicate(value)) {
-			count++;
+			count++
 		}
 	}
-	return count;
+	return count
 }
 
-export function findInsertionIndexInSortedArray<T>(array: T[], value: T, isBeforeFunction: (a: T, b: T) => boolean): number {
-	let low = 0;
-	let high = array.length;
+export function findInsertionIndexInSortedArray<T>(
+	array: T[],
+	value: T,
+	isBeforeFunction: (a: T, b: T) => boolean,
+): number {
+	let low = 0
+	let high = array.length
 	while (low < high) {
-		const mid = (low + high) >>> 1;
+		const mid = (low + high) >>> 1
 		if (isBeforeFunction(array[mid], value)) {
-			low = mid + 1;
-		}
-		else {
-			high = mid;
+			low = mid + 1
+		} else {
+			high = mid
 		}
 	}
-	return low;
+	return low
 }
 /**
  * Returns the maximum element in the array according to the given sort callback.
@@ -38,31 +41,31 @@ export function findInsertionIndexInSortedArray<T>(array: T[], value: T, isBefor
  */
 export function max<T>(arr: T[], compare: (a: T, b: T) => number): T | undefined {
 	if (arr.length === 0) {
-		return undefined;
+		return undefined
 	}
 
-	let maxElement = arr[0];
+	let maxElement = arr[0]
 
 	for (let i = 1; i < arr.length; i++) {
-		const currentElement = arr[i];
+		const currentElement = arr[i]
 
 		if (compare(currentElement, maxElement) > 0) {
-			maxElement = currentElement;
+			maxElement = currentElement
 		}
 	}
 
-	return maxElement;
+	return maxElement
 }
 
 export function filterMap<T, K>(array: T[], map: (t: T) => K | undefined | null): K[] {
-	const result: K[] = [];
+	const result: K[] = []
 	for (const element of array) {
-		const mapped = map(element);
+		const mapped = map(element)
 		if (mapped !== undefined && mapped !== null) {
-			result.push(mapped);
+			result.push(mapped)
 		}
 	}
-	return result;
+	return result
 }
 
 /**
@@ -70,12 +73,12 @@ export function filterMap<T, K>(array: T[], map: (t: T) => K | undefined | null)
  */
 export function min(array: number[]): number {
 	if (array.length === 0) {
-		return Infinity;
+		return Infinity
 	}
 
-	let min = array[0];
+	let min = array[0]
 	for (let i = 1; i < array.length; i++) {
-		min = Math.min(min, array[i]);
+		min = Math.min(min, array[i])
 	}
-	return min;
+	return min
 }

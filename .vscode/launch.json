@@ -10,11 +10,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--enable-proposed-api",
-				"bocsoft.aixcoding"
-			],
+			"args": ["--extensionDevelopmentPath=${workspaceFolder}", "--enable-proposed-api", "bocsoft.aixcoding"],
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
 			"preLaunchTask": "${defaultBuildTask}",

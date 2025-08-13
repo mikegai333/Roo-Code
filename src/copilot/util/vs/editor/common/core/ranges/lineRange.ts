@@ -5,45 +5,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BugIndicatingError } from '../../../../base/common/errors';
-import { OffsetRange } from './offsetRange';
-import { Range } from '../range';
-import { findFirstIdxMonotonousOrArrLen, findLastIdxMonotonous, findLastMonotonous } from '../../../../base/common/arraysFind';
-import { Comparator, compareBy, numberComparator } from '../../../../base/common/arrays';
+import { BugIndicatingError } from "../../../../base/common/errors"
+import { OffsetRange } from "./offsetRange"
+import { Range } from "../range"
+import {
+	findFirstIdxMonotonousOrArrLen,
+	findLastIdxMonotonous,
+	findLastMonotonous,
+} from "../../../../base/common/arraysFind"
+import { Comparator, compareBy, numberComparator } from "../../../../base/common/arrays"
 
 /**
  * A range of lines (1-based).
  */
 export class LineRange {
 	public static ofLength(startLineNumber: number, length: number): LineRange {
-		return new LineRange(startLineNumber, startLineNumber + length);
+		return new LineRange(startLineNumber, startLineNumber + length)
 	}
 
 	public static fromRange(range: Range): LineRange {
-		return new LineRange(range.startLineNumber, range.endLineNumber);
+		return new LineRange(range.startLineNumber, range.endLineNumber)
 	}
 
 	public static fromRangeInclusive(range: Range): LineRange {
-		return new LineRange(range.startLineNumber, range.endLineNumber + 1);
+		return new LineRange(range.startLineNumber, range.endLineNumber + 1)
 	}
 
-	public static readonly compareByStart: Comparator<LineRange> = compareBy(l => l.startLineNumber, numberComparator);
+	public static readonly compareByStart: Comparator<LineRange> = compareBy((l) => l.startLineNumber, numberComparator)
 
 	public static subtract(a: LineRange, b: LineRange | undefined): LineRange[] {
 		if (!b) {
-			return [a];
+			return [a]
 		}
 		if (a.startLineNumber < b.startLineNumber && b.endLineNumberExclusive < a.endLineNumberExclusive) {
 			return [
 				new LineRange(a.startLineNumber, b.startLineNumber),
-				new LineRange(b.endLineNumberExclusive, a.endLineNumberExclusive)
-			];
+				new LineRange(b.endLineNumberExclusive, a.endLineNumberExclusive),
+			]
 		} else if (b.startLineNumber <= a.startLineNumber && a.endLineNumberExclusive <= b.endLineNumberExclusive) {
-			return [];
+			return []
 		} else if (b.endLineNumberExclusive < a.endLineNumberExclusive) {
-			return [new LineRange(Math.max(b.endLineNumberExclusive, a.startLineNumber), a.endLineNumberExclusive)];
+			return [new LineRange(Math.max(b.endLineNumberExclusive, a.startLineNumber), a.endLineNumberExclusive)]
 		} else {
-			return [new LineRange(a.startLineNumber, Math.min(b.startLineNumber, a.endLineNumberExclusive))];
+			return [new LineRange(a.startLineNumber, Math.min(b.startLineNumber, a.endLineNumberExclusive))]
 		}
 	}
 
@@ -52,90 +56,91 @@ export class LineRange {
 	 */
 	public static joinMany(lineRanges: readonly (readonly LineRange[])[]): readonly LineRange[] {
 		if (lineRanges.length === 0) {
-			return [];
+			return []
 		}
-		let result = new LineRangeSet(lineRanges[0].slice());
+		let result = new LineRangeSet(lineRanges[0].slice())
 		for (let i = 1; i < lineRanges.length; i++) {
-			result = result.getUnion(new LineRangeSet(lineRanges[i].slice()));
+			result = result.getUnion(new LineRangeSet(lineRanges[i].slice()))
 		}
-		return result.ranges;
+		return result.ranges
 	}
 
 	public static join(lineRanges: LineRange[]): LineRange {
 		if (lineRanges.length === 0) {
-			throw new BugIndicatingError('lineRanges cannot be empty');
+			throw new BugIndicatingError("lineRanges cannot be empty")
 		}
-		let startLineNumber = lineRanges[0].startLineNumber;
-		let endLineNumberExclusive = lineRanges[0].endLineNumberExclusive;
+		let startLineNumber = lineRanges[0].startLineNumber
+		let endLineNumberExclusive = lineRanges[0].endLineNumberExclusive
 		for (let i = 1; i < lineRanges.length; i++) {
-			startLineNumber = Math.min(startLineNumber, lineRanges[i].startLineNumber);
-			endLineNumberExclusive = Math.max(endLineNumberExclusive, lineRanges[i].endLineNumberExclusive);
+			startLineNumber = Math.min(startLineNumber, lineRanges[i].startLineNumber)
+			endLineNumberExclusive = Math.max(endLineNumberExclusive, lineRanges[i].endLineNumberExclusive)
 		}
-		return new LineRange(startLineNumber, endLineNumberExclusive);
+		return new LineRange(startLineNumber, endLineNumberExclusive)
 	}
 
 	/**
 	 * @internal
 	 */
 	public static deserialize(lineRange: ISerializedLineRange): LineRange {
-		return new LineRange(lineRange[0], lineRange[1]);
+		return new LineRange(lineRange[0], lineRange[1])
 	}
 
 	/**
 	 * The start line number.
 	 */
-	public readonly startLineNumber: number;
+	public readonly startLineNumber: number
 
 	/**
 	 * The end line number (exclusive).
 	 */
-	public readonly endLineNumberExclusive: number;
+	public readonly endLineNumberExclusive: number
 
-	constructor(
-		startLineNumber: number,
-		endLineNumberExclusive: number,
-	) {
+	constructor(startLineNumber: number, endLineNumberExclusive: number) {
 		if (startLineNumber > endLineNumberExclusive) {
-			throw new BugIndicatingError(`startLineNumber ${startLineNumber} cannot be after endLineNumberExclusive ${endLineNumberExclusive}`);
+			throw new BugIndicatingError(
+				`startLineNumber ${startLineNumber} cannot be after endLineNumberExclusive ${endLineNumberExclusive}`,
+			)
 		}
-		this.startLineNumber = startLineNumber;
-		this.endLineNumberExclusive = endLineNumberExclusive;
+		this.startLineNumber = startLineNumber
+		this.endLineNumberExclusive = endLineNumberExclusive
 	}
 
 	/**
 	 * Indicates if this line range contains the given line number.
 	 */
 	public contains(lineNumber: number): boolean {
-		return this.startLineNumber <= lineNumber && lineNumber < this.endLineNumberExclusive;
+		return this.startLineNumber <= lineNumber && lineNumber < this.endLineNumberExclusive
 	}
 
 	public containsRange(range: LineRange): boolean {
-		return this.startLineNumber <= range.startLineNumber && range.endLineNumberExclusive <= this.endLineNumberExclusive;
+		return (
+			this.startLineNumber <= range.startLineNumber && range.endLineNumberExclusive <= this.endLineNumberExclusive
+		)
 	}
 
 	/**
 	 * Indicates if this line range is empty.
 	 */
 	get isEmpty(): boolean {
-		return this.startLineNumber === this.endLineNumberExclusive;
+		return this.startLineNumber === this.endLineNumberExclusive
 	}
 
 	/**
 	 * Moves this line range by the given offset of line numbers.
 	 */
 	public delta(offset: number): LineRange {
-		return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive + offset);
+		return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive + offset)
 	}
 
 	public deltaLength(offset: number): LineRange {
-		return new LineRange(this.startLineNumber, this.endLineNumberExclusive + offset);
+		return new LineRange(this.startLineNumber, this.endLineNumberExclusive + offset)
 	}
 
 	/**
 	 * The number of lines this line range spans.
 	 */
 	public get length(): number {
-		return this.endLineNumberExclusive - this.startLineNumber;
+		return this.endLineNumberExclusive - this.startLineNumber
 	}
 
 	/**
@@ -144,12 +149,12 @@ export class LineRange {
 	public join(other: LineRange): LineRange {
 		return new LineRange(
 			Math.min(this.startLineNumber, other.startLineNumber),
-			Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive)
-		);
+			Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive),
+		)
 	}
 
 	public toString(): string {
-		return `[${this.startLineNumber},${this.endLineNumberExclusive})`;
+		return `[${this.startLineNumber},${this.endLineNumberExclusive})`
 	}
 
 	/**
@@ -157,51 +162,55 @@ export class LineRange {
 	 * If the ranges don't even touch, the result is undefined.
 	 */
 	public intersect(other: LineRange): LineRange | undefined {
-		const startLineNumber = Math.max(this.startLineNumber, other.startLineNumber);
-		const endLineNumberExclusive = Math.min(this.endLineNumberExclusive, other.endLineNumberExclusive);
+		const startLineNumber = Math.max(this.startLineNumber, other.startLineNumber)
+		const endLineNumberExclusive = Math.min(this.endLineNumberExclusive, other.endLineNumberExclusive)
 		if (startLineNumber <= endLineNumberExclusive) {
-			return new LineRange(startLineNumber, endLineNumberExclusive);
+			return new LineRange(startLineNumber, endLineNumberExclusive)
 		}
-		return undefined;
+		return undefined
 	}
 
 	public intersectsStrict(other: LineRange): boolean {
-		return this.startLineNumber < other.endLineNumberExclusive && other.startLineNumber < this.endLineNumberExclusive;
+		return (
+			this.startLineNumber < other.endLineNumberExclusive && other.startLineNumber < this.endLineNumberExclusive
+		)
 	}
 
 	public intersectsOrTouches(other: LineRange): boolean {
-		return this.startLineNumber <= other.endLineNumberExclusive && other.startLineNumber <= this.endLineNumberExclusive;
+		return (
+			this.startLineNumber <= other.endLineNumberExclusive && other.startLineNumber <= this.endLineNumberExclusive
+		)
 	}
 
 	public equals(b: LineRange): boolean {
-		return this.startLineNumber === b.startLineNumber && this.endLineNumberExclusive === b.endLineNumberExclusive;
+		return this.startLineNumber === b.startLineNumber && this.endLineNumberExclusive === b.endLineNumberExclusive
 	}
 
 	public toInclusiveRange(): Range | null {
 		if (this.isEmpty) {
-			return null;
+			return null
 		}
-		return new Range(this.startLineNumber, 1, this.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER);
+		return new Range(this.startLineNumber, 1, this.endLineNumberExclusive - 1, Number.MAX_SAFE_INTEGER)
 	}
 
 	/**
 	 * @deprecated Using this function is discouraged because it might lead to bugs: The end position is not guaranteed to be a valid position!
-	*/
+	 */
 	public toExclusiveRange(): Range {
-		return new Range(this.startLineNumber, 1, this.endLineNumberExclusive, 1);
+		return new Range(this.startLineNumber, 1, this.endLineNumberExclusive, 1)
 	}
 
 	public mapToLineArray<T>(f: (lineNumber: number) => T): T[] {
-		const result: T[] = [];
+		const result: T[] = []
 		for (let lineNumber = this.startLineNumber; lineNumber < this.endLineNumberExclusive; lineNumber++) {
-			result.push(f(lineNumber));
+			result.push(f(lineNumber))
 		}
-		return result;
+		return result
 	}
 
 	public forEach(f: (lineNumber: number) => void): void {
 		for (let lineNumber = this.startLineNumber; lineNumber < this.endLineNumberExclusive; lineNumber++) {
-			f(lineNumber);
+			f(lineNumber)
 		}
 	}
 
@@ -209,7 +218,7 @@ export class LineRange {
 	 * @internal
 	 */
 	public serialize(): ISerializedLineRange {
-		return [this.startLineNumber, this.endLineNumberExclusive];
+		return [this.startLineNumber, this.endLineNumberExclusive]
 	}
 
 	/**
@@ -217,39 +226,35 @@ export class LineRange {
 	 * @internal
 	 */
 	public toOffsetRange(): OffsetRange {
-		return new OffsetRange(this.startLineNumber - 1, this.endLineNumberExclusive - 1);
+		return new OffsetRange(this.startLineNumber - 1, this.endLineNumberExclusive - 1)
 	}
 
 	public distanceToRange(other: LineRange): number {
 		if (this.endLineNumberExclusive <= other.startLineNumber) {
-			return other.startLineNumber - this.endLineNumberExclusive;
+			return other.startLineNumber - this.endLineNumberExclusive
 		}
 		if (other.endLineNumberExclusive <= this.startLineNumber) {
-			return this.startLineNumber - other.endLineNumberExclusive;
+			return this.startLineNumber - other.endLineNumberExclusive
 		}
-		return 0;
+		return 0
 	}
 
 	public distanceToLine(lineNumber: number): number {
 		if (this.contains(lineNumber)) {
-			return 0;
+			return 0
 		}
 		if (lineNumber < this.startLineNumber) {
-			return this.startLineNumber - lineNumber;
+			return this.startLineNumber - lineNumber
 		}
-		return lineNumber - this.endLineNumberExclusive;
+		return lineNumber - this.endLineNumberExclusive
 	}
 
 	public addMargin(marginTop: number, marginBottom: number): LineRange {
-		return new LineRange(
-			this.startLineNumber - marginTop,
-			this.endLineNumberExclusive + marginBottom
-		);
+		return new LineRange(this.startLineNumber - marginTop, this.endLineNumberExclusive + marginBottom)
 	}
 }
 
-export type ISerializedLineRange = [startLineNumber: number, endLineNumberExclusive: number];
-
+export type ISerializedLineRange = [startLineNumber: number, endLineNumberExclusive: number]
 
 export class LineRangeSet {
 	constructor(
@@ -257,100 +262,114 @@ export class LineRangeSet {
 		 * Sorted by start line number.
 		 * No two line ranges are touching or intersecting.
 		 */
-		private readonly _normalizedRanges: LineRange[] = []
-	) {
-	}
+		private readonly _normalizedRanges: LineRange[] = [],
+	) {}
 
 	get ranges(): readonly LineRange[] {
-		return this._normalizedRanges;
+		return this._normalizedRanges
 	}
 
 	addRange(range: LineRange): void {
 		if (range.length === 0) {
-			return;
+			return
 		}
 
 		// Idea: Find joinRange such that:
 		// replaceRange = _normalizedRanges.replaceRange(joinRange, range.joinAll(joinRange.map(idx => this._normalizedRanges[idx])))
 
 		// idx of first element that touches range or that is after range
-		const joinRangeStartIdx = findFirstIdxMonotonousOrArrLen(this._normalizedRanges, r => r.endLineNumberExclusive >= range.startLineNumber);
+		const joinRangeStartIdx = findFirstIdxMonotonousOrArrLen(
+			this._normalizedRanges,
+			(r) => r.endLineNumberExclusive >= range.startLineNumber,
+		)
 		// idx of element after { last element that touches range or that is before range }
-		const joinRangeEndIdxExclusive = findLastIdxMonotonous(this._normalizedRanges, r => r.startLineNumber <= range.endLineNumberExclusive) + 1;
+		const joinRangeEndIdxExclusive =
+			findLastIdxMonotonous(this._normalizedRanges, (r) => r.startLineNumber <= range.endLineNumberExclusive) + 1
 
 		if (joinRangeStartIdx === joinRangeEndIdxExclusive) {
 			// If there is no element that touches range, then joinRangeStartIdx === joinRangeEndIdxExclusive and that value is the index of the element after range
-			this._normalizedRanges.splice(joinRangeStartIdx, 0, range);
+			this._normalizedRanges.splice(joinRangeStartIdx, 0, range)
 		} else if (joinRangeStartIdx === joinRangeEndIdxExclusive - 1) {
 			// Else, there is an element that touches range and in this case it is both the first and last element. Thus we can replace it
-			const joinRange = this._normalizedRanges[joinRangeStartIdx];
-			this._normalizedRanges[joinRangeStartIdx] = joinRange.join(range);
+			const joinRange = this._normalizedRanges[joinRangeStartIdx]
+			this._normalizedRanges[joinRangeStartIdx] = joinRange.join(range)
 		} else {
 			// First and last element are different - we need to replace the entire range
-			const joinRange = this._normalizedRanges[joinRangeStartIdx].join(this._normalizedRanges[joinRangeEndIdxExclusive - 1]).join(range);
-			this._normalizedRanges.splice(joinRangeStartIdx, joinRangeEndIdxExclusive - joinRangeStartIdx, joinRange);
+			const joinRange = this._normalizedRanges[joinRangeStartIdx]
+				.join(this._normalizedRanges[joinRangeEndIdxExclusive - 1])
+				.join(range)
+			this._normalizedRanges.splice(joinRangeStartIdx, joinRangeEndIdxExclusive - joinRangeStartIdx, joinRange)
 		}
 	}
 
 	contains(lineNumber: number): boolean {
-		const rangeThatStartsBeforeEnd = findLastMonotonous(this._normalizedRanges, r => r.startLineNumber <= lineNumber);
-		return !!rangeThatStartsBeforeEnd && rangeThatStartsBeforeEnd.endLineNumberExclusive > lineNumber;
+		const rangeThatStartsBeforeEnd = findLastMonotonous(
+			this._normalizedRanges,
+			(r) => r.startLineNumber <= lineNumber,
+		)
+		return !!rangeThatStartsBeforeEnd && rangeThatStartsBeforeEnd.endLineNumberExclusive > lineNumber
 	}
 
 	intersects(range: LineRange): boolean {
-		const rangeThatStartsBeforeEnd = findLastMonotonous(this._normalizedRanges, r => r.startLineNumber < range.endLineNumberExclusive);
-		return !!rangeThatStartsBeforeEnd && rangeThatStartsBeforeEnd.endLineNumberExclusive > range.startLineNumber;
+		const rangeThatStartsBeforeEnd = findLastMonotonous(
+			this._normalizedRanges,
+			(r) => r.startLineNumber < range.endLineNumberExclusive,
+		)
+		return !!rangeThatStartsBeforeEnd && rangeThatStartsBeforeEnd.endLineNumberExclusive > range.startLineNumber
 	}
 
 	getUnion(other: LineRangeSet): LineRangeSet {
 		if (this._normalizedRanges.length === 0) {
-			return other;
+			return other
 		}
 		if (other._normalizedRanges.length === 0) {
-			return this;
+			return this
 		}
 
-		const result: LineRange[] = [];
-		let i1 = 0;
-		let i2 = 0;
-		let current: LineRange | null = null;
+		const result: LineRange[] = []
+		let i1 = 0
+		let i2 = 0
+		let current: LineRange | null = null
 		while (i1 < this._normalizedRanges.length || i2 < other._normalizedRanges.length) {
-			let next: LineRange | null = null;
+			let next: LineRange | null = null
 			if (i1 < this._normalizedRanges.length && i2 < other._normalizedRanges.length) {
-				const lineRange1 = this._normalizedRanges[i1];
-				const lineRange2 = other._normalizedRanges[i2];
+				const lineRange1 = this._normalizedRanges[i1]
+				const lineRange2 = other._normalizedRanges[i2]
 				if (lineRange1.startLineNumber < lineRange2.startLineNumber) {
-					next = lineRange1;
-					i1++;
+					next = lineRange1
+					i1++
 				} else {
-					next = lineRange2;
-					i2++;
+					next = lineRange2
+					i2++
 				}
 			} else if (i1 < this._normalizedRanges.length) {
-				next = this._normalizedRanges[i1];
-				i1++;
+				next = this._normalizedRanges[i1]
+				i1++
 			} else {
-				next = other._normalizedRanges[i2];
-				i2++;
+				next = other._normalizedRanges[i2]
+				i2++
 			}
 
 			if (current === null) {
-				current = next;
+				current = next
 			} else {
 				if (current.endLineNumberExclusive >= next.startLineNumber) {
 					// merge
-					current = new LineRange(current.startLineNumber, Math.max(current.endLineNumberExclusive, next.endLineNumberExclusive));
+					current = new LineRange(
+						current.startLineNumber,
+						Math.max(current.endLineNumberExclusive, next.endLineNumberExclusive),
+					)
 				} else {
 					// push
-					result.push(current);
-					current = next;
+					result.push(current)
+					current = next
 				}
 			}
 		}
 		if (current !== null) {
-			result.push(current);
+			result.push(current)
 		}
-		return new LineRangeSet(result);
+		return new LineRangeSet(result)
 	}
 
 	/**
@@ -358,59 +377,63 @@ export class LineRangeSet {
 	 */
 	subtractFrom(range: LineRange): LineRangeSet {
 		// idx of first element that touches range or that is after range
-		const joinRangeStartIdx = findFirstIdxMonotonousOrArrLen(this._normalizedRanges, r => r.endLineNumberExclusive >= range.startLineNumber);
+		const joinRangeStartIdx = findFirstIdxMonotonousOrArrLen(
+			this._normalizedRanges,
+			(r) => r.endLineNumberExclusive >= range.startLineNumber,
+		)
 		// idx of element after { last element that touches range or that is before range }
-		const joinRangeEndIdxExclusive = findLastIdxMonotonous(this._normalizedRanges, r => r.startLineNumber <= range.endLineNumberExclusive) + 1;
+		const joinRangeEndIdxExclusive =
+			findLastIdxMonotonous(this._normalizedRanges, (r) => r.startLineNumber <= range.endLineNumberExclusive) + 1
 
 		if (joinRangeStartIdx === joinRangeEndIdxExclusive) {
-			return new LineRangeSet([range]);
+			return new LineRangeSet([range])
 		}
 
-		const result: LineRange[] = [];
-		let startLineNumber = range.startLineNumber;
+		const result: LineRange[] = []
+		let startLineNumber = range.startLineNumber
 		for (let i = joinRangeStartIdx; i < joinRangeEndIdxExclusive; i++) {
-			const r = this._normalizedRanges[i];
+			const r = this._normalizedRanges[i]
 			if (r.startLineNumber > startLineNumber) {
-				result.push(new LineRange(startLineNumber, r.startLineNumber));
+				result.push(new LineRange(startLineNumber, r.startLineNumber))
 			}
-			startLineNumber = r.endLineNumberExclusive;
+			startLineNumber = r.endLineNumberExclusive
 		}
 		if (startLineNumber < range.endLineNumberExclusive) {
-			result.push(new LineRange(startLineNumber, range.endLineNumberExclusive));
+			result.push(new LineRange(startLineNumber, range.endLineNumberExclusive))
 		}
 
-		return new LineRangeSet(result);
+		return new LineRangeSet(result)
 	}
 
 	toString() {
-		return this._normalizedRanges.map(r => r.toString()).join(', ');
+		return this._normalizedRanges.map((r) => r.toString()).join(", ")
 	}
 
 	getIntersection(other: LineRangeSet): LineRangeSet {
-		const result: LineRange[] = [];
+		const result: LineRange[] = []
 
-		let i1 = 0;
-		let i2 = 0;
+		let i1 = 0
+		let i2 = 0
 		while (i1 < this._normalizedRanges.length && i2 < other._normalizedRanges.length) {
-			const r1 = this._normalizedRanges[i1];
-			const r2 = other._normalizedRanges[i2];
+			const r1 = this._normalizedRanges[i1]
+			const r2 = other._normalizedRanges[i2]
 
-			const i = r1.intersect(r2);
+			const i = r1.intersect(r2)
 			if (i && !i.isEmpty) {
-				result.push(i);
+				result.push(i)
 			}
 
 			if (r1.endLineNumberExclusive < r2.endLineNumberExclusive) {
-				i1++;
+				i1++
 			} else {
-				i2++;
+				i2++
 			}
 		}
 
-		return new LineRangeSet(result);
+		return new LineRangeSet(result)
 	}
 
 	getWithDelta(value: number): LineRangeSet {
-		return new LineRangeSet(this._normalizedRanges.map(r => r.delta(value)));
+		return new LineRangeSet(this._normalizedRanges.map((r) => r.delta(value)))
 	}
 }

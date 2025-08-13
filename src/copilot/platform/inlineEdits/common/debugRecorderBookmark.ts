@@ -4,7 +4,5 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class DebugRecorderBookmark {
-	constructor(
-		public readonly timeMs: number,
-	) { }
+	constructor(public readonly timeMs: number) {}
 }

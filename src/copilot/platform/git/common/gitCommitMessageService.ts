@@ -3,29 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { CancellationToken, Uri } from 'vscode';
-import { createServiceIdentifier } from '../../../util/common/services';
-import { Repository } from '../vscode/git';
+import type { CancellationToken, Uri } from "vscode"
+import { createServiceIdentifier } from "../../../util/common/services"
+import { Repository } from "../vscode/git"
 
-export const IGitCommitMessageService = createServiceIdentifier<IGitCommitMessageService>('IGitCommitMessageService');
+export const IGitCommitMessageService = createServiceIdentifier<IGitCommitMessageService>("IGitCommitMessageService")
 
 export interface IGitCommitMessageService {
-	readonly _serviceBrand: undefined;
-	generateCommitMessage(repository: Repository, cancellationToken: CancellationToken | undefined): Promise<string | undefined>;
-	getRepository(uri: Uri | undefined): Repository | null;
+	readonly _serviceBrand: undefined
+	generateCommitMessage(
+		repository: Repository,
+		cancellationToken: CancellationToken | undefined,
+	): Promise<string | undefined>
+	getRepository(uri: Uri | undefined): Repository | null
 }
 
 /**
  * @remark For testing purposes only.
  */
 export class NoopGitCommitMessageService implements IGitCommitMessageService {
-	declare readonly _serviceBrand: undefined;
+	declare readonly _serviceBrand: undefined
 
 	generateCommitMessage(): Promise<string | undefined> {
-		return Promise.resolve(undefined);
+		return Promise.resolve(undefined)
 	}
 
 	getRepository(): Repository | null {
-		return null;
+		return null
 	}
 }
