@@ -3,18 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { StringEdit } from "../../../../util/vs/editor/common/core/edits/stringEdit"
-import { OffsetRange } from "../../../../util/vs/editor/common/core/ranges/offsetRange"
-import { IEventFetchEnd } from "../workspaceLog"
+import { StringEdit } from '../../../../util/vs/editor/common/core/edits/stringEdit';
+import { OffsetRange } from '../../../../util/vs/editor/common/core/ranges/offsetRange';
+import { IEventFetchEnd } from '../workspaceLog';
 
-export type Operation =
-	| DocumentSetContentOperation
-	| DocumentOpenedOperation
-	| DocumentClosedOperation
-	| DocumentChangedOperation
-	| DocumentFocusChangedOperation
-	| DocumentSelectionChangedOperation
-	| DocumentRestoreContentOperation
+export type Operation = DocumentSetContentOperation | DocumentOpenedOperation | DocumentClosedOperation
+	| DocumentChangedOperation | DocumentFocusChangedOperation | DocumentSelectionChangedOperation | DocumentRestoreContentOperation;
 
 export const enum OperationKind {
 	SetContent = 0,
@@ -26,12 +20,12 @@ export const enum OperationKind {
 	Restore = 6,
 }
 
-export type Time = number
-export type DocumentId = number
-export type DocumentStateId = number
+export type Time = number;
+export type DocumentId = number;
+export type DocumentStateId = number;
 
 export abstract class BaseOperation {
-	public abstract get kind(): OperationKind
+	public abstract get kind(): OperationKind;
 
 	constructor(
 		public readonly operationIdx: number,
@@ -40,21 +34,21 @@ export abstract class BaseOperation {
 		public readonly documentStateIdBefore: DocumentStateId,
 		public readonly documentStateIdAfter: DocumentStateId,
 		public readonly logEventIdx: number,
-	) {}
+	) { }
 
-	public reason: string | undefined = undefined
-	public readonly inlineCompletionFetchRequests: InlineCompletionFetchRequest[] = []
+	public reason: string | undefined = undefined;
+	public readonly inlineCompletionFetchRequests: InlineCompletionFetchRequest[] = [];
 }
 
 export class InlineCompletionFetchRequest {
 	constructor(
 		public readonly requestId: number,
 		public result?: IEventFetchEnd,
-	) {}
+	) { }
 }
 
 export class DocumentSetContentOperation extends BaseOperation {
-	public readonly kind = OperationKind.SetContent
+	public readonly kind = OperationKind.SetContent;
 
 	constructor(
 		operationIdx: number,
@@ -66,12 +60,12 @@ export class DocumentSetContentOperation extends BaseOperation {
 		/* If undefined, sets a rollback-point */
 		public readonly content: string | undefined,
 	) {
-		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx)
+		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx);
 	}
 }
 
 export class DocumentOpenedOperation extends BaseOperation {
-	public readonly kind = OperationKind.Opened
+	public readonly kind = OperationKind.Opened;
 
 	constructor(
 		operationIdx: number,
@@ -81,12 +75,12 @@ export class DocumentOpenedOperation extends BaseOperation {
 		documentStateIdAfter: DocumentStateId,
 		logEventIdx: number,
 	) {
-		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx)
+		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx);
 	}
 }
 
 export class DocumentClosedOperation extends BaseOperation {
-	public readonly kind = OperationKind.Closed
+	public readonly kind = OperationKind.Closed;
 
 	constructor(
 		operationIdx: number,
@@ -96,12 +90,12 @@ export class DocumentClosedOperation extends BaseOperation {
 		documentStateIdAfter: DocumentStateId,
 		logEventIdx: number,
 	) {
-		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx)
+		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx);
 	}
 }
 
 export class DocumentChangedOperation extends BaseOperation {
-	public readonly kind = OperationKind.Changed
+	public readonly kind = OperationKind.Changed;
 
 	constructor(
 		operationIdx: number,
@@ -112,12 +106,12 @@ export class DocumentChangedOperation extends BaseOperation {
 		logEventIdx: number,
 		public readonly edit: StringEdit,
 	) {
-		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx)
+		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx);
 	}
 }
 
 export class DocumentFocusChangedOperation extends BaseOperation {
-	public readonly kind = OperationKind.FocusChanged
+	public readonly kind = OperationKind.FocusChanged;
 
 	constructor(
 		operationIdx: number,
@@ -127,12 +121,12 @@ export class DocumentFocusChangedOperation extends BaseOperation {
 		documentStateIdAfter: DocumentStateId,
 		logEventIdx: number,
 	) {
-		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx)
+		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx);
 	}
 }
 
 export class DocumentSelectionChangedOperation extends BaseOperation {
-	public readonly kind = OperationKind.SelectionChanged
+	public readonly kind = OperationKind.SelectionChanged;
 
 	constructor(
 		operationIdx: number,
@@ -143,12 +137,12 @@ export class DocumentSelectionChangedOperation extends BaseOperation {
 		logEventIdx: number,
 		public readonly selection: readonly OffsetRange[],
 	) {
-		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx)
+		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx);
 	}
 }
 
 export class DocumentRestoreContentOperation extends BaseOperation {
-	public readonly kind = OperationKind.Restore
+	public readonly kind = OperationKind.Restore;
 
 	constructor(
 		operationIdx: number,
@@ -158,6 +152,6 @@ export class DocumentRestoreContentOperation extends BaseOperation {
 		documentStateIdAfter: DocumentStateId,
 		logEventIdx: number,
 	) {
-		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx)
+		super(operationIdx, time, documentId, documentStateIdBefore, documentStateIdAfter, logEventIdx);
 	}
 }

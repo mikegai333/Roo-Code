@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/59924
 
 	/**
@@ -15,69 +16,69 @@ declare module "vscode" {
 		 * will be matched against the file paths of files relative to their workspace. Use a {@link RelativePattern relative pattern}
 		 * to restrict the search results to a {@link WorkspaceFolder workspace folder}.
 		 */
-		include?: GlobPattern
+		include?: GlobPattern;
 
 		/**
 		 * A {@link GlobPattern glob pattern} that defines files and folders to exclude. The glob pattern
 		 * will be matched against the file paths of resulting matches relative to their workspace. When `undefined`, default excludes will
 		 * apply.
 		 */
-		exclude?: GlobPattern
+		exclude?: GlobPattern;
 
 		/**
 		 * Whether to use the default and user-configured excludes. Defaults to true.
 		 */
-		useDefaultExcludes?: boolean
+		useDefaultExcludes?: boolean;
 
 		/**
 		 * The maximum number of results to search for
 		 */
-		maxResults?: number
+		maxResults?: number;
 
 		/**
 		 * Whether external files that exclude files, like .gitignore, should be respected.
 		 * See the vscode setting `"search.useIgnoreFiles"`.
 		 */
-		useIgnoreFiles?: boolean
+		useIgnoreFiles?: boolean;
 
 		/**
 		 * Whether global files that exclude files, like .gitignore, should be respected.
 		 * See the vscode setting `"search.useGlobalIgnoreFiles"`.
 		 */
-		useGlobalIgnoreFiles?: boolean
+		useGlobalIgnoreFiles?: boolean;
 
 		/**
 		 * Whether files in parent directories that exclude files, like .gitignore, should be respected.
 		 * See the vscode setting `"search.useParentIgnoreFiles"`.
 		 */
-		useParentIgnoreFiles?: boolean
+		useParentIgnoreFiles?: boolean;
 
 		/**
 		 * Whether symlinks should be followed while searching.
 		 * See the vscode setting `"search.followSymlinks"`.
 		 */
-		followSymlinks?: boolean
+		followSymlinks?: boolean;
 
 		/**
 		 * Interpret files using this encoding.
 		 * See the vscode setting `"files.encoding"`
 		 */
-		encoding?: string
+		encoding?: string;
 
 		/**
 		 * Options to specify the size of the result text preview.
 		 */
-		previewOptions?: TextSearchPreviewOptions
+		previewOptions?: TextSearchPreviewOptions;
 
 		/**
 		 * Number of lines of context to include before each match.
 		 */
-		beforeContext?: number
+		beforeContext?: number;
 
 		/**
 		 * Number of lines of context to include after each match.
 		 */
-		afterContext?: number
+		afterContext?: number;
 	}
 
 	export namespace workspace {
@@ -88,11 +89,7 @@ declare module "vscode" {
 		 * @param token A token that can be used to signal cancellation to the underlying search engine.
 		 * @return A thenable that resolves when the search is complete.
 		 */
-		export function findTextInFiles(
-			query: TextSearchQuery,
-			callback: (result: TextSearchResult) => void,
-			token?: CancellationToken,
-		): Thenable<TextSearchComplete>
+		export function findTextInFiles(query: TextSearchQuery, callback: (result: TextSearchResult) => void, token?: CancellationToken): Thenable<TextSearchComplete>;
 
 		/**
 		 * Search text in files across all {@link workspace.workspaceFolders workspace folders} in the workspace.
@@ -102,11 +99,6 @@ declare module "vscode" {
 		 * @param token A token that can be used to signal cancellation to the underlying search engine.
 		 * @return A thenable that resolves when the search is complete.
 		 */
-		export function findTextInFiles(
-			query: TextSearchQuery,
-			options: FindTextInFilesOptions,
-			callback: (result: TextSearchResult) => void,
-			token?: CancellationToken,
-		): Thenable<TextSearchComplete>
+		export function findTextInFiles(query: TextSearchQuery, options: FindTextInFilesOptions, callback: (result: TextSearchResult) => void, token?: CancellationToken): Thenable<TextSearchComplete>;
 	}
 }

@@ -10,7 +10,13 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceFolder}", "--enable-proposed-api", "bocsoft.aixcoding"],
+			"args": [
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--enable-proposed-api",
+				"bocsoft.aixcoding",
+				"--enable-proposed-api",
+				"MarsCode.marscode-extension"
+			],
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
 			"preLaunchTask": "${defaultBuildTask}",

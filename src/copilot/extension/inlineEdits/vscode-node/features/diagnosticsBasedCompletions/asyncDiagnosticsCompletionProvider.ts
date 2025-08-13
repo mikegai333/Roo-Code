@@ -3,132 +3,104 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LanguageId } from "../../../../../platform/inlineEdits/common/dataTypes/languageId"
-import { ITracer } from "../../../../../util/common/tracing"
-import { CancellationToken } from "../../../../../util/vs/base/common/cancellation"
-import { TextReplacement } from "../../../../../util/vs/editor/common/core/edits/textEdit"
-import { Position } from "../../../../../util/vs/editor/common/core/position"
-import { IVSCodeObservableDocument } from "../../parts/vscodeWorkspace"
-import {
-	CodeAction,
-	Diagnostic,
-	DiagnosticCompletionItem,
-	DiagnosticInlineEditRequestLogContext,
-	getCodeActionsForDiagnostic,
-	IDiagnosticCodeAction,
-	IDiagnosticCompletionProvider,
-	isDiagnosticWithinDistance,
-	log,
-} from "./diagnosticsCompletions"
+import { LanguageId } from '../../../../../platform/inlineEdits/common/dataTypes/languageId';
+import { ITracer } from '../../../../../util/common/tracing';
+import { CancellationToken } from '../../../../../util/vs/base/common/cancellation';
+import { TextReplacement } from '../../../../../util/vs/editor/common/core/edits/textEdit';
+import { Position } from '../../../../../util/vs/editor/common/core/position';
+import { IVSCodeObservableDocument } from '../../parts/vscodeWorkspace';
+import { CodeAction, Diagnostic, DiagnosticCompletionItem, DiagnosticInlineEditRequestLogContext, getCodeActionsForDiagnostic, IDiagnosticCodeAction, IDiagnosticCompletionProvider, isDiagnosticWithinDistance, log } from './diagnosticsCompletions';
 
 class AsyncDiagnosticCompletionItem extends DiagnosticCompletionItem {
-	public static readonly type = "async"
+	public static readonly type = 'async';
 
-	public readonly providerName = "async"
+	public readonly providerName = 'async';
 
-	constructor(diagnostic: Diagnostic, edit: TextReplacement, workspaceDocument: IVSCodeObservableDocument) {
-		super(AsyncDiagnosticCompletionItem.type, diagnostic, edit, workspaceDocument)
+	constructor(
+		diagnostic: Diagnostic,
+		edit: TextReplacement,
+		workspaceDocument: IVSCodeObservableDocument,
+	) {
+		super(AsyncDiagnosticCompletionItem.type, diagnostic, edit, workspaceDocument);
 	}
 }
 export class AsyncDiagnosticCompletionProvider implements IDiagnosticCompletionProvider<AsyncDiagnosticCompletionItem> {
-	public static SupportedLanguages = new Set<string>([
-		"typescript",
-		"javascript",
-		"typescriptreact",
-		"javascriptreact",
-	])
 
-	public readonly providerName = "async"
+	public static SupportedLanguages = new Set<string>(['typescript', 'javascript', 'typescriptreact', 'javascriptreact']);
 
-	constructor(private readonly _tracer: ITracer) {}
+	public readonly providerName = 'async';
+
+	constructor(private readonly _tracer: ITracer) { }
 
 	public providesCompletionsForDiagnostic(diagnostic: Diagnostic, language: LanguageId, pos: Position): boolean {
 		if (!AsyncDiagnosticCompletionProvider.SupportedLanguages.has(language)) {
-			return false
+			return false;
 		}
 
 		if (!isDiagnosticWithinDistance(diagnostic, pos, 3)) {
-			return false
+			return false;
 		}
 
-		return isAsyncDiagnostics(diagnostic)
+		return isAsyncDiagnostics(diagnostic);
 	}
 
-	async provideDiagnosticCompletionItem(
-		workspaceDocument: IVSCodeObservableDocument,
-		sortedDiagnostics: Diagnostic[],
-		pos: Position,
-		logContext: DiagnosticInlineEditRequestLogContext,
-		token: CancellationToken,
-	): Promise<AsyncDiagnosticCompletionItem | null> {
-		const missingAsyncDiagnostic = sortedDiagnostics.find((diagnostic) =>
-			this.providesCompletionsForDiagnostic(diagnostic, workspaceDocument.languageId.get(), pos),
-		)
+	async provideDiagnosticCompletionItem(workspaceDocument: IVSCodeObservableDocument, sortedDiagnostics: Diagnostic[], pos: Position, logContext: DiagnosticInlineEditRequestLogContext, token: CancellationToken): Promise<AsyncDiagnosticCompletionItem | null> {
+		const missingAsyncDiagnostic = sortedDiagnostics.find(diagnostic => this.providesCompletionsForDiagnostic(diagnostic, workspaceDocument.languageId.get(), pos));
 		if (missingAsyncDiagnostic === undefined) {
-			return null
+			return null;
 		}
 
 		// fetch code actions for missing async
-		const availableCodeActions = await getCodeActionsForDiagnostic(missingAsyncDiagnostic, workspaceDocument, token)
+		const availableCodeActions = await getCodeActionsForDiagnostic(missingAsyncDiagnostic, workspaceDocument, token);
 		if (availableCodeActions === undefined) {
-			log(
-				`Fetching code actions likely timed out for \`${missingAsyncDiagnostic.message}\``,
-				logContext,
-				this._tracer,
-			)
-			return null
+			log(`Fetching code actions likely timed out for \`${missingAsyncDiagnostic.message}\``, logContext, this._tracer);
+			return null;
 		}
 
-		const asyncCodeActions = getAsyncCodeActions(availableCodeActions, workspaceDocument)
+		const asyncCodeActions = getAsyncCodeActions(availableCodeActions, workspaceDocument);
 		if (asyncCodeActions.length === 0) {
-			log("No async code actions found in the available code actions", logContext, this._tracer)
-			return null
+			log('No async code actions found in the available code actions', logContext, this._tracer);
+			return null;
 		}
 
-		const asyncCodeActionToShow = asyncCodeActions[0]
-		const item = new AsyncDiagnosticCompletionItem(
-			missingAsyncDiagnostic,
-			asyncCodeActionToShow.edit,
-			workspaceDocument,
-		)
+		const asyncCodeActionToShow = asyncCodeActions[0];
+		const item = new AsyncDiagnosticCompletionItem(missingAsyncDiagnostic, asyncCodeActionToShow.edit, workspaceDocument);
 
-		log(`Created async completion item for: \`${missingAsyncDiagnostic.toString()}\``, logContext, this._tracer)
+		log(`Created async completion item for: \`${missingAsyncDiagnostic.toString()}\``, logContext, this._tracer);
 
-		return item
+		return item;
 	}
 }
 
 function isAsyncDiagnostics(diagnostic: Diagnostic): boolean {
-	return diagnostic.code === 1308
+	return diagnostic.code === 1308;
 }
 
-const CODE_ACTION_ASYNC_TITLE_PREFIXES = ["Add async", "Update async"]
+const CODE_ACTION_ASYNC_TITLE_PREFIXES = ['Add async', 'Update async'];
 
-function getAsyncCodeActions(
-	codeActions: CodeAction[],
-	workspaceDocument: IVSCodeObservableDocument,
-): IDiagnosticCodeAction[] {
-	const asyncCodeActions: IDiagnosticCodeAction[] = []
+function getAsyncCodeActions(codeActions: CodeAction[], workspaceDocument: IVSCodeObservableDocument): IDiagnosticCodeAction[] {
+
+	const asyncCodeActions: IDiagnosticCodeAction[] = [];
 	for (const codeAction of codeActions) {
-		const asyncTitlePrefix = CODE_ACTION_ASYNC_TITLE_PREFIXES.find((prefix) => codeAction.title.startsWith(prefix))
+		const asyncTitlePrefix = CODE_ACTION_ASYNC_TITLE_PREFIXES.find(prefix => codeAction.title.startsWith(prefix));
 
-		const isAsyncCodeAction = !!asyncTitlePrefix
+		const isAsyncCodeAction = !!asyncTitlePrefix;
 		if (!isAsyncCodeAction) {
-			continue
+			continue;
 		}
 
-		const edits = codeAction.getEditForWorkspaceDocument(workspaceDocument)
+		const edits = codeAction.getEditForWorkspaceDocument(workspaceDocument);
 		if (!edits) {
-			continue
+			continue;
 		}
 
-		const joinedEdit = TextReplacement.joinReplacements(edits, workspaceDocument.value.get())
+		const joinedEdit = TextReplacement.joinReplacements(edits, workspaceDocument.value.get());
 
 		asyncCodeActions.push({
 			...codeAction,
 			edit: joinedEdit,
-		})
+		});
 	}
 
-	return asyncCodeActions
+	return asyncCodeActions;
 }

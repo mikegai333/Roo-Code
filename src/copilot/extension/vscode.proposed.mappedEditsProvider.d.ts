@@ -3,14 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	/**
 	 * @deprecated Part of MappedEditsProvider, use `MappedEditsProvider2` instead.
 	 */
 	export interface DocumentContextItem {
-		readonly uri: Uri
-		readonly version: number
-		readonly ranges: Range[]
+		readonly uri: Uri;
+		readonly version: number;
+		readonly ranges: Range[];
 	}
 
 	/**
@@ -18,8 +19,8 @@ declare module "vscode" {
 	 */
 	export interface ConversationRequest {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		readonly type: "request"
-		readonly message: string
+		readonly type: 'request';
+		readonly message: string;
 	}
 
 	/**
@@ -27,22 +28,22 @@ declare module "vscode" {
 	 */
 	export interface ConversationResponse {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		readonly type: "response"
-		readonly message: string
-		readonly result?: ChatResult
-		readonly references?: DocumentContextItem[]
+		readonly type: 'response';
+		readonly message: string;
+		readonly result?: ChatResult;
+		readonly references?: DocumentContextItem[];
 	}
 
 	/**
 	 * @deprecated Part of MappedEditsProvider, use `MappedEditsProvider2` instead.
 	 */
 	export interface MappedEditsContext {
-		readonly documents: DocumentContextItem[][]
+		readonly documents: DocumentContextItem[][];
 		/**
 		 * The conversation that led to the current code block(s).
 		 * The last conversation part contains the code block(s) for which the code mapper should provide edits.
 		 */
-		readonly conversation?: Array<ConversationRequest | ConversationResponse>
+		readonly conversation?: Array<ConversationRequest | ConversationResponse>;
 	}
 
 	/**
@@ -63,28 +64,28 @@ declare module "vscode" {
 			document: TextDocument,
 			codeBlocks: string[],
 			context: MappedEditsContext,
-			token: CancellationToken,
-		): ProviderResult<WorkspaceEdit | null>
+			token: CancellationToken
+		): ProviderResult<WorkspaceEdit | null>;
 	}
 
 	/**
 	 * Interface for providing mapped edits for a given document.
 	 */
 	export interface MappedEditsRequest {
-		readonly codeBlocks: { code: string; resource: Uri; markdownBeforeBlock?: string }[]
-		readonly location?: string
-		readonly chatRequestId?: string
-		readonly chatSessionId?: string
-		readonly chatRequestModel?: string
+		readonly codeBlocks: { code: string; resource: Uri; markdownBeforeBlock?: string }[];
+		readonly location?: string;
+		readonly chatRequestId?: string;
+		readonly chatSessionId?: string;
+		readonly chatRequestModel?: string;
 	}
 
 	export interface MappedEditsResponseStream {
-		textEdit(target: Uri, edits: TextEdit | TextEdit[]): void
-		notebookEdit(target: Uri, edits: NotebookEdit | NotebookEdit[]): void
+		textEdit(target: Uri, edits: TextEdit | TextEdit[]): void;
+		notebookEdit(target: Uri, edits: NotebookEdit | NotebookEdit[]): void;
 	}
 
 	export interface MappedEditsResult {
-		readonly errorMessage?: string
+		readonly errorMessage?: string;
 	}
 
 	/**
@@ -94,19 +95,16 @@ declare module "vscode" {
 		provideMappedEdits(
 			request: MappedEditsRequest,
 			result: MappedEditsResponseStream,
-			token: CancellationToken,
-		): ProviderResult<MappedEditsResult>
+			token: CancellationToken
+		): ProviderResult<MappedEditsResult>;
 	}
 
 	namespace chat {
 		/**
 		 * @deprecated Use `MappedEditsProvider2` instead.
 		 */
-		export function registerMappedEditsProvider(
-			documentSelector: DocumentSelector,
-			provider: MappedEditsProvider,
-		): Disposable
+		export function registerMappedEditsProvider(documentSelector: DocumentSelector, provider: MappedEditsProvider): Disposable;
 
-		export function registerMappedEditsProvider2(provider: MappedEditsProvider2): Disposable
+		export function registerMappedEditsProvider2(provider: MappedEditsProvider2): Disposable;
 	}
 }

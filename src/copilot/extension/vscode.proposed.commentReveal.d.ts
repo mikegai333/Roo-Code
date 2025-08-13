@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// @alexr00 https://github.com/microsoft/vscode/issues/167253
 
 	/**
@@ -13,18 +14,19 @@ declare module "vscode" {
 		/**
 		 * By default, the comment thread will be focused. Set `preserveFocus` to `true` to maintain the original focus.
 		 */
-		preserveFocus?: boolean
+		preserveFocus?: boolean;
 
 		/**
 		 * Focus the comment thread reply editor, if the thread supports replying.
 		 */
-		focusReply?: boolean
+		focusReply?: boolean;
 	}
 
 	export interface CommentThread {
 		/**
 		 * Reveal the comment thread in an editor.
 		 */
-		reveal(options?: CommentThreadRevealOptions): Thenable<void>
+		reveal(options?: CommentThreadRevealOptions): Thenable<void>;
 	}
+
 }

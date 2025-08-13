@@ -5,29 +5,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISettableObservable } from "../base"
-import { DebugNameData, IDebugNameData } from "../debugName"
-import { EqualityComparer, strictEquals } from "../commonFacade/deps"
-import { ObservableValue } from "./observableValue"
-import { LazyObservableValue } from "./lazyObservableValue"
+import { ISettableObservable } from '../base';
+import { DebugNameData, IDebugNameData } from '../debugName';
+import { EqualityComparer, strictEquals } from '../commonFacade/deps';
+import { ObservableValue } from './observableValue';
+import { LazyObservableValue } from './lazyObservableValue';
 
 export function observableValueOpts<T, TChange = void>(
 	options: IDebugNameData & {
-		equalsFn?: EqualityComparer<T>
-		lazy?: boolean
+		equalsFn?: EqualityComparer<T>;
+		lazy?: boolean;
 	},
-	initialValue: T,
+	initialValue: T
 ): ISettableObservable<T, TChange> {
 	if (options.lazy) {
 		return new LazyObservableValue(
 			new DebugNameData(options.owner, options.debugName, undefined),
 			initialValue,
 			options.equalsFn ?? strictEquals,
-		)
+		);
 	}
 	return new ObservableValue(
 		new DebugNameData(options.owner, options.debugName, undefined),
 		initialValue,
 		options.equalsFn ?? strictEquals,
-	)
+	);
 }

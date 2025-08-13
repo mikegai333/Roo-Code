@@ -7,11 +7,12 @@
  * A class representing a lock that can be acquired and released.
  */
 export class Lock {
-	private _locked = false
-	private _queue: (() => void)[] = []
+
+	private _locked = false;
+	private _queue: (() => void)[] = [];
 
 	get locked(): boolean {
-		return this._locked
+		return this._locked;
 	}
 
 	/**
@@ -19,14 +20,14 @@ export class Lock {
 	 */
 	async acquire(): Promise<void> {
 		if (!this._locked) {
-			this._locked = true
-			return
+			this._locked = true;
+			return;
 		}
 
 		await new Promise<void>((resolve) => {
-			this._queue.push(resolve)
-		})
-		await this.acquire()
+			this._queue.push(resolve);
+		});
+		await this.acquire();
 	}
 
 	/**
@@ -35,35 +36,36 @@ export class Lock {
 	 */
 	release(): void {
 		if (!this._locked) {
-			throw new Error("Cannot release an unlocked lock")
+			throw new Error('Cannot release an unlocked lock');
 		}
 
-		this._locked = false
-		const next = this._queue.shift()
+		this._locked = false;
+		const next = this._queue.shift();
 		if (next) {
-			next()
+			next();
 		}
 	}
 }
 
 export class LockMap {
-	private _locks: Map<string, Lock> = new Map()
+
+	private _locks: Map<string, Lock> = new Map();
 
 	async withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
 		if (!this._locks.has(key)) {
-			this._locks.set(key, new Lock())
+			this._locks.set(key, new Lock());
 		}
 
-		const lock = this._locks.get(key)!
+		const lock = this._locks.get(key)!;
 
-		await lock.acquire()
+		await lock.acquire();
 
 		try {
-			return await fn()
+			return await fn();
 		} catch (error) {
-			throw error
+			throw error;
 		} finally {
-			lock.release()
+			lock.release();
 		}
 	}
 }

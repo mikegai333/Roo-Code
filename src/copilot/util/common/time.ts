@@ -11,21 +11,21 @@
  */
 export function secondsToHumanReadableTime(seconds: number): string {
 	if (seconds < 90) {
-		return `${seconds} seconds`
+		return `${seconds} seconds`;
 	}
 
-	const minutes = Math.floor(seconds / 60)
+	const minutes = Math.floor(seconds / 60);
 	if (seconds <= 5400) {
-		return `${minutes} minutes`
+		return `${minutes} minutes`;
 	}
 
-	const hours = Math.floor(minutes / 60)
-	const remainingMinutes = minutes % 60
+	const hours = Math.floor(minutes / 60);
+	const remainingMinutes = minutes % 60;
 
-	let result = `${hours} hours`
+	let result = `${hours} hours`;
 	if (remainingMinutes > 0) {
-		result += ` ${remainingMinutes} minutes`
+		result += ` ${remainingMinutes} minutes`;
 	}
 
-	return result
+	return result;
 }

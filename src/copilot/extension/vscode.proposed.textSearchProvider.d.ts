@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/59921
 
 	/**
@@ -13,27 +14,27 @@ declare module "vscode" {
 		/**
 		 * The text pattern to search for.
 		 */
-		pattern: string
+		pattern: string;
 
 		/**
 		 * Whether or not `pattern` should match multiple lines of text.
 		 */
-		isMultiline?: boolean
+		isMultiline?: boolean;
 
 		/**
 		 * Whether or not `pattern` should be interpreted as a regular expression.
 		 */
-		isRegExp?: boolean
+		isRegExp?: boolean;
 
 		/**
 		 * Whether or not the search should be case-sensitive.
 		 */
-		isCaseSensitive?: boolean
+		isCaseSensitive?: boolean;
 
 		/**
 		 * Whether or not to search for whole word matches only.
 		 */
-		isWordMatch?: boolean
+		isWordMatch?: boolean;
 	}
 
 	/**
@@ -41,7 +42,7 @@ declare module "vscode" {
 	 * TODO@roblourens merge this with the GlobPattern docs/definition in vscode.d.ts.
 	 * @see {@link GlobPattern}
 	 */
-	export type GlobString = string
+	export type GlobString = string;
 
 	/**
 	 * Options common to file and text search
@@ -50,41 +51,41 @@ declare module "vscode" {
 		/**
 		 * The root folder to search within.
 		 */
-		folder: Uri
+		folder: Uri;
 
 		/**
 		 * Files that match an `includes` glob pattern should be included in the search.
 		 */
-		includes: GlobString[]
+		includes: GlobString[];
 
 		/**
 		 * Files that match an `excludes` glob pattern should be excluded from the search.
 		 */
-		excludes: GlobString[]
+		excludes: GlobString[];
 
 		/**
 		 * Whether external files that exclude files, like .gitignore, should be respected.
 		 * See the vscode setting `"search.useIgnoreFiles"`.
 		 */
-		useIgnoreFiles: boolean
+		useIgnoreFiles: boolean;
 
 		/**
 		 * Whether symlinks should be followed while searching.
 		 * See the vscode setting `"search.followSymlinks"`.
 		 */
-		followSymlinks: boolean
+		followSymlinks: boolean;
 
 		/**
 		 * Whether global files that exclude files, like .gitignore, should be respected.
 		 * See the vscode setting `"search.useGlobalIgnoreFiles"`.
 		 */
-		useGlobalIgnoreFiles: boolean
+		useGlobalIgnoreFiles: boolean;
 
 		/**
 		 * Whether files in parent directories that exclude files, like .gitignore, should be respected.
 		 * See the vscode setting `"search.useParentIgnoreFiles"`.
 		 */
-		useParentIgnoreFiles: boolean
+		useParentIgnoreFiles: boolean;
 	}
 
 	/**
@@ -96,12 +97,12 @@ declare module "vscode" {
 		 * The maximum number of lines in the preview.
 		 * Only search providers that support multiline search will ever return more than one line in the match.
 		 */
-		matchLines: number
+		matchLines: number;
 
 		/**
 		 * The maximum number of characters included per line.
 		 */
-		charsPerLine: number
+		charsPerLine: number;
 	}
 
 	/**
@@ -111,33 +112,33 @@ declare module "vscode" {
 		/**
 		 * The maximum number of results to be returned.
 		 */
-		maxResults: number
+		maxResults: number;
 
 		/**
 		 * Options to specify the size of the result text preview.
 		 */
-		previewOptions?: TextSearchPreviewOptions
+		previewOptions?: TextSearchPreviewOptions;
 
 		/**
 		 * Exclude files larger than `maxFileSize` in bytes.
 		 */
-		maxFileSize?: number
+		maxFileSize?: number;
 
 		/**
 		 * Interpret files using this encoding.
 		 * See the vscode setting `"files.encoding"`
 		 */
-		encoding?: string
+		encoding?: string;
 
 		/**
 		 * Number of lines of context to include before each match.
 		 */
-		beforeContext?: number
+		beforeContext?: number;
 
 		/**
 		 * Number of lines of context to include after each match.
 		 */
-		afterContext?: number
+		afterContext?: number;
 	}
 
 	/**
@@ -155,16 +156,16 @@ declare module "vscode" {
 		/**
 		 * Markdown text of the message.
 		 */
-		text: string
+		text: string;
 		/**
 		 * Whether the source of the message is trusted, command links are disabled for untrusted message sources.
 		 * Messaged are untrusted by default.
 		 */
-		trusted?: boolean
+		trusted?: boolean;
 		/**
 		 * The message type, this affects how the message will be rendered.
 		 */
-		type: TextSearchCompleteMessageType
+		type: TextSearchCompleteMessageType;
 	}
 
 	/**
@@ -178,7 +179,7 @@ declare module "vscode" {
 		 * - If `maxResults` matches are returned and more exist, this should be true.
 		 * - If search hits an internal limit which is less than `maxResults`, this should be true.
 		 */
-		limitHit?: boolean
+		limitHit?: boolean;
 
 		/**
 		 * Additional information regarding the state of the completed search.
@@ -189,7 +190,7 @@ declare module "vscode" {
 		 *
 		 * Commands may optionally return { triggerSearch: true } to signal to the editor that the original search should run be again.
 		 */
-		message?: TextSearchCompleteMessage | TextSearchCompleteMessage[]
+		message?: TextSearchCompleteMessage | TextSearchCompleteMessage[];
 	}
 
 	/**
@@ -199,13 +200,13 @@ declare module "vscode" {
 		/**
 		 * The matching lines of text, or a portion of the matching line that contains the match.
 		 */
-		text: string
+		text: string;
 
 		/**
 		 * The Range within `text` corresponding to the text of the match.
 		 * The number of matches must match the TextSearchMatch's range property.
 		 */
-		matches: Range | Range[]
+		matches: Range | Range[];
 	}
 
 	/**
@@ -215,17 +216,17 @@ declare module "vscode" {
 		/**
 		 * The uri for the matching document.
 		 */
-		uri: Uri
+		uri: Uri;
 
 		/**
 		 * The range of the match within the document, or multiple ranges for multiple matches.
 		 */
-		ranges: Range | Range[]
+		ranges: Range | Range[];
 
 		/**
 		 * A preview of the text match.
 		 */
-		preview: TextSearchMatchPreview
+		preview: TextSearchMatchPreview;
 	}
 
 	/**
@@ -235,21 +236,21 @@ declare module "vscode" {
 		/**
 		 * The uri for the matching document.
 		 */
-		uri: Uri
+		uri: Uri;
 
 		/**
 		 * One line of text.
 		 * previewOptions.charsPerLine applies to this
 		 */
-		text: string
+		text: string;
 
 		/**
 		 * The line number of this line of context.
 		 */
-		lineNumber: number
+		lineNumber: number;
 	}
 
-	export type TextSearchResult = TextSearchMatch | TextSearchContext
+	export type TextSearchResult = TextSearchMatch | TextSearchContext;
 
 	/**
 	 * A TextSearchProvider provides search results for text results inside files in the workspace.
@@ -262,12 +263,7 @@ declare module "vscode" {
 		 * @param progress A progress callback that must be invoked for all results.
 		 * @param token A cancellation token.
 		 */
-		provideTextSearchResults(
-			query: TextSearchQuery,
-			options: TextSearchOptions,
-			progress: Progress<TextSearchResult>,
-			token: CancellationToken,
-		): ProviderResult<TextSearchComplete>
+		provideTextSearchResults(query: TextSearchQuery, options: TextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken): ProviderResult<TextSearchComplete>;
 	}
 
 	export namespace workspace {
@@ -280,6 +276,6 @@ declare module "vscode" {
 		 * @param provider The provider.
 		 * @return A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerTextSearchProvider(scheme: string, provider: TextSearchProvider): Disposable
+		export function registerTextSearchProvider(scheme: string, provider: TextSearchProvider): Disposable;
 	}
 }

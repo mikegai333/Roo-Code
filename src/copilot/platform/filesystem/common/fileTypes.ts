@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode"
-import { URI } from "../../../util/vs/base/common/uri"
+import type * as vscode from 'vscode';
+import { URI } from '../../../util/vs/base/common/uri';
 
 /**
  * Taken from vscode.d.ts
@@ -28,16 +28,14 @@ export enum FileType {
 	/**
 	 * A symbolic link to a file.
 	 */
-	SymbolicLink = 64,
+	SymbolicLink = 64
 }
 
 export class RelativePattern implements vscode.RelativePattern {
 	constructor(
 		public readonly baseUri: URI,
 		public readonly pattern: string,
-	) {}
+	) { }
 
-	get base(): string {
-		throw new Error("Not implemented")
-	}
+	get base(): string { throw new Error('Not implemented'); }
 }

@@ -3,69 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Diagnostic,
-	DiagnosticSeverity,
-	EndOfLine,
-	languages,
-	Range,
-	TextDocument,
-	TextDocumentChangeEvent,
-	TextDocumentContentChangeEvent,
-	Uri,
-	window,
-	workspace,
-} from "vscode"
+import { Diagnostic, DiagnosticSeverity, EndOfLine, languages, Range, TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, Uri, window, workspace } from 'vscode';
 // import { IIgnoreService } from '../../../../platform/ignore/common/ignoreService';
-import { DiagnosticData } from "../../../../platform/inlineEdits/common/dataTypes/diagnosticData"
-import { DocumentId } from "../../../../platform/inlineEdits/common/dataTypes/documentId"
-import { LanguageId } from "../../../../platform/inlineEdits/common/dataTypes/languageId"
-import { EditReason } from "../../../../platform/inlineEdits/common/editReason"
-import {
-	IObservableDocument,
-	ObservableWorkspace,
-	StringEditWithReason,
-} from "../../../../platform/inlineEdits/common/observableWorkspace"
-import { IWorkspaceService } from "../../../../platform/workspace/common/workspaceService"
-import { findNotebook } from "../../../../util/common/notebooks"
-import { diffMaps } from "../../../../util/vs/base/common/collections"
-import { onUnexpectedError } from "../../../../util/vs/base/common/errors"
-import { Disposable, DisposableStore, IDisposable } from "../../../../util/vs/base/common/lifecycle"
-import { Schemas } from "../../../../util/vs/base/common/network"
-import {
-	autorun,
-	derived,
-	IObservable,
-	IReader,
-	ISettableObservable,
-	mapObservableArrayCached,
-	observableFromEvent,
-	observableValue,
-	transaction,
-} from "../../../../util/vs/base/common/observableInternal"
-import { isDefined } from "../../../../util/vs/base/common/types"
-import { URI } from "../../../../util/vs/base/common/uri"
-import { StringEdit, StringReplacement } from "../../../../util/vs/editor/common/core/edits/stringEdit"
-import { OffsetRange } from "../../../../util/vs/editor/common/core/ranges/offsetRange"
-import { StringText } from "../../../../util/vs/editor/common/core/text/abstractText"
-import { IInstantiationService } from "../../../../util/vs/platform/instantiation/common/instantiation"
+import { DiagnosticData } from '../../../../platform/inlineEdits/common/dataTypes/diagnosticData';
+import { DocumentId } from '../../../../platform/inlineEdits/common/dataTypes/documentId';
+import { LanguageId } from '../../../../platform/inlineEdits/common/dataTypes/languageId';
+import { EditReason } from '../../../../platform/inlineEdits/common/editReason';
+import { IObservableDocument, ObservableWorkspace, StringEditWithReason } from '../../../../platform/inlineEdits/common/observableWorkspace';
+import { IWorkspaceService } from '../../../../platform/workspace/common/workspaceService';
+import { findNotebook } from '../../../../util/common/notebooks';
+import { diffMaps } from '../../../../util/vs/base/common/collections';
+import { onUnexpectedError } from '../../../../util/vs/base/common/errors';
+import { Disposable, DisposableStore, IDisposable } from '../../../../util/vs/base/common/lifecycle';
+import { Schemas } from '../../../../util/vs/base/common/network';
+import { autorun, derived, IObservable, IReader, ISettableObservable, mapObservableArrayCached, observableFromEvent, observableValue, transaction } from '../../../../util/vs/base/common/observableInternal';
+import { isDefined } from '../../../../util/vs/base/common/types';
+import { URI } from '../../../../util/vs/base/common/uri';
+import { StringEdit, StringReplacement } from '../../../../util/vs/editor/common/core/edits/stringEdit';
+import { OffsetRange } from '../../../../util/vs/editor/common/core/ranges/offsetRange';
+import { StringText } from '../../../../util/vs/editor/common/core/text/abstractText';
+import { IInstantiationService } from '../../../../util/vs/platform/instantiation/common/instantiation';
 
 export class VSCodeWorkspace extends ObservableWorkspace implements IDisposable {
-	private readonly _openDocuments = observableValue<
-		readonly IVSCodeObservableDocument[],
-		{ added: readonly IVSCodeObservableDocument[]; removed: readonly IVSCodeObservableDocument[] }
-	>(this, [])
-	public readonly openDocuments = this._openDocuments
-	private readonly _store = new DisposableStore()
-	private readonly _filter: DocumentFilter
+	private readonly _openDocuments = observableValue<readonly IVSCodeObservableDocument[], { added: readonly IVSCodeObservableDocument[]; removed: readonly IVSCodeObservableDocument[] }>(this, []);
+	public readonly openDocuments = this._openDocuments;
+	private readonly _store = new DisposableStore();
+	private readonly _filter: DocumentFilter;
 
 	constructor(
 		@IWorkspaceService private readonly _workspaceService: IWorkspaceService,
 		@IInstantiationService private readonly _instaService: IInstantiationService,
 	) {
-		super()
+		super();
 
-		this._filter = this._instaService.createInstance(DocumentFilter)
+		this._filter = this._instaService.createInstance(DocumentFilter);
 
 		// this._store.add(autorun(reader => {
 		// 	if (config.read(reader)) {
@@ -73,220 +44,174 @@ export class VSCodeWorkspace extends ObservableWorkspace implements IDisposable 
 		// 	}
 		// }));
 
-		let lastDocs: Map<DocumentId, VSCodeObservableDocument> = new Map()
-		this._store.add(
-			autorun((reader) => {
-				// Manually copy over the documents to get the delta
-				const curDocs = this._obsDocsByDocId.read(reader)
-				const diff = diffMaps(lastDocs, curDocs)
-				lastDocs = curDocs
+		let lastDocs: Map<DocumentId, VSCodeObservableDocument> = new Map();
+		this._store.add(autorun(reader => {
+			// Manually copy over the documents to get the delta
+			const curDocs = this._obsDocsByDocId.read(reader);
+			const diff = diffMaps(lastDocs, curDocs);
+			lastDocs = curDocs;
 
-				this._openDocuments.set([...curDocs.values()], undefined, {
-					added: diff.added,
-					removed: diff.removed,
-				})
-			}),
-		)
+			this._openDocuments.set([...curDocs.values()], undefined, {
+				added: diff.added,
+				removed: diff.removed,
+			});
+		}));
 
-		this._store.add(
-			workspace.onDidChangeTextDocument((e) => {
-				const doc = this._getDocumentByTextDocumentAndUpdateShouldTrack(e.document.uri)
-				if (!doc) {
-					return
+		this._store.add(workspace.onDidChangeTextDocument(e => {
+			const doc = this._getDocumentByTextDocumentAndUpdateShouldTrack(e.document.uri);
+			if (!doc) {
+				return;
+			}
+			const edit = editFromTextDocumentContentChangeEvents(e.contentChanges);
+			const editWithReason = new StringEditWithReason(edit.replacements, EditReason.create(e.detailedReason?.metadata as any));
+			transaction(tx => {
+				doc.languageId.set(LanguageId.create(e.document.languageId), tx);
+				doc.value.set(stringValueFromDoc(e.document), tx, editWithReason);
+				doc.version.set(e.document.version, tx);
+			});
+		}));
+
+		this._store.add(window.onDidChangeTextEditorSelection(e => {
+			const doc = this._getDocumentByTextDocumentAndUpdateShouldTrack(e.textEditor.document.uri);
+			if (!doc) {
+				return;
+			}
+			doc.selection.set(e.selections.map(s => rangeToOffsetRange(s, e.textEditor.document)), undefined);
+		}));
+
+		this._store.add(window.onDidChangeTextEditorVisibleRanges(e => {
+			const doc = this._getDocumentByTextDocumentAndUpdateShouldTrack(e.textEditor.document.uri);
+			if (!doc) {
+				return;
+			}
+			doc.visibleRanges.set(e.visibleRanges.map(r => rangeToOffsetRange(r, e.textEditor.document)), undefined);
+		}));
+
+		this._store.add(languages.onDidChangeDiagnostics(e => {
+			e.uris.forEach(uri => {
+				const document = this._getDocumentByTextDocumentAndUpdateShouldTrack(uri);
+				if (!document) {
+					return;
 				}
-				const edit = editFromTextDocumentContentChangeEvents(e.contentChanges)
-				const editWithReason = new StringEditWithReason(
-					edit.replacements,
-					EditReason.create(e.detailedReason?.metadata as any),
-				)
-				transaction((tx) => {
-					doc.languageId.set(LanguageId.create(e.document.languageId), tx)
-					doc.value.set(stringValueFromDoc(e.document), tx, editWithReason)
-					doc.version.set(e.document.version, tx)
-				})
-			}),
-		)
-
-		this._store.add(
-			window.onDidChangeTextEditorSelection((e) => {
-				const doc = this._getDocumentByTextDocumentAndUpdateShouldTrack(e.textEditor.document.uri)
-				if (!doc) {
-					return
-				}
-				doc.selection.set(
-					e.selections.map((s) => rangeToOffsetRange(s, e.textEditor.document)),
-					undefined,
-				)
-			}),
-		)
-
-		this._store.add(
-			window.onDidChangeTextEditorVisibleRanges((e) => {
-				const doc = this._getDocumentByTextDocumentAndUpdateShouldTrack(e.textEditor.document.uri)
-				if (!doc) {
-					return
-				}
-				doc.visibleRanges.set(
-					e.visibleRanges.map((r) => rangeToOffsetRange(r, e.textEditor.document)),
-					undefined,
-				)
-			}),
-		)
-
-		this._store.add(
-			languages.onDidChangeDiagnostics((e) => {
-				e.uris.forEach((uri) => {
-					const document = this._getDocumentByTextDocumentAndUpdateShouldTrack(uri)
-					if (!document) {
-						return
-					}
-					const diagnostics = languages
-						.getDiagnostics(uri)
-						.map((d) => this._createDiagnosticData(d, document.textDocument))
-						.filter(isDefined)
-					document.diagnostics.set(diagnostics, undefined)
-				})
-			}),
-		)
+				const diagnostics = languages.getDiagnostics(uri).map(d => this._createDiagnosticData(d, document.textDocument)).filter(isDefined);
+				document.diagnostics.set(diagnostics, undefined);
+			});
+		}));
 	}
 
 	public dispose(): void {
-		this._store.dispose()
+		this._store.dispose();
 	}
 
-	private readonly _obsDocsByDocId = derived(this, (reader) => {
-		const docs = this._docsWithShouldTrackFlag.read(reader)
-		const obsDocs = docs.map((d) => d.obsDoc.read(reader)).filter(isDefined)
-		const map = new Map(obsDocs.map((d) => [d.id, d]))
-		return map
-	})
+	private readonly _obsDocsByDocId = derived(this, reader => {
+		const docs = this._docsWithShouldTrackFlag.read(reader);
+		const obsDocs = docs.map(d => d.obsDoc.read(reader)).filter(isDefined);
+		const map = new Map(obsDocs.map(d => [d.id, d]));
+		return map;
+	});
 
-	private readonly _vscodeTextDocuments = getTextDocuments()
-	private readonly _docsWithShouldTrackFlag = mapObservableArrayCached(
-		this,
-		this._vscodeTextDocuments,
-		(doc, store) => {
-			const shouldTrack = observableValue<boolean>(this, false)
-			const updateShouldTrack = () => {
-				// @ulugbekna: not sure if invoking `isCopilotIgnored` on every textDocument-edit event is a good idea
-				// 	also not sure if we should be enforcing local copilot-ignore rules (vs only remote-exclusion rules)
-				this._filter
-					.isTrackingEnabled(doc)
-					.then((v) => {
-						shouldTrack.set(v, undefined)
-					})
-					.catch((e) => {
-						onUnexpectedError(e)
-					})
+	private readonly _vscodeTextDocuments = getTextDocuments();
+	private readonly _docsWithShouldTrackFlag = mapObservableArrayCached(this, this._vscodeTextDocuments, (doc, store) => {
+		const shouldTrack = observableValue<boolean>(this, false);
+		const updateShouldTrack = () => {
+			// @ulugbekna: not sure if invoking `isCopilotIgnored` on every textDocument-edit event is a good idea
+			// 	also not sure if we should be enforcing local copilot-ignore rules (vs only remote-exclusion rules)
+			this._filter.isTrackingEnabled(doc).then(v => {
+				shouldTrack.set(v, undefined);
+			}).catch(e => {
+				onUnexpectedError(e);
+			});
+		};
+		const obsDoc = derived(this, reader => {
+			if (!shouldTrack.read(reader)) {
+				return undefined;
 			}
-			const obsDoc = derived(this, (reader) => {
-				if (!shouldTrack.read(reader)) {
-					return undefined
-				}
 
-				const documentId = DocumentId.create(doc.uri.toString())
-				const openedTextEditor = window.visibleTextEditors.find(
-					(e) => e.document.uri.toString() === doc.uri.toString(),
-				)
-				const selections = openedTextEditor?.selections.map((s) => rangeToOffsetRange(s, doc))
-				const visibleRanges = openedTextEditor?.visibleRanges.map((r) => rangeToOffsetRange(r, doc))
-				const diagnostics = languages
-					.getDiagnostics(doc.uri)
-					.map((d) => this._createDiagnosticData(d, doc))
-					.filter(isDefined)
-				const document = new VSCodeObservableDocument(
-					documentId,
-					stringValueFromDoc(doc),
-					doc.version,
-					selections ?? [],
-					visibleRanges ?? [],
-					LanguageId.create(doc.languageId),
-					diagnostics,
-					doc,
-				)
-				return document
-			}).recomputeInitiallyAndOnChange(store)
+			const documentId = DocumentId.create(doc.uri.toString());
+			const openedTextEditor = window.visibleTextEditors.find(e => e.document.uri.toString() === doc.uri.toString());
+			const selections = openedTextEditor?.selections.map(s => rangeToOffsetRange(s, doc));
+			const visibleRanges = openedTextEditor?.visibleRanges.map(r => rangeToOffsetRange(r, doc));
+			const diagnostics = languages.getDiagnostics(doc.uri).map(d => this._createDiagnosticData(d, doc)).filter(isDefined);
+			const document = new VSCodeObservableDocument(documentId, stringValueFromDoc(doc), doc.version, selections ?? [], visibleRanges ?? [], LanguageId.create(doc.languageId), diagnostics, doc);
+			return document;
+		}).recomputeInitiallyAndOnChange(store);
 
-			updateShouldTrack()
-			return {
-				doc,
-				updateShouldTrack,
-				obsDoc,
-			}
-		},
-	)
+		updateShouldTrack();
+		return {
+			doc,
+			updateShouldTrack,
+			obsDoc,
+		};
+	});
 
 	private _getDocumentByTextDocumentAndUpdateShouldTrack(uri: URI): VSCodeObservableDocument | undefined {
-		const internalDoc = this._getInternalDocument(uri)
+		const internalDoc = this._getInternalDocument(uri);
 		if (!internalDoc) {
-			return undefined
+			return undefined;
 		}
-		internalDoc.updateShouldTrack()
-		return internalDoc.obsDoc.get()
+		internalDoc.updateShouldTrack();
+		return internalDoc.obsDoc.get();
 	}
 
 	private _getInternalDocument(uri: Uri, reader?: IReader) {
-		const document = this._obsDocsWithUpdateIgnored.read(reader).get(uri.toString())
-		return document
+		const document = this._obsDocsWithUpdateIgnored.read(reader).get(uri.toString());
+		return document;
 	}
 
 	private _createDiagnosticData(diagnostic: Diagnostic, doc: TextDocument): DiagnosticData | undefined {
-		if (
-			!diagnostic.source ||
-			(diagnostic.severity !== DiagnosticSeverity.Error && diagnostic.severity !== DiagnosticSeverity.Warning)
-		) {
-			return undefined
+		if (!diagnostic.source || (diagnostic.severity !== DiagnosticSeverity.Error && diagnostic.severity !== DiagnosticSeverity.Warning)) {
+			return undefined;
 		}
 		const diag: DiagnosticData = new DiagnosticData(
 			doc.uri,
 			diagnostic.message,
-			diagnostic.severity === DiagnosticSeverity.Error ? "error" : "warning",
-			rangeToOffsetRange(diagnostic.range, doc),
-		)
-		return diag
+			diagnostic.severity === DiagnosticSeverity.Error ? 'error' : 'warning',
+			rangeToOffsetRange(diagnostic.range, doc)
+		);
+		return diag;
 	}
 
-	private readonly _obsDocsWithUpdateIgnored = derived(this, (reader) => {
-		const docs = this._docsWithShouldTrackFlag.read(reader)
-		return new Map(docs.map((d) => [d.doc.uri.toString(), d]))
-	})
+	private readonly _obsDocsWithUpdateIgnored = derived(this, reader => {
+		const docs = this._docsWithShouldTrackFlag.read(reader);
+		return new Map(docs.map(d => [d.doc.uri.toString(), d]));
+	});
 
 	/**
 	 * Returns undefined for documents that are not tracked (e.g. filtered out).
-	 */
+	*/
 	public getDocumentByTextDocument(doc: TextDocument, reader?: IReader): IVSCodeObservableDocument | undefined {
-		this._store.assertNotDisposed()
+		this._store.assertNotDisposed();
 
-		const internalDoc = this._getInternalDocument(doc.uri, reader)
+		const internalDoc = this._getInternalDocument(doc.uri, reader);
 		if (!internalDoc) {
-			return undefined
+			return undefined;
 		}
-		return internalDoc.obsDoc.get()
+		return internalDoc.obsDoc.get();
 	}
 
 	public getWorkspaceRoot(documentId: DocumentId): URI | undefined {
-		let uri = documentId.toUri()
+		let uri = documentId.toUri();
 		if (uri.scheme === Schemas.vscodeNotebookCell) {
-			const notebook = findNotebook(uri, this._workspaceService.notebookDocuments)
+			const notebook = findNotebook(uri, this._workspaceService.notebookDocuments);
 			if (notebook) {
-				uri = notebook.uri
+				uri = notebook.uri;
 			}
 		}
-		return workspace.getWorkspaceFolder(uri)?.uri
+		return workspace.getWorkspaceFolder(uri)?.uri;
 	}
 }
 
 export interface IVSCodeObservableDocument extends IObservableDocument {
-	readonly textDocument: TextDocument
+	readonly textDocument: TextDocument;
 }
 
 class VSCodeObservableDocument implements IVSCodeObservableDocument {
-	public readonly value: ISettableObservable<StringText, StringEditWithReason>
-	public readonly version: ISettableObservable<number>
-	public readonly selection: ISettableObservable<readonly OffsetRange[]>
-	public readonly visibleRanges: ISettableObservable<readonly OffsetRange[]>
-	public readonly languageId: ISettableObservable<LanguageId>
-	public readonly diagnostics: ISettableObservable<readonly DiagnosticData[]>
+	public readonly value: ISettableObservable<StringText, StringEditWithReason>;
+	public readonly version: ISettableObservable<number>;
+	public readonly selection: ISettableObservable<readonly OffsetRange[]>;
+	public readonly visibleRanges: ISettableObservable<readonly OffsetRange[]>;
+	public readonly languageId: ISettableObservable<LanguageId>;
+	public readonly diagnostics: ISettableObservable<readonly DiagnosticData[]>;
 
 	constructor(
 		public readonly id: DocumentId,
@@ -298,42 +223,39 @@ class VSCodeObservableDocument implements IVSCodeObservableDocument {
 		diagnostics: DiagnosticData[],
 		public readonly textDocument: TextDocument,
 	) {
-		this.value = observableValue(this, value)
-		this.version = observableValue(this, versionId)
-		this.selection = observableValue(this, selection)
-		this.visibleRanges = observableValue(this, visibleRanges)
-		this.languageId = observableValue(this, languageId)
-		this.diagnostics = observableValue(this, diagnostics)
+		this.value = observableValue(this, value);
+		this.version = observableValue(this, versionId);
+		this.selection = observableValue(this, selection);
+		this.visibleRanges = observableValue(this, visibleRanges);
+		this.languageId = observableValue(this, languageId);
+		this.diagnostics = observableValue(this, diagnostics);
 	}
 }
 
 function rangeToOffsetRange(range: Range, doc: TextDocument): OffsetRange {
-	return new OffsetRange(doc.offsetAt(range.start), doc.offsetAt(range.end))
+	return new OffsetRange(doc.offsetAt(range.start), doc.offsetAt(range.end));
 }
 
 function getTextDocuments(): IObservable<readonly TextDocument[]> {
-	return observableFromEvent(
-		undefined,
-		(e) => {
-			const d1 = workspace.onDidOpenTextDocument(e)
-			const d2 = workspace.onDidCloseTextDocument(e)
-			return {
-				dispose: () => {
-					d1.dispose()
-					d2.dispose()
-				},
+	return observableFromEvent(undefined, e => {
+		const d1 = workspace.onDidOpenTextDocument(e);
+		const d2 = workspace.onDidCloseTextDocument(e);
+		return {
+			dispose: () => {
+				d1.dispose();
+				d2.dispose();
 			}
-		},
-		() => workspace.textDocuments,
-	)
+		};
+	}, () => workspace.textDocuments);
 }
 
 export class DocumentFilter {
-	constructor() {}
+	constructor() {
+	}
 
 	public async isTrackingEnabled(document: TextDocument): Promise<boolean> {
 		// Bypasses settings to always enable.
-		return true
+		return true;
 	}
 }
 
@@ -343,41 +265,36 @@ export class DocumentFilter {
  * produces the new document state. Reports mismatches via telemetry.
  */
 export class VerifyTextDocumentChanges extends Disposable {
-	private readonly _documentStates = new Map<string, { text: string; linefeed: EndOfLine }>()
+	private readonly _documentStates = new Map<string, { text: string; linefeed: EndOfLine }>();
 
-	constructor() {
-		super()
+	constructor(
+	) {
+		super();
 
-		this._register(
-			workspace.onDidOpenTextDocument((doc) => {
-				const docUri = doc.uri.toString()
-				this._documentStates.set(docUri, { text: doc.getText(), linefeed: doc.eol })
-			}),
-		)
+		this._register(workspace.onDidOpenTextDocument(doc => {
+			const docUri = doc.uri.toString();
+			this._documentStates.set(docUri, { text: doc.getText(), linefeed: doc.eol });
+		}));
 
-		this._register(
-			workspace.onDidCloseTextDocument((doc) => {
-				const docUri = doc.uri.toString()
-				this._documentStates.delete(docUri)
-			}),
-		)
+		this._register(workspace.onDidCloseTextDocument(doc => {
+			const docUri = doc.uri.toString();
+			this._documentStates.delete(docUri);
+		}));
 
-		workspace.textDocuments.forEach((doc) => {
-			const docUri = doc.uri.toString()
-			this._documentStates.set(docUri, { text: doc.getText(), linefeed: doc.eol })
-		})
+		workspace.textDocuments.forEach(doc => {
+			const docUri = doc.uri.toString();
+			this._documentStates.set(docUri, { text: doc.getText(), linefeed: doc.eol });
+		});
 
-		this._register(
-			workspace.onDidChangeTextDocument((e) => {
-				this._verifyDocumentStateConsistency(e)
-			}),
-		)
+		this._register(workspace.onDidChangeTextDocument(e => {
+			this._verifyDocumentStateConsistency(e);
+		}));
 	}
 
 	private _verifyDocumentStateConsistency(e: TextDocumentChangeEvent): void {
-		const docUri = e.document.uri.toString()
-		const currentText = e.document.getText()
-		const previousValue = this._documentStates.get(docUri)
+		const docUri = e.document.uri.toString();
+		const currentText = e.document.getText();
+		const previousValue = this._documentStates.get(docUri);
 
 		if (previousValue === undefined) {
 			/* __GDPR__
@@ -386,13 +303,13 @@ export class VerifyTextDocumentChanges extends Disposable {
 					"comment": "Telemetry for verifying VSCode content change API consistency"
 				}
 			*/
-			return
+			return;
 		}
 
-		this._documentStates.set(docUri, { text: currentText, linefeed: e.document.eol })
+		this._documentStates.set(docUri, { text: currentText, linefeed: e.document.eol });
 
-		const edit = editFromTextDocumentContentChangeEvents(e.contentChanges)
-		const expectedText = edit.apply(previousValue.text)
+		const edit = editFromTextDocumentContentChangeEvents(e.contentChanges);
+		const expectedText = edit.apply(previousValue.text);
 
 		if (expectedText !== currentText) {
 			/* __GDPR__
@@ -408,16 +325,16 @@ export class VerifyTextDocumentChanges extends Disposable {
 					"scheme": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "comment": "Scheme of the currently open document." }
 				}
 			*/
+
 		}
 	}
 }
 
 export function stringValueFromDoc(doc: TextDocument): StringText {
-	return new StringText(doc.getText())
+	return new StringText(doc.getText());
 }
 export function editFromTextDocumentContentChangeEvents(events: readonly TextDocumentContentChangeEvent[]): StringEdit {
-	const replacementsInApplicationOrder = events.map((e) =>
-		StringReplacement.replace(OffsetRange.ofStartAndLength(e.rangeOffset, e.rangeLength), e.text),
-	)
-	return StringEdit.composeSequentialReplacements(replacementsInApplicationOrder)
+	const replacementsInApplicationOrder = events.map(e => StringReplacement.replace(OffsetRange.ofStartAndLength(e.rangeOffset, e.rangeLength), e.text));
+	return StringEdit.composeSequentialReplacements(replacementsInApplicationOrder);
 }
+

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	/**
 	 * Detailed information about why a text document changed.
 	 */
@@ -11,12 +12,12 @@ declare module "vscode" {
 		/**
 		 * The source of the change (e.g., 'inline-completion', 'chat-edit', 'extension')
 		 */
-		readonly source: string
+		readonly source: string;
 
 		/**
 		 * Additional context-specific metadata
 		 */
-		readonly metadata: { readonly [key: string]: any }
+		readonly metadata: { readonly [key: string]: any };
 	}
 
 	export interface TextDocumentChangeEvent {
@@ -24,6 +25,6 @@ declare module "vscode" {
 		 * The precise reason for the document change.
 		 * Only available to extensions that have enabled the `textDocumentChangeReason` proposed API.
 		 */
-		readonly detailedReason?: TextDocumentDetailedChangeReason | undefined
+		readonly detailedReason?: TextDocumentDetailedChangeReason | undefined;
 	}
 }

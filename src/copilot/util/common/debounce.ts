@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 type DebounceState = {
-	timer: any
-	reject: (reason?: any) => void
-}
+	timer: any;
+	reject: (reason?: any) => void;
+};
 
 /**
  * Debouncer class for async code.
@@ -19,7 +19,7 @@ type DebounceState = {
  * by the previous call.
  */
 export class Debouncer {
-	private state: DebounceState | undefined
+	private state: DebounceState | undefined;
 
 	/**
 	 * Wait for the specified number of milliseconds, then resolve.
@@ -27,35 +27,35 @@ export class Debouncer {
 	 */
 	public async debounce(ms: number): Promise<void> {
 		if (this.state) {
-			clearTimeout(this.state.timer)
-			this.state.reject()
-			this.state = undefined
+			clearTimeout(this.state.timer);
+			this.state.reject();
+			this.state = undefined;
 		}
 		return new Promise<void>((resolve, reject) => {
 			this.state = {
 				timer: setTimeout(() => resolve(), ms),
 				reject,
-			}
-		})
+			};
+		});
 	}
 }
 
 /** Debounce function for sync functions */
 export function debounce<T extends (...args: any[]) => any>(
 	ms: number,
-	callback: T,
+	callback: T
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
-	let timer: any | undefined
+	let timer: any | undefined;
 
 	return (...args: Parameters<T>) => {
 		if (timer) {
-			clearTimeout(timer)
+			clearTimeout(timer);
 		}
-		return new Promise<ReturnType<T>>((resolve) => {
+		return new Promise<ReturnType<T>>(resolve => {
 			timer = setTimeout(() => {
-				const returnValue = callback(...args) as ReturnType<T>
-				resolve(returnValue)
-			}, ms)
-		})
-	}
+				const returnValue = callback(...args) as ReturnType<T>;
+				resolve(returnValue);
+			}, ms);
+		});
+	};
 }

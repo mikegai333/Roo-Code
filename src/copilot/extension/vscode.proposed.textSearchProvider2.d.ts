@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/59921
 
 	/**
@@ -16,7 +17,7 @@ declare module "vscode" {
 		 * If explicitly contains a newline character (`\n`), the default search behavior
 		 * will automatically enable {@link isMultiline}.
 		 */
-		pattern: string
+		pattern: string;
 
 		/**
 		 * Whether or not `pattern` should match multiple lines of text.
@@ -24,7 +25,7 @@ declare module "vscode" {
 		 * If using the default search provider, this will be interpreted as `true` if
 		 * `pattern` contains a newline character (`\n`).
 		 */
-		isMultiline?: boolean
+		isMultiline?: boolean;
 
 		/**
 		 * Whether or not `pattern` should be interpreted as a regular expression.
@@ -32,7 +33,7 @@ declare module "vscode" {
 		 * If using the default search provider, this will be interpreted case-insensitively
 		 * if {@link isCaseSensitive} is `false` or not set.
 		 */
-		isRegExp?: boolean
+		isRegExp?: boolean;
 
 		/**
 		 * Whether or not the search should be case-sensitive.
@@ -40,7 +41,7 @@ declare module "vscode" {
 		 * If using the default search provider, this can be affected by the `search.smartCase` setting.
 		 * See the setting description for more information.
 		 */
-		isCaseSensitive?: boolean
+		isCaseSensitive?: boolean;
 
 		/**
 		 * Whether or not to search for whole word matches only.
@@ -49,34 +50,35 @@ declare module "vscode" {
 		 * (regex pattern `\b`) surrounding the {@link pattern} to see whether something
 		 * is a word match.
 		 */
-		isWordMatch?: boolean
+		isWordMatch?: boolean;
 	}
 
 	/**
 	 * Options that apply to text search.
 	 */
 	export interface TextSearchProviderOptions {
+
 		folderOptions: {
 			/**
 			 * The root folder to search within.
 			 */
-			folder: Uri
+			folder: Uri;
 
 			/**
 			 * Files that match an `includes` glob pattern should be included in the search.
 			 */
-			includes: string[]
+			includes: string[];
 
 			/**
 			 * Files that match an `excludes` glob pattern should be excluded from the search.
 			 */
-			excludes: GlobPattern[]
+			excludes: GlobPattern[];
 
 			/**
 			 * Whether symlinks should be followed while searching.
 			 * For more info, see the setting description for `search.followSymlinks`.
 			 */
-			followSymlinks: boolean
+			followSymlinks: boolean;
 
 			/**
 			 * Which file locations we should look for ignore (.gitignore or .ignore) files to respect.
@@ -85,28 +87,28 @@ declare module "vscode" {
 				/**
 				 * Use ignore files at the current workspace root.
 				 */
-				local: boolean
+				local: boolean;
 				/**
 				 * Use ignore files at the parent directory. If set, {@link TextSearchProviderOptions.useIgnoreFiles.local} should also be `true`.
 				 */
-				parent: boolean
+				parent: boolean;
 				/**
 				 * Use global ignore files. If set, {@link TextSearchProviderOptions.useIgnoreFiles.local} should also be `true`.
 				 */
-				global: boolean
-			}
+				global: boolean;
+			};
 
 			/**
 			 * Interpret files using this encoding.
 			 * See the vscode setting `"files.encoding"`
 			 */
-			encoding: string
-		}[]
+			encoding: string;
+		}[];
 
 		/**
 		 * The maximum number of results to be returned.
 		 */
-		maxResults: number
+		maxResults: number;
 
 		/**
 		 * Options to specify the size of the result text preview.
@@ -117,24 +119,24 @@ declare module "vscode" {
 			 * Only search providers that support multiline search will ever return more than one line in the match.
 			 * Defaults to 100.
 			 */
-			matchLines: number
+			matchLines: number;
 
 			/**
 			 * The maximum number of characters included per line.
 			 * Defaults to 10000.
 			 */
-			charsPerLine: number
-		}
+			charsPerLine: number;
+		};
 
 		/**
 		 * Exclude files larger than `maxFileSize` in bytes.
 		 */
-		maxFileSize: number | undefined
+		maxFileSize: number | undefined;
 
 		/**
 		 * Number of lines of context to include before and after each match.
 		 */
-		surroundingContext: number
+		surroundingContext: number;
 	}
 
 	/**
@@ -148,7 +150,7 @@ declare module "vscode" {
 		 * - If `maxResults` matches are returned and more exist, this should be true.
 		 * - If search hits an internal limit which is less than `maxResults`, this should be true.
 		 */
-		limitHit?: boolean
+		limitHit?: boolean;
 	}
 
 	/**
@@ -170,12 +172,12 @@ declare module "vscode" {
 		 * @param ranges The ranges associated with this match.
 		 * @param previewText The text that is used to preview the match. The highlighted range in `previewText` is specified in `ranges`.
 		 */
-		constructor(uri: Uri, ranges: { sourceRange: Range; previewRange: Range }[], previewText: string)
+		constructor(uri: Uri, ranges: { sourceRange: Range; previewRange: Range }[], previewText: string);
 
 		/**
 		 * The uri for the matching document.
 		 */
-		uri: Uri
+		uri: Uri;
 
 		/**
 		 * The ranges associated with this match.
@@ -184,14 +186,14 @@ declare module "vscode" {
 			/**
 			 * The range of the match within the document, or multiple ranges for multiple matches.
 			 */
-			sourceRange: Range
+			sourceRange: Range;
 			/**
 			 * The Range within `previewText` corresponding to the text of the match.
 			 */
-			previewRange: Range
-		}[]
+			previewRange: Range;
+		}[];
 
-		previewText: string
+		previewText: string;
 	}
 
 	/**
@@ -216,23 +218,23 @@ declare module "vscode" {
 		 * @param text The line of context text.
 		 * @param lineNumber The line number of this line of context.
 		 */
-		constructor(uri: Uri, text: string, lineNumber: number)
+		constructor(uri: Uri, text: string, lineNumber: number);
 
 		/**
 		 * The uri for the matching document.
 		 */
-		uri: Uri
+		uri: Uri;
 
 		/**
 		 * One line of text.
 		 * previewOptions.charsPerLine applies to this
 		 */
-		text: string
+		text: string;
 
 		/**
 		 * The line number of this line of context.
 		 */
-		lineNumber: number
+		lineNumber: number;
 	}
 
 	/**
@@ -242,26 +244,26 @@ declare module "vscode" {
 		/**
 		 * @param keyword The keyword associated with the search.
 		 */
-		constructor(keyword: string)
+		constructor(keyword: string);
 
 		/**
 		 * The keyword associated with the search.
 		 */
-		keyword: string
+		keyword: string;
 	}
 
 	/**
 	 * A result payload for a text search, pertaining to {@link TextSearchMatch2 matches}
 	 * and its associated {@link TextSearchContext2 context} within a single file.
 	 */
-	export type TextSearchResult2 = TextSearchMatch2 | TextSearchContext2
+	export type TextSearchResult2 = TextSearchMatch2 | TextSearchContext2;
 
 	/**
 	 * A result payload for an AI search.
 	 * This can be a {@link TextSearchMatch2 match} or a {@link AISearchKeyword keyword}.
 	 * The result can be a match or a keyword.
 	 */
-	export type AISearchResult = TextSearchResult2 | AISearchKeyword
+	export type AISearchResult = TextSearchResult2 | AISearchKeyword;
 
 	/**
 	 * A TextSearchProvider provides search results for text results inside files in the workspace.
@@ -277,12 +279,7 @@ declare module "vscode" {
 		 * These results can be direct matches, or context that surrounds matches.
 		 * @param token A cancellation token.
 		 */
-		provideTextSearchResults(
-			query: TextSearchQuery2,
-			options: TextSearchProviderOptions,
-			progress: Progress<TextSearchResult2>,
-			token: CancellationToken,
-		): ProviderResult<TextSearchComplete2>
+		provideTextSearchResults(query: TextSearchQuery2, options: TextSearchProviderOptions, progress: Progress<TextSearchResult2>, token: CancellationToken): ProviderResult<TextSearchComplete2>;
 	}
 
 	export namespace workspace {
@@ -295,6 +292,6 @@ declare module "vscode" {
 		 * @param provider The provider.
 		 * @return A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registertextSearchProvider2(scheme: string, provider: TextSearchProvider2): Disposable
+		export function registertextSearchProvider2(scheme: string, provider: TextSearchProvider2): Disposable;
 	}
 }

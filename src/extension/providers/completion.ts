@@ -350,7 +350,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 				doc.id,
 				context,
 				logContext,
-				500,
+				50,
 				token
 			);
 			

@@ -3,17 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export interface ChatStatusItem {
 		/**
 		 * The identifier of this item.
 		 */
-		readonly id: string
+		readonly id: string;
 
 		/**
 		 * The main name of the entry, like 'Indexing Status'
 		 */
-		title: string | { label: string; link: string }
+		title: string | { label: string; link: string };
 
 		/**
 		 * Optional additional description of the entry.
@@ -21,7 +22,7 @@ declare module "vscode" {
 		 * This is rendered after the title. Supports Markdown style links (`[text](http://example.com)`) and rendering of
 		 * {@link ThemeIcon theme icons} via the `$(<name>)`-syntax.
 		 */
-		description: string
+		description: string;
 
 		/**
 		 * Optional additional details of the entry.
@@ -29,22 +30,22 @@ declare module "vscode" {
 		 * This is rendered less prominently after the title. Supports Markdown style links (`[text](http://example.com)`) and rendering of
 		 * {@link ThemeIcon theme icons} via the `$(<name>)`-syntax.
 		 */
-		detail: string | undefined
+		detail: string | undefined;
 
 		/**
 		 * Shows the entry in the chat status.
 		 */
-		show(): void
+		show(): void;
 
 		/**
 		 * Hide the entry in the chat status.
 		 */
-		hide(): void
+		hide(): void;
 
 		/**
 		 * Dispose and free associated resources
 		 */
-		dispose(): void
+		dispose(): void;
 	}
 
 	namespace window {
@@ -55,6 +56,6 @@ declare module "vscode" {
 		 *
 		 * @returns A new chat status item.
 		 */
-		export function createChatStatusItem(id: string): ChatStatusItem
+		export function createChatStatusItem(id: string): ChatStatusItem;
 	}
 }

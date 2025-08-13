@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Length, lengthToObj } from "./length"
+import { Length, lengthToObj } from './length';
 
 export class TextEditInfo {
 	/*public static fromModelContentChanges(changes: IModelContentChange[]): TextEditInfo[] {
@@ -22,10 +22,11 @@ export class TextEditInfo {
 	constructor(
 		public readonly startOffset: Length,
 		public readonly endOffset: Length,
-		public readonly newLength: Length,
-	) {}
+		public readonly newLength: Length
+	) {
+	}
 
 	toString(): string {
-		return `[${lengthToObj(this.startOffset)}...${lengthToObj(this.endOffset)}) -> ${lengthToObj(this.newLength)}`
+		return `[${lengthToObj(this.startOffset)}...${lengthToObj(this.endOffset)}) -> ${lengthToObj(this.newLength)}`;
 	}
 }

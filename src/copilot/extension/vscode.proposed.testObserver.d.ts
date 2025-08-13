@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/107467
 
 	export namespace tests {
@@ -12,74 +13,68 @@ declare module "vscode" {
 		 * @param run Run options to use.
 		 * @param token Cancellation token for the test run
 		 */
-		export function runTests(run: TestRunRequest, token?: CancellationToken): Thenable<void>
+		export function runTests(run: TestRunRequest, token?: CancellationToken): Thenable<void>;
 
 		/**
 		 * Registers a provider that can provide follow-up actions for a test failure.
 		 */
-		export function registerTestFollowupProvider(provider: TestFollowupProvider): Disposable
+		export function registerTestFollowupProvider(provider: TestFollowupProvider): Disposable;
 
 		/**
 		 * Returns an observer that watches and can request tests.
 		 */
-		export function createTestObserver(): TestObserver
+		export function createTestObserver(): TestObserver;
 		/**
 		 * List of test results stored by the editor, sorted in descending
 		 * order by their `completedAt` time.
 		 */
-		export const testResults: ReadonlyArray<TestRunResult>
+		export const testResults: ReadonlyArray<TestRunResult>;
 
 		/**
 		 * Event that fires when the {@link testResults} array is updated.
 		 */
-		export const onDidChangeTestResults: Event<void>
+		export const onDidChangeTestResults: Event<void>;
 	}
 
 	export interface TestFollowupProvider {
-		provideFollowup(
-			result: TestRunResult,
-			test: TestResultSnapshot,
-			taskIndex: number,
-			messageIndex: number,
-			token: CancellationToken,
-		): ProviderResult<Command[]>
+		provideFollowup(result: TestRunResult, test: TestResultSnapshot, taskIndex: number, messageIndex: number, token: CancellationToken): ProviderResult<Command[]>;
 	}
 
 	export interface TestObserver {
 		/**
 		 * List of tests returned by test provider for files in the workspace.
 		 */
-		readonly tests: ReadonlyArray<TestItem>
+		readonly tests: ReadonlyArray<TestItem>;
 
 		/**
 		 * An event that fires when an existing test in the collection changes, or
 		 * null if a top-level test was added or removed. When fired, the consumer
 		 * should check the test item and all its children for changes.
 		 */
-		readonly onDidChangeTest: Event<TestsChangeEvent>
+		readonly onDidChangeTest: Event<TestsChangeEvent>;
 
 		/**
 		 * Dispose of the observer, allowing the editor to eventually tell test
 		 * providers that they no longer need to update tests.
 		 */
-		dispose(): void
+		dispose(): void;
 	}
 
 	export interface TestsChangeEvent {
 		/**
 		 * List of all tests that are newly added.
 		 */
-		readonly added: ReadonlyArray<TestItem>
+		readonly added: ReadonlyArray<TestItem>;
 
 		/**
 		 * List of existing tests that have updated.
 		 */
-		readonly updated: ReadonlyArray<TestItem>
+		readonly updated: ReadonlyArray<TestItem>;
 
 		/**
 		 * List of existing tests that have been removed.
 		 */
-		readonly removed: ReadonlyArray<TestItem>
+		readonly removed: ReadonlyArray<TestItem>;
 	}
 
 	/**
@@ -95,24 +90,24 @@ declare module "vscode" {
 		/**
 		 * Unix milliseconds timestamp at which the test run was completed.
 		 */
-		readonly completedAt: number
+		readonly completedAt: number;
 
 		/**
 		 * Optional raw output from the test run.
 		 */
-		readonly output?: string
+		readonly output?: string;
 
 		/**
 		 * List of test results. The items in this array are the items that
 		 * were passed in the {@link tests.runTests} method.
 		 */
-		readonly results: ReadonlyArray<Readonly<TestResultSnapshot>>
+		readonly results: ReadonlyArray<Readonly<TestResultSnapshot>>;
 
 		/**
 		 * Gets coverage information for a URI. This function is available only
 		 * when a test run reported coverage.
 		 */
-		getDetailedCoverage?(uri: Uri, token?: CancellationToken): Thenable<FileCoverageDetail[]>
+		getDetailedCoverage?(uri: Uri, token?: CancellationToken): Thenable<FileCoverageDetail[]>;
 	}
 
 	/**
@@ -125,63 +120,63 @@ declare module "vscode" {
 		 * This is used to correlate test results and tests in the document with
 		 * those in the workspace (test explorer).
 		 */
-		readonly id: string
+		readonly id: string;
 
 		/**
 		 * Parent of this item.
 		 */
-		readonly parent?: TestResultSnapshot
+		readonly parent?: TestResultSnapshot;
 
 		/**
 		 * URI this TestItem is associated with. May be a file or file.
 		 */
-		readonly uri?: Uri
+		readonly uri?: Uri;
 
 		/**
 		 * Display name describing the test case.
 		 */
-		readonly label: string
+		readonly label: string;
 
 		/**
 		 * Optional description that appears next to the label.
 		 */
-		readonly description?: string
+		readonly description?: string;
 
 		/**
 		 * Location of the test item in its `uri`. This is only meaningful if the
 		 * `uri` points to a file.
 		 */
-		readonly range?: Range
+		readonly range?: Range;
 
 		/**
 		 * State of the test in each task. In the common case, a test will only
 		 * be executed in a single task and the length of this array will be 1.
 		 */
-		readonly taskStates: ReadonlyArray<TestSnapshotTaskState>
+		readonly taskStates: ReadonlyArray<TestSnapshotTaskState>;
 
 		/**
 		 * Optional list of nested tests for this item.
 		 */
-		readonly children: Readonly<TestResultSnapshot>[]
+		readonly children: Readonly<TestResultSnapshot>[];
 	}
 
 	export interface TestSnapshotTaskState {
 		/**
 		 * Current result of the test.
 		 */
-		readonly state: TestResultState
+		readonly state: TestResultState;
 
 		/**
 		 * The number of milliseconds the test took to run. This is set once the
 		 * `state` is `Passed`, `Failed`, or `Errored`.
 		 */
-		readonly duration?: number
+		readonly duration?: number;
 
 		/**
 		 * Associated test run message. Can, for example, contain assertion
 		 * failure information if the test fails.
 		 */
-		readonly messages: ReadonlyArray<TestMessage>
+		readonly messages: ReadonlyArray<TestMessage>;
 	}
 
 	/**
@@ -199,6 +194,6 @@ declare module "vscode" {
 		// Test run has been skipped
 		Skipped = 5,
 		// Test run failed for some other reason (compilation error, timeout, etc)
-		Errored = 6,
+		Errored = 6
 	}
 }

@@ -80,6 +80,7 @@
 // 			// 只使用 diagnosticsBasedProvider
 // 			let diagnosticsSuggestion = undefined;
 
+
 // 			if (this.model.diagnosticsBasedProvider) {
 // 				// 创建日志和遥测实例
 // 				const logContext = new InlineEditRequestLogContext(doc.id.uri, document.version, context);

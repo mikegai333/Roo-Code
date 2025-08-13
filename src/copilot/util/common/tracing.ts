@@ -4,52 +4,50 @@
  *--------------------------------------------------------------------------------------------*/
 
 export interface ITracer {
-	trace(message: string, ...payload: unknown[]): void
-	sub(name: string | string[]): ITracer
-	throws(message?: string, ...payload: unknown[]): void
-	returns(message?: string, ...payload: unknown[]): void
+	trace(message: string, ...payload: unknown[]): void;
+	sub(name: string | string[]): ITracer;
+	throws(message?: string, ...payload: unknown[]): void;
+	returns(message?: string, ...payload: unknown[]): void;
 }
 
 export function createTracer(section: string | string[], logFn: (message: string) => void): ITracer {
 	const stringify = (value: unknown) => {
 		if (!value) {
-			return JSON.stringify(value)
+			return JSON.stringify(value);
 		}
-		if (typeof value === "string") {
-			return value
-		} else if (typeof value === "object") {
-			const toStringValue = value.toString()
-			if (toStringValue && toStringValue !== "[object Object]") {
-				return toStringValue
+		if (typeof value === 'string') {
+			return value;
+		} else if (typeof value === 'object') {
+			const toStringValue = value.toString();
+			if (toStringValue && toStringValue !== '[object Object]') {
+				return toStringValue;
 			}
 			if (value instanceof Error) {
-				return value.stack || value.message
+				return value.stack || value.message;
 			}
-			return JSON.stringify(value, null, "\t")
+			return JSON.stringify(value, null, '\t');
 		}
-		return String(value) // Ensure all code paths return a value
-	}
-	const sectionStr = Array.isArray(section) ? section.join("][") : section
+		return String(value); // Ensure all code paths return a value
+	};
+	const sectionStr = Array.isArray(section) ? section.join('][') : section;
 	return {
 		trace: (message: string, ...payload: unknown[]) => {
-			const payloadStr = payload.length ? ` ${stringify(payload)}` : ""
-			logFn(`[${sectionStr}] ${message}` + payloadStr)
+			const payloadStr = payload.length ? ` ${stringify(payload)}` : '';
+			logFn(`[${sectionStr}] ${message}` + payloadStr);
 		},
 		sub: (name: string | string[]) => {
-			const subSection = Array.isArray(section)
-				? section.concat(name)
-				: [section, ...(Array.isArray(name) ? name : [name])]
-			const sub = createTracer(subSection, logFn)
-			sub.trace("created")
-			return sub
+			const subSection = Array.isArray(section) ? section.concat(name) : [section, ...(Array.isArray(name) ? name : [name])];
+			const sub = createTracer(subSection, logFn);
+			sub.trace('created');
+			return sub;
 		},
 		returns: (message?: string, ...payload: unknown[]) => {
-			const payloadStr = payload.length ? ` ${stringify(payload)}` : ""
-			logFn(`[${sectionStr}] Return: ${message ? message : "void"}${payloadStr}`)
+			const payloadStr = payload.length ? ` ${stringify(payload)}` : '';
+			logFn(`[${sectionStr}] Return: ${message ? message : 'void'}${payloadStr}`);
 		},
 		throws: (message?: string, ...payload: unknown[]) => {
-			const payloadStr = payload.length ? ` ${stringify(payload)}` : ""
-			logFn(`[${sectionStr}] Throw: ${message ? message : "void"}${payloadStr}`)
-		},
-	}
+			const payloadStr = payload.length ? ` ${stringify(payload)}` : '';
+			logFn(`[${sectionStr}] Throw: ${message ? message : 'void'}${payloadStr}`);
+		}
+	};
 }

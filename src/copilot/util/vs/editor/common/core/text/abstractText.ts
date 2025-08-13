@@ -5,111 +5,114 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "../../../../base/common/assert"
-import { splitLines } from "../../../../base/common/strings"
-import { Position } from "../position"
-import { Range } from "../range"
-import { LineRange } from "../ranges/lineRange"
-import { PositionOffsetTransformer } from "./positionToOffset"
-import { TextLength } from "./textLength"
+import { assert } from '../../../../base/common/assert';
+import { splitLines } from '../../../../base/common/strings';
+import { Position } from '../position';
+import { Range } from '../range';
+import { LineRange } from '../ranges/lineRange';
+import { PositionOffsetTransformer } from './positionToOffset';
+import { TextLength } from './textLength';
 
 export abstract class AbstractText {
-	abstract getValueOfRange(range: Range): string
-	abstract readonly length: TextLength
+	abstract getValueOfRange(range: Range): string;
+	abstract readonly length: TextLength;
 
 	get endPositionExclusive(): Position {
-		return this.length.addToPosition(new Position(1, 1))
+		return this.length.addToPosition(new Position(1, 1));
 	}
 
 	get lineRange(): LineRange {
-		return this.length.toLineRange()
+		return this.length.toLineRange();
 	}
 
 	getValue(): string {
-		return this.getValueOfRange(this.length.toRange())
+		return this.getValueOfRange(this.length.toRange());
 	}
 
 	getLineLength(lineNumber: number): number {
-		return this.getValueOfRange(new Range(lineNumber, 1, lineNumber, Number.MAX_SAFE_INTEGER)).length
+		return this.getValueOfRange(new Range(lineNumber, 1, lineNumber, Number.MAX_SAFE_INTEGER)).length;
 	}
 
-	private _transformer: PositionOffsetTransformer | undefined = undefined
+	private _transformer: PositionOffsetTransformer | undefined = undefined;
 
 	getTransformer(): PositionOffsetTransformer {
 		if (!this._transformer) {
-			this._transformer = new PositionOffsetTransformer(this.getValue())
+			this._transformer = new PositionOffsetTransformer(this.getValue());
 		}
-		return this._transformer
+		return this._transformer;
 	}
 
 	getLineAt(lineNumber: number): string {
-		return this.getValueOfRange(new Range(lineNumber, 1, lineNumber, Number.MAX_SAFE_INTEGER))
+		return this.getValueOfRange(new Range(lineNumber, 1, lineNumber, Number.MAX_SAFE_INTEGER));
 	}
 
 	getLines(): string[] {
-		const value = this.getValue()
-		return splitLines(value)
+		const value = this.getValue();
+		return splitLines(value);
 	}
 
 	equals(other: AbstractText): boolean {
 		if (this === other) {
-			return true
+			return true;
 		}
-		return this.getValue() === other.getValue()
+		return this.getValue() === other.getValue();
 	}
 }
 
 export class LineBasedText extends AbstractText {
 	constructor(
 		private readonly _getLineContent: (lineNumber: number) => string,
-		private readonly _lineCount: number,
+		private readonly _lineCount: number
 	) {
-		assert(_lineCount >= 1)
+		assert(_lineCount >= 1);
 
-		super()
+		super();
 	}
 
 	override getValueOfRange(range: Range): string {
 		if (range.startLineNumber === range.endLineNumber) {
-			return this._getLineContent(range.startLineNumber).substring(range.startColumn - 1, range.endColumn - 1)
+			return this._getLineContent(range.startLineNumber).substring(range.startColumn - 1, range.endColumn - 1);
 		}
-		let result = this._getLineContent(range.startLineNumber).substring(range.startColumn - 1)
+		let result = this._getLineContent(range.startLineNumber).substring(range.startColumn - 1);
 		for (let i = range.startLineNumber + 1; i < range.endLineNumber; i++) {
-			result += "\n" + this._getLineContent(i)
+			result += '\n' + this._getLineContent(i);
 		}
-		result += "\n" + this._getLineContent(range.endLineNumber).substring(0, range.endColumn - 1)
-		return result
+		result += '\n' + this._getLineContent(range.endLineNumber).substring(0, range.endColumn - 1);
+		return result;
 	}
 
 	override getLineLength(lineNumber: number): number {
-		return this._getLineContent(lineNumber).length
+		return this._getLineContent(lineNumber).length;
 	}
 
 	get length(): TextLength {
-		const lastLine = this._getLineContent(this._lineCount)
-		return new TextLength(this._lineCount - 1, lastLine.length)
+		const lastLine = this._getLineContent(this._lineCount);
+		return new TextLength(this._lineCount - 1, lastLine.length);
 	}
 }
 
 export class ArrayText extends LineBasedText {
 	constructor(lines: string[]) {
-		super((lineNumber) => lines[lineNumber - 1], lines.length)
+		super(
+			lineNumber => lines[lineNumber - 1],
+			lines.length
+		);
 	}
 }
 
 export class StringText extends AbstractText {
-	private readonly _t
+	private readonly _t;
 
 	constructor(public readonly value: string) {
-		super()
-		this._t = new PositionOffsetTransformer(this.value)
+		super();
+		this._t = new PositionOffsetTransformer(this.value);
 	}
 
 	getValueOfRange(range: Range): string {
-		return this._t.getOffsetRange(range).substring(this.value)
+		return this._t.getOffsetRange(range).substring(this.value);
 	}
 
 	get length(): TextLength {
-		return this._t.textLength
+		return this._t.textLength;
 	}
 }

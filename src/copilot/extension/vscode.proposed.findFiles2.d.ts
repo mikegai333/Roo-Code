@@ -5,7 +5,8 @@
 
 // version: 2
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export interface FindFiles2Options {
 		/**
 		 * An array of {@link GlobPattern GlobPattern} that defines files to exclude.
@@ -22,17 +23,17 @@ declare module "vscode" {
 		 *
 		 * In this, `ab` will be the intersection of results from `a` and `b`.
 		 */
-		exclude?: GlobPattern[]
+		exclude?: GlobPattern[];
 
 		/**
 		 * Which settings to follow when searching for files. Defaults to {@link ExcludeSettingOptions.searchAndFilesExclude}.
 		 */
-		useExcludeSettings?: ExcludeSettingOptions
+		useExcludeSettings?: ExcludeSettingOptions;
 
 		/**
 		 * The maximum number of results to search for. Defaults to 20000 results.
 		 */
-		maxResults?: number
+		maxResults?: number;
 
 		/**
 		 * Which file locations have ignore (`.gitignore` or `.ignore`) files to follow.
@@ -51,25 +52,25 @@ declare module "vscode" {
 			 * Use ignore files at the current workspace root.
 			 * May default to `search.useIgnoreFiles` setting if not set.
 			 */
-			local?: boolean
+			local?: boolean;
 			/**
 			 * Use ignore files at the parent directory. When set to `true`, {@link FindFiles2Options.useIgnoreFiles.local} must also be `true`.
 			 * May default to `search.useParentIgnoreFiles` setting if not set.
 			 */
-			parent?: boolean
+			parent?: boolean;
 			/**
 			 * Use global ignore files. When set to `true`, {@link FindFiles2Options.useIgnoreFiles.local} must also be `true`.
 			 * May default to `search.useGlobalIgnoreFiles` setting if not set.
 			 */
-			global?: boolean
-		}
+			global?: boolean;
+		};
 
 		/**
 		 * Whether symlinks should be followed while searching.
 		 * Defaults to the value for `search.followSymlinks` in settings.
 		 * For more info, see the setting description for `search.followSymlinks`.
 		 */
-		followSymlinks?: boolean
+		followSymlinks?: boolean;
 	}
 
 	/**
@@ -87,7 +88,7 @@ declare module "vscode" {
 		/**
 		 * Use the `files.exclude` and `search.exclude` settings
 		 */
-		SearchAndFilesExclude = 3,
+		SearchAndFilesExclude = 3
 	}
 
 	export namespace workspace {
@@ -119,10 +120,6 @@ declare module "vscode" {
 		 * @returns A thenable that resolves to an array of resource identifiers. Will return no results if no
 		 * {@link workspace.workspaceFolders workspace folders} are opened.
 		 */
-		export function findFiles2(
-			filePattern: GlobPattern[],
-			options?: FindFiles2Options,
-			token?: CancellationToken,
-		): Thenable<Uri[]>
+		export function findFiles2(filePattern: GlobPattern[], options?: FindFiles2Options, token?: CancellationToken): Thenable<Uri[]>;
 	}
 }

@@ -3,67 +3,67 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from "../vs/base/common/lifecycle"
+import { IDisposable } from '../vs/base/common/lifecycle';
 
 class Node<T> {
-	key: string
-	value: T
-	prev: Node<T> | null = null
-	next: Node<T> | null = null
+	key: string;
+	value: T;
+	prev: Node<T> | null = null;
+	next: Node<T> | null = null;
 
 	constructor(key: string, value: T) {
-		this.key = key
-		this.value = value
+		this.key = key;
+		this.value = value;
 	}
 }
 
 export class LRUCache<T> {
-	private readonly _capacity: number
-	private readonly _cache: Map<string, Node<T>>
-	private readonly _head: Node<T>
-	private readonly _tail: Node<T>
+	private readonly _capacity: number;
+	private readonly _cache: Map<string, Node<T>>;
+	private readonly _head: Node<T>;
+	private readonly _tail: Node<T>;
 
 	constructor(size = 10) {
 		if (size < 1) {
-			throw new Error("Cache size must be at least 1")
+			throw new Error('Cache size must be at least 1');
 		}
-		this._capacity = size
-		this._cache = new Map<string, Node<T>>()
-		this._head = new Node<T>("", null as any)
-		this._tail = new Node<T>("", null as any)
-		this._head.next = this._tail
-		this._tail.prev = this._head
+		this._capacity = size;
+		this._cache = new Map<string, Node<T>>();
+		this._head = new Node<T>('', null as any);
+		this._tail = new Node<T>('', null as any);
+		this._head.next = this._tail;
+		this._tail.prev = this._head;
 	}
 
 	private _addNode(node: Node<T>) {
-		node.prev = this._head
-		node.next = this._head.next
-		this._head.next!.prev = node
-		this._head.next = node
+		node.prev = this._head;
+		node.next = this._head.next;
+		this._head.next!.prev = node;
+		this._head.next = node;
 	}
 
 	private _removeNode(node: Node<T>) {
-		const prev = node.prev
-		const next = node.next
-		prev!.next = next
-		next!.prev = prev
+		const prev = node.prev;
+		const next = node.next;
+		prev!.next = next;
+		next!.prev = prev;
 	}
 
 	private _moveToHead(node: Node<T>) {
-		this._removeNode(node)
-		this._addNode(node)
+		this._removeNode(node);
+		this._addNode(node);
 	}
 
 	private _popTail(): Node<T> {
-		const res = this._tail.prev!
-		this._removeNode(res)
-		return res
+		const res = this._tail.prev!;
+		this._removeNode(res);
+		return res;
 	}
 
 	clear() {
-		this._cache.clear()
-		this._head.next = this._tail
-		this._tail.prev = this._head
+		this._cache.clear();
+		this._head.next = this._tail;
+		this._tail.prev = this._head;
 	}
 
 	/**
@@ -72,22 +72,22 @@ export class LRUCache<T> {
 	 * @returns The value of the deleted cache entry, or undefined if the key was not found.
 	 */
 	deleteKey(key: string): T | undefined {
-		const node = this._cache.get(key)
+		const node = this._cache.get(key);
 		if (!node) {
-			return undefined
+			return undefined;
 		}
-		this._removeNode(node)
-		this._cache.delete(key)
-		return node.value
+		this._removeNode(node);
+		this._cache.delete(key);
+		return node.value;
 	}
 
 	get(key: string): T | undefined {
-		const node = this._cache.get(key)
+		const node = this._cache.get(key);
 		if (!node) {
-			return undefined
+			return undefined;
 		}
-		this._moveToHead(node)
-		return node.value
+		this._moveToHead(node);
+		return node.value;
 	}
 
 	/**
@@ -97,89 +97,89 @@ export class LRUCache<T> {
 	 * private array used to represent those keys.
 	 */
 	keys(): string[] {
-		const keys: string[] = []
-		let current = this._head.next
+		const keys: string[] = [];
+		let current = this._head.next;
 		while (current !== this._tail) {
-			keys.push(current!.key)
-			current = current!.next
+			keys.push(current!.key);
+			current = current!.next;
 		}
-		return keys
+		return keys;
 	}
 
 	getValues() {
-		const values: T[] = []
-		let current = this._head.next
+		const values: T[] = [];
+		let current = this._head.next;
 		while (current !== this._tail) {
-			values.push(current!.value)
-			current = current!.next
+			values.push(current!.value);
+			current = current!.next;
 		}
-		return values
+		return values;
 	}
 
 	/** @returns the evicted [key, value]  */
 	put(key: string, value: T): [string, T] | undefined {
-		let node = this._cache.get(key)
+		let node = this._cache.get(key);
 		if (node) {
-			node.value = value
-			this._moveToHead(node)
-			return undefined // Explicitly return undefined when no eviction occurs
+			node.value = value;
+			this._moveToHead(node);
+			return undefined; // Explicitly return undefined when no eviction occurs
 		} else {
-			node = new Node<T>(key, value)
-			this._cache.set(key, node)
-			this._addNode(node)
+			node = new Node<T>(key, value);
+			this._cache.set(key, node);
+			this._addNode(node);
 
 			if (this._cache.size > this._capacity) {
-				const tail = this._popTail()
-				this._cache.delete(tail.key)
-				return [tail.key, tail.value] as const
+				const tail = this._popTail();
+				this._cache.delete(tail.key);
+				return [tail.key, tail.value] as const;
 			}
-			return undefined // Explicitly return undefined when no eviction occurs
+			return undefined; // Explicitly return undefined when no eviction occurs
 		}
 	}
 }
 
 export class DisposablesLRUCache<T extends IDisposable> implements IDisposable {
-	private readonly actual: LRUCache<T>
+	private readonly actual: LRUCache<T>;
 
 	constructor(size?: number) {
-		this.actual = new LRUCache<T>(size)
+		this.actual = new LRUCache<T>(size);
 	}
 
 	dispose() {
-		this.clear()
+		this.clear();
 	}
 
 	clear() {
-		const values = this.actual.getValues()
+		const values = this.actual.getValues();
 		for (const value of values) {
-			value.dispose()
+			value.dispose();
 		}
-		this.actual.clear()
+		this.actual.clear();
 	}
 
 	deleteKey(key: string): void {
-		const value = this.actual.deleteKey(key)
+		const value = this.actual.deleteKey(key);
 		if (value) {
-			value.dispose()
+			value.dispose();
 		}
 	}
 
 	get(key: string): T | undefined {
-		return this.actual.get(key)
+		return this.actual.get(key);
 	}
 
 	keys(): string[] {
-		return this.actual.keys()
+		return this.actual.keys();
 	}
 
 	getValues() {
-		return this.actual.getValues()
+		return this.actual.getValues();
 	}
 
 	put(key: string, value: T): void {
-		const evicted = this.actual.put(key, value)
+		const evicted = this.actual.put(key, value);
 		if (evicted) {
-			evicted[1].dispose()
+			evicted[1].dispose();
 		}
 	}
 }

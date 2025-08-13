@@ -5,12 +5,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISettableObservable, ITransaction } from "../base"
-import { TransactionImpl } from "../transaction"
-import { BaseObservable } from "./baseObservable"
-import { EqualityComparer, IDisposable, strictEquals } from "../commonFacade/deps"
-import { DebugNameData } from "../debugName"
-import { getLogger } from "../logging/logging"
+import { ISettableObservable, ITransaction } from '../base';
+import { TransactionImpl } from '../transaction';
+import { BaseObservable } from './baseObservable';
+import { EqualityComparer, IDisposable, strictEquals } from '../commonFacade/deps';
+import { DebugNameData } from '../debugName';
+import { getLogger } from '../logging/logging';
 
 /**
  * Creates an observable value.
@@ -19,101 +19,82 @@ import { getLogger } from "../logging/logging"
  * Observers will receive every single change value.
  */
 
-export function observableValue<T, TChange = void>(name: string, initialValue: T): ISettableObservable<T, TChange>
-export function observableValue<T, TChange = void>(owner: object, initialValue: T): ISettableObservable<T, TChange>
-export function observableValue<T, TChange = void>(
-	nameOrOwner: string | object,
-	initialValue: T,
-): ISettableObservable<T, TChange> {
-	let debugNameData: DebugNameData
-	if (typeof nameOrOwner === "string") {
-		debugNameData = new DebugNameData(undefined, nameOrOwner, undefined)
+export function observableValue<T, TChange = void>(name: string, initialValue: T): ISettableObservable<T, TChange>;
+export function observableValue<T, TChange = void>(owner: object, initialValue: T): ISettableObservable<T, TChange>;
+export function observableValue<T, TChange = void>(nameOrOwner: string | object, initialValue: T): ISettableObservable<T, TChange> {
+	let debugNameData: DebugNameData;
+	if (typeof nameOrOwner === 'string') {
+		debugNameData = new DebugNameData(undefined, nameOrOwner, undefined);
 	} else {
-		debugNameData = new DebugNameData(nameOrOwner, undefined, undefined)
+		debugNameData = new DebugNameData(nameOrOwner, undefined, undefined);
 	}
-	return new ObservableValue(debugNameData, initialValue, strictEquals)
+	return new ObservableValue(debugNameData, initialValue, strictEquals);
 }
 
 export class ObservableValue<T, TChange = void>
 	extends BaseObservable<T, TChange>
-	implements ISettableObservable<T, TChange>
-{
-	protected _value: T
+	implements ISettableObservable<T, TChange> {
+	protected _value: T;
 
 	get debugName() {
-		return this._debugNameData.getDebugName(this) ?? "ObservableValue"
+		return this._debugNameData.getDebugName(this) ?? 'ObservableValue';
 	}
 
 	constructor(
 		private readonly _debugNameData: DebugNameData,
 		initialValue: T,
-		private readonly _equalityComparator: EqualityComparer<T>,
+		private readonly _equalityComparator: EqualityComparer<T>
 	) {
-		super()
-		this._value = initialValue
+		super();
+		this._value = initialValue;
 
-		getLogger()?.handleObservableUpdated(this, {
-			hadValue: false,
-			newValue: initialValue,
-			change: undefined,
-			didChange: true,
-			oldValue: undefined,
-		})
+		getLogger()?.handleObservableUpdated(this, { hadValue: false, newValue: initialValue, change: undefined, didChange: true, oldValue: undefined });
 	}
 	public override get(): T {
-		return this._value
+		return this._value;
 	}
 
 	public set(value: T, tx: ITransaction | undefined, change: TChange): void {
 		if (change === undefined && this._equalityComparator(this._value, value)) {
-			return
+			return;
 		}
 
-		let _tx: TransactionImpl | undefined
+		let _tx: TransactionImpl | undefined;
 		if (!tx) {
-			tx = _tx = new TransactionImpl(
-				() => {},
-				() => `Setting ${this.debugName}`,
-			)
+			tx = _tx = new TransactionImpl(() => { }, () => `Setting ${this.debugName}`);
 		}
 		try {
-			const oldValue = this._value
-			this._setValue(value)
-			getLogger()?.handleObservableUpdated(this, {
-				oldValue,
-				newValue: value,
-				change,
-				didChange: true,
-				hadValue: true,
-			})
+			const oldValue = this._value;
+			this._setValue(value);
+			getLogger()?.handleObservableUpdated(this, { oldValue, newValue: value, change, didChange: true, hadValue: true });
 
 			for (const observer of this._observers) {
-				tx.updateObserver(observer, this)
-				observer.handleChange(this, change)
+				tx.updateObserver(observer, this);
+				observer.handleChange(this, change);
 			}
 		} finally {
 			if (_tx) {
-				_tx.finish()
+				_tx.finish();
 			}
 		}
 	}
 
 	override toString(): string {
-		return `${this.debugName}: ${this._value}`
+		return `${this.debugName}: ${this._value}`;
 	}
 
 	protected _setValue(newValue: T): void {
-		this._value = newValue
+		this._value = newValue;
 	}
 
 	public debugGetState() {
 		return {
 			value: this._value,
-		}
+		};
 	}
 
 	public debugSetValue(value: unknown) {
-		this._value = value as T
+		this._value = value as T;
 	}
 }
 /**
@@ -121,34 +102,28 @@ export class ObservableValue<T, TChange = void>
  * When a new value is set, the previous value is disposed.
  */
 
-export function disposableObservableValue<T extends IDisposable | undefined, TChange = void>(
-	nameOrOwner: string | object,
-	initialValue: T,
-): ISettableObservable<T, TChange> & IDisposable {
-	let debugNameData: DebugNameData
-	if (typeof nameOrOwner === "string") {
-		debugNameData = new DebugNameData(undefined, nameOrOwner, undefined)
+export function disposableObservableValue<T extends IDisposable | undefined, TChange = void>(nameOrOwner: string | object, initialValue: T): ISettableObservable<T, TChange> & IDisposable {
+	let debugNameData: DebugNameData;
+	if (typeof nameOrOwner === 'string') {
+		debugNameData = new DebugNameData(undefined, nameOrOwner, undefined);
 	} else {
-		debugNameData = new DebugNameData(nameOrOwner, undefined, undefined)
+		debugNameData = new DebugNameData(nameOrOwner, undefined, undefined);
 	}
-	return new DisposableObservableValue(debugNameData, initialValue, strictEquals)
+	return new DisposableObservableValue(debugNameData, initialValue, strictEquals);
 }
 
-export class DisposableObservableValue<T extends IDisposable | undefined, TChange = void>
-	extends ObservableValue<T, TChange>
-	implements IDisposable
-{
+export class DisposableObservableValue<T extends IDisposable | undefined, TChange = void> extends ObservableValue<T, TChange> implements IDisposable {
 	protected override _setValue(newValue: T): void {
 		if (this._value === newValue) {
-			return
+			return;
 		}
 		if (this._value) {
-			this._value.dispose()
+			this._value.dispose();
 		}
-		this._value = newValue
+		this._value = newValue;
 	}
 
 	public dispose(): void {
-		this._value?.dispose()
+		this._value?.dispose();
 	}
 }
