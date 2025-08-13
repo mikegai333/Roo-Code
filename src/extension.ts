@@ -12,7 +12,7 @@ import { GitVersionComparer } from "./extension/providers/gitVersionConpare"
 
 let myStatusBarItem: vscode.StatusBarItem
 import * as os from "os"
-import { CompletionProvider } from "./extension/providers/completion"
+import { CompletionProvider, NesCompletionInfo, DiagnosticsCompletionInfo } from "./extension/providers/completion"
 import { TemplateProvider } from "./extension/template-provider"
 import { ServerMessage } from "./common/types"
 import { FileInteractionCache } from "./extension/file-interaction"
@@ -21,6 +21,27 @@ import path from "path"
 import { delayExecution } from "./extension/utils"
 import { initializeConfiguration } from "./api/aixcoding"
 import { VsCodeIde } from "./extension/util/VsCodeIde"
+import { DiagnosticCompletionItem } from "./copilot/extension/inlineEdits/vscode-node/features/diagnosticsBasedCompletions/diagnosticsCompletions"
+import { VSCodeWorkspace } from "./copilot/extension/inlineEdits/vscode-node/parts/vscodeWorkspace"
+import { DiagnosticsNextEditProvider } from "./copilot/extension/inlineEdits/vscode-node/features/diagnosticsInlineEditProvider";
+import { GitExtensionServiceImpl } from "./copilot/platform/git/vscode/gitExtensionServiceImpl";
+import { IGitExtensionService } from "./copilot/platform/git/common/gitExtensionService";
+import { IInstantiationService } from "./copilot/util/vs/platform/instantiation/common/instantiation";
+import { InstantiationService } from "./copilot/util/vs/platform/instantiation/common/instantiationService";
+import { ServiceCollection } from "./copilot/util/vs/platform/instantiation/common/serviceCollection";
+import { IWorkspaceService } from "./copilot/platform/workspace/common/workspaceService";
+import { ExtensionTextDocumentManager } from "./copilot/platform/workspace/vscode/workspaceServiceImpl";
+import { ILogService, LogLevel, LogServiceImpl } from "./copilot/platform/log/common/logService";
+import { NewOutputChannelLogTarget } from "./copilot/platform/log/vscode/outputChannelLogTarget";
+import { IRemoteRepositoriesService, RemoteRepositoriesService } from "./copilot/platform/remoteRepositories/vscode/remoteRepositories";
+import { ObservableGit } from "./copilot/platform/inlineEdits/common/observableGit";
+import { IFileSystemService } from "./copilot/platform/filesystem/common/fileSystemService"
+import { VSCodeFileSystemService } from "./copilot/platform/filesystem/vscode/fileSystemServiceImpl"
+import { ITabsAndEditorsService } from "./copilot/platform/tabs/common/tabsAndEditorsService"
+import { TabsAndEditorsServiceImpl } from "./copilot/platform/tabs/vscode/tabsAndEditorsServiceImpl"
+import { ILanguageDiagnosticsService } from "./copilot/platform/languages/common/languageDiagnosticsService"
+import { LanguageDiagnosticsServiceImpl } from "./copilot/platform/languages/vscode/languageDiagnosticsServiceImpl"
+import { SyncDescriptor } from "./copilot/util/vs/platform/instantiation/common/descriptors"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -36,6 +57,16 @@ let extensionContext: vscode.ExtensionContext
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
 export function activate(context: vscode.ExtensionContext) {
+	const services = new ServiceCollection();
+	const instantiationService = new InstantiationService(services, true);
+	services.set(IInstantiationService, instantiationService);
+	services.set(ILogService, new LogServiceImpl([new NewOutputChannelLogTarget(context)]));
+	services.set(IRemoteRepositoriesService, new RemoteRepositoriesService());
+	services.set(IGitExtensionService, instantiationService.createInstance(GitExtensionServiceImpl));
+	services.set(IWorkspaceService, instantiationService.createInstance(ExtensionTextDocumentManager));
+	services.set(IFileSystemService, new VSCodeFileSystemService())
+	services.set(ITabsAndEditorsService, new TabsAndEditorsServiceImpl())
+	services.set(ILanguageDiagnosticsService, new SyncDescriptor(LanguageDiagnosticsServiceImpl))
 	initializeConfiguration(context)
 	vscode.commands.executeCommand("setContext", "newVersion", context.globalState.get("mode") !== 'ask')
 	extensionContext = context
@@ -92,6 +123,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.window.registerUriHandler({ handleUri }))
 
+	// 定义白名单语言 ID
+	const WHITELISTED_LANGUAGES = [
+		'java', 'javascript', 'python', 'shellscript', 'sql', 'xml', 'vue',
+		'html', 'cpp', 'json', 'css', 'typescript', 'typescriptreact', 'c', 'go'
+	];
+    const documentSelector: vscode.DocumentSelector = WHITELISTED_LANGUAGES.map(lang => ({
+        language: lang,
+        scheme: 'file' // 你也可以添加 'untitled' 来支持未保存的文件
+    }));	
+
 	// Register code actions provider.
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider({ pattern: "**/*" }, new CodeActionProvider(), {
@@ -113,14 +154,20 @@ export function activate(context: vscode.ExtensionContext) {
 		//   uris: [event.uri.toString()],
 		// });
 	  });
-	const completionProvider = new CompletionProvider(statusBar, fileInteractionCache, templateProvider, context, ide)
+	const workspace = instantiationService.createInstance(VSCodeWorkspace);
+	const git = instantiationService.createInstance(ObservableGit);
+	const diagnosticsCompletions = instantiationService.createInstance(DiagnosticsNextEditProvider, workspace, git);
+	const completionProvider = new CompletionProvider(statusBar, fileInteractionCache, templateProvider, context, ide, diagnosticsCompletions, workspace)
 	templateProvider.init()
 	statusBar.text = "AIxCoding"
 	statusBar.command = "aixcoding.toggleCompletion"
 	updateStatusBar()
 	statusBar.show()
 	context.subscriptions.push(
-		vscode.languages.registerInlineCompletionItemProvider({ pattern: "**" }, completionProvider),
+		vscode.languages.registerInlineCompletionItemProvider(documentSelector, completionProvider, {
+				displayName: 'aixcoding',
+				yieldTo: undefined,
+			})
 	)
 
 	// 停止补全代码
@@ -166,29 +213,12 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.workspace.onDidChangeTextDocument((e) => {
 			const changes = e.contentChanges[0]
 			if (!changes) return
-			const lastCompletion = completionProvider.lastCompletionText
-			const isLastCompltionMultiline = getLineBreakCount(lastCompletion) > 1
-			completionProvider.setAcceptedLastCompletion(
-				!!(changes.text && lastCompletion && changes.text === lastCompletion && isLastCompltionMultiline),
-			)
-			// 上报补全接纳
-			if (lastCompletion) {
-				if (!!(changes.text && lastCompletion && changes.text === lastCompletion)) {
-					completionProvider.reportAccept()
-				}
-			}
 			const currentLine = changes.range.start.line
 			const currentCharacter = changes.range.start.character
 			fileInteractionCache.incrementStrokes(currentLine, currentCharacter)
 		}),
 	)
 
-	vscode.window.onDidChangeTextEditorSelection(() => {
-		completionProvider.abortCompletion()
-		delayExecution(() => {
-			completionProvider.setAcceptedLastCompletion(false)
-		}, 200)
-	})
 
 	// 扫描选中的文件
 	const lintSelected = vscode.commands.registerCommand(
@@ -218,6 +248,9 @@ export function activate(context: vscode.ExtensionContext) {
 		let gitVersionComparer = new GitVersionComparer()
 		gitVersionComparer.compareAndExport()
 	})
+
+
+
 	context.subscriptions.push(
 		lintSelected,
 		lintCurrent,

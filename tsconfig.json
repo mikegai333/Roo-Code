@@ -17,7 +17,7 @@
 		"sourceMap": true,
 		"strict": true,
 		"target": "es2022",
-		"useDefineForClassFields": true,
+		"useDefineForClassFields": false,
 		"useUnknownInCatchVariables": false,
 		"jsx": "react-jsx"
 	},

@@ -55,7 +55,7 @@ const stableCodeFimTemplate: AutocompleteTemplate = {
 // https://github.com/QwenLM/Qwen2.5-Coder/issues/343
 const qwenCoderFimTemplate: AutocompleteTemplate = {
   template:
-    "<|fim_prefix|>{{{prefix}}}<|fim_suffix|>{{{suffix}}}<|fim_middle|>",
+    "// Language: {{{language}}}\n<|fim_prefix|>{{{prefix}}}<|fim_suffix|>{{{suffix}}}<|fim_middle|>",
   completionOptions: {
     stop: [
       "<|endoftext|>",

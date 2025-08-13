@@ -96,6 +96,10 @@ export class VsCodeLmHandler implements ApiHandler, SingleCompletionHandler {
 				family: "lm",
 				version: "1.0",
 				maxInputTokens: 8192,
+				capabilities: {
+					supportsToolCalling: false,
+					supportsImageToText: false,
+				},
 				sendRequest: async (messages, options, token) => {
 					// Provide a minimal implementation
 					return {

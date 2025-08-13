@@ -88,7 +88,6 @@ export function renderPrompt({
     const formattedSnippets = formatSnippets(helper, snippets, workspaceDirs);
     prefix = [formattedSnippets, prefix].join("\n");
   }
-
   const prompt =
     // Templates can be passed as a Handlebars template string or a function
     typeof template === "string"
