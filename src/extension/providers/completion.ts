@@ -70,7 +70,11 @@ import { ContextRetrievalService } from "../snippets/ContextRetrievalService"
 import { TabAutocompleteOptions } from "../util"
 import { renderPrompt } from "../snippets/template"
 import * as path from "path"
-import { DiagnosticsNextEditProvider, DiagnosticsNextEditResult, INextEditProvider } from "../../copilot/extension/inlineEdits/vscode-node/features/diagnosticsInlineEditProvider"
+import {
+	DiagnosticsNextEditProvider,
+	DiagnosticsNextEditResult,
+	INextEditProvider,
+} from "../../copilot/extension/inlineEdits/vscode-node/features/diagnosticsInlineEditProvider"
 import { VSCodeWorkspace } from "../../copilot/extension/inlineEdits/vscode-node/parts/vscodeWorkspace"
 import { CancellationToken, CancellationTokenSource } from "../../copilot/util/vs/base/common/cancellation"
 import { INextEditResult } from "../../copilot/extension/inlineEdits/node/nextEditResult"
@@ -83,40 +87,40 @@ import { language } from "../../copilot/util/vs/base/common/platform"
 import { report } from "process"
 
 abstract class BaseNesCompletionInfo<T extends INextEditResult> {
-	public abstract source: string;
+	public abstract source: string
 
 	constructor(
 		public readonly suggestion: T,
 		public readonly documentId: DocumentId,
 		public readonly document: TextDocument,
-		public readonly requestUuid: string
-	) { }
+		public readonly requestUuid: string,
+	) {}
 }
 export interface NesCompletionItem extends InlineCompletionItem {
-	readonly info: NesCompletionInfo;
-	wasShown: boolean;
+	readonly info: NesCompletionInfo
+	wasShown: boolean
 }
 class NesCompletionList extends InlineCompletionList {
-	public override enableForwardStability = true;
+	public override enableForwardStability = true
 
 	constructor(
 		public readonly requestUuid: string,
 		item: NesCompletionItem | undefined,
 		public override readonly commands: Command[],
 	) {
-		super(item === undefined ? [] : [item]);
+		super(item === undefined ? [] : [item])
 	}
 }
 enum InlineCompletionReportKind {
-	Accepted = '202',
-	Rejected = '204',
-	Ignored = '203',
-	Shown = '201'
+	Accepted = "202",
+	Rejected = "204",
+	Ignored = "203",
+	Shown = "201",
 }
 export class DiagnosticsCompletionInfo extends BaseNesCompletionInfo<DiagnosticsNextEditResult> {
-	public readonly source = 'diagnostics';
+	public readonly source = "diagnostics"
 }
-export type NesCompletionInfo = DiagnosticsCompletionInfo;
+export type NesCompletionInfo = DiagnosticsCompletionInfo
 export class CompletionProvider implements InlineCompletionItemProvider {
 	private _config = workspace.getConfiguration("aixcoding.main.config")
 	private _abortController: AbortController | null
@@ -158,7 +162,6 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	private _secretState
 	private contextRetrievalService: ContextRetrievalService
 	private completionContext: InlineCompletionContext | undefined
-	
 
 	constructor(
 		statusBar: StatusBarItem,
@@ -182,7 +185,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._secretState = extentionContext.secrets
 		this._autoSuggestEnabled = extentionContext.globalState.get("enableCompletion", false)
 		this.contextRetrievalService = new ContextRetrievalService(this.ide)
-	
+
 		console.log(this.diagnosticsProvider)
 	}
 
@@ -190,66 +193,68 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		document: TextDocument,
 		position: Position,
 		context: InlineCompletionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<InlineCompletionItem[] | InlineCompletionList | NesCompletionList | null | undefined> {
-
 		this.completionContext = context
-		this._isAborted = false;
-		console.log("[AIXCODING] provideInlineCompletionItems called, enableCompletion:", this._autoSuggestEnabled);
+		this._isAborted = false
+		console.log("[AIXCODING] provideInlineCompletionItems called, enableCompletion:", this._autoSuggestEnabled)
 
-		const editor = window.activeTextEditor;
-		if (!this._enabled || !editor || getShouldSkipCompletion(context, this._autoSuggestEnabled) || !triggerCompletion()) {
-			return this.handleEarlyReturn(context);
+		const editor = window.activeTextEditor
+		if (
+			!this._enabled ||
+			!editor ||
+			getShouldSkipCompletion(context, this._autoSuggestEnabled) ||
+			!triggerCompletion()
+		) {
+			return this.handleEarlyReturn(context)
 		}
-		
-		this._document = document;
-		this._position = position;
-		this._prefixSuffix = getPrefixSuffix(this._numLineContext, document, position);
-		
-		const cachedCompletion = cache.getCache(this._prefixSuffix);
+
+		this._document = document
+		this._position = position
+		this._prefixSuffix = getPrefixSuffix(this._numLineContext, document, position)
+
+		const cachedCompletion = cache.getCache(this._prefixSuffix)
 		if (cachedCompletion && this._completionCacheEnabled) {
-			this._completion = cachedCompletion;
-			return this.provideInlineCompletion();
+			this._completion = cachedCompletion
+			return this.provideInlineCompletion()
 		}
-		
-		this._statusBar.text = "$(loading~spin) AI×Coding";
 
-		
-		
-		const diagnosticsResult = await this._provideDiagnosticsCompletion(document, context, token);
+		this._statusBar.text = "$(loading~spin) AI×Coding"
+
+		const diagnosticsResult = await this._provideDiagnosticsCompletion(document, context, token)
 
 		if (token.isCancellationRequested) {
-			this._statusBar.text = "$(check) AI×Coding";
-			return;
+			this._statusBar.text = "$(check) AI×Coding"
+			return
 		}
-		
+
 		if (diagnosticsResult) {
-			this._statusBar.text = "$(check) AI×Coding";
-			return diagnosticsResult;
+			this._statusBar.text = "$(check) AI×Coding"
+			return diagnosticsResult
 		}
 
 		// Fallback to standard completion if diagnostics completion returns nothing
-		return this._provideStandardCompletion(document, position, context, token);
+		return this._provideStandardCompletion(document, position, context, token)
 	}
 
 	public handleEndOfLifetime(item: NesCompletionItem, reason: InlineCompletionEndOfLifeReason): void {
 		console.log("requestUuid", this._requestId)
 		switch (reason.kind) {
 			case InlineCompletionEndOfLifeReasonKind.Accepted: {
-				this._handleAcceptance(item);
-				break;
+				this._handleAcceptance(item)
+				break
 			}
 			case InlineCompletionEndOfLifeReasonKind.Rejected: {
-				this._handleDidRejectCompletionItem(item);
-				break;
+				this._handleDidRejectCompletionItem(item)
+				break
 			}
 			case InlineCompletionEndOfLifeReasonKind.Ignored: {
-				const supersededBy = reason.supersededBy ? (reason.supersededBy as NesCompletionItem) : undefined;
-				this._handleDidIgnoreCompletionItem(item, supersededBy);
-				break;
-			}		
+				const supersededBy = reason.supersededBy ? (reason.supersededBy as NesCompletionItem) : undefined
+				this._handleDidIgnoreCompletionItem(item, supersededBy)
+				break
+			}
 		}
-	}	
+	}
 	// 报告补全结果显示事件
 	public handleDidShowCompletionItem(completionItem: NesCompletionItem, updatedInsertText: string) {
 		console.log("shown", completionItem, updatedInsertText)
@@ -257,20 +262,20 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	}
 	// 报告补全结果接受事件
 	private _handleAcceptance(item: NesCompletionItem) {
-		console.log('accept', item)
+		console.log("accept", item)
 		this.setAcceptedLastCompletion(true)
 		// this.updateEvent(InlineCompletionReportKind.Accepted)
 	}
 	// 报告补全结果拒绝事件
 	private _handleDidRejectCompletionItem(item: NesCompletionItem) {
-		console.log('reject', item)
+		console.log("reject", item)
 		this.setAcceptedLastCompletion(false)
 		// this.updateEvent(InlineCompletionReportKind.Rejected)
 	}
 
 	// 报告补全结果忽略事件
 	private _handleDidIgnoreCompletionItem(item: NesCompletionItem, supersededBy: NesCompletionItem | undefined) {
-		console.log('ignored', item, supersededBy)
+		console.log("ignored", item, supersededBy)
 		this.setAcceptedLastCompletion(false)
 		// this.updateEvent(InlineCompletionReportKind.Ignored)
 	}
@@ -287,11 +292,11 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			pluginVersion: telemetry.pluginVersion,
 			projectName: telemetry.projectName,
 			fileName: this._document?.fileName || "",
-			completionType: completionItem.isInlineEdit?'diagnostics': 'llm',
-			triggerType: (this._globalState.get("completionMode") === "1") ? 'multiple' : 'line',
+			completionType: completionItem.isInlineEdit ? "diagnostics" : "llm",
+			triggerType: this._globalState.get("completionMode") === "1" ? "multiple" : "line",
 			clientStatus,
 			completionLines,
-			language: this._document?.languageId
+			language: this._document?.languageId,
 		}
 		fetch(apiUrl, {
 			method: "POST", // 或 'PUT'
@@ -304,7 +309,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			.then((response) => response.json())
 			.then((data) => console.log("Success:", data))
 			.catch((error) => console.error("Error:", error))
-	}	
+	}
 
 	// 更新事件状态
 	public updateEvent(clientStatus: string) {
@@ -312,7 +317,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		const clientRequestId = this.completionContext?.requestUuid
 		const reportBody = {
 			clientRequestId,
-			clientStatus
+			clientStatus,
 		}
 		fetch(apiUrl, {
 			method: "POST", // 或 'PUT'
@@ -325,41 +330,35 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			.then((response) => response.json())
 			.then((data) => console.log("Success:", data))
 			.catch((error) => console.error("Error:", error))
-	}		
+	}
 	private handleEarlyReturn(context: InlineCompletionContext) {
 		if (context.triggerKind === InlineCompletionTriggerKind.Invoke && this._autoSuggestEnabled) {
-			this._completion = this.lastCompletionText;
-			return this.provideInlineCompletion();
+			this._completion = this.lastCompletionText
+			return this.provideInlineCompletion()
 		}
-		this._lastCompletionMultiline = false;
-		return;
+		this._lastCompletionMultiline = false
+		return
 	}
 
 	private async _provideDiagnosticsCompletion(
 		document: TextDocument,
 		context: InlineCompletionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<NesCompletionList | undefined> {
-		const doc = this._workspace.getDocumentByTextDocument(document);
-		if (!doc) return undefined;
+		const doc = this._workspace.getDocumentByTextDocument(document)
+		if (!doc) return undefined
 
 		try {
-			const logContext = new InlineEditRequestLogContext(doc.id.uri, document.version, context);
+			const logContext = new InlineEditRequestLogContext(doc.id.uri, document.version, context)
 
-			const diagnosticsPromise = this.diagnosticsProvider.runUntilNextEdit(
-				doc.id,
-				context,
-				logContext,
-				50,
-				token
-			);
-			
-			const timeoutPromise = new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), 1000));
+			const diagnosticsPromise = this.diagnosticsProvider.runUntilNextEdit(doc.id, context, logContext, 50, token)
 
-			const diagnosticsSuggestion = await Promise.race([diagnosticsPromise, timeoutPromise]);
+			const timeoutPromise = new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 750))
+
+			const diagnosticsSuggestion = await Promise.race([diagnosticsPromise, timeoutPromise])
 
 			if (!diagnosticsSuggestion) {
-				return undefined;
+				return undefined
 			}
 
 			if (diagnosticsSuggestion.result && diagnosticsSuggestion.result.edit.newText) {
@@ -367,23 +366,23 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 					diagnosticsSuggestion,
 					doc.id,
 					document,
-					context.requestUuid
-				);
-				const { result } = suggestionInfo.suggestion;
-				if (!result) return undefined;
-				const range = this.documentRangeFromOffsetRange(document, result.edit.replaceRange);
+					context.requestUuid,
+				)
+				const { result } = suggestionInfo.suggestion
+				if (!result) return undefined
+				const range = this.documentRangeFromOffsetRange(document, result.edit.replaceRange)
 				const showRange = new Range(
 					Math.max(range.start.line - 4, 0),
 					0,
 					range.end.line + 4,
-					Number.MAX_SAFE_INTEGER
-				);
+					Number.MAX_SAFE_INTEGER,
+				)
 				const displayLocation = result.displayLocation
 					? {
 							range: toExternalRange(result.displayLocation.range),
 							label: result.displayLocation.label,
-					  }
-					: undefined;
+						}
+					: undefined
 				const inlineEdit: NesCompletionItem = {
 					insertText: result.edit.newText,
 					range,
@@ -393,117 +392,114 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 					showInlineEditMenu: true,
 					displayLocation,
 					wasShown: false,
-				};
-				return new NesCompletionList(context.requestUuid, inlineEdit, []);
+				}
+				return new NesCompletionList(context.requestUuid, inlineEdit, [])
 			}
 		} catch (error) {
-			this._statusBar.text = "$(check) AI×Coding";
-			console.error("Error getting diagnostics completion, falling back to standard completion.", error);
+			this._statusBar.text = "$(check) AI×Coding"
+			console.error("Error getting diagnostics completion, falling back to standard completion.", error)
 		}
-		return undefined;
+		return undefined
 	}
 
 	private async _provideStandardCompletion(
 		document: TextDocument,
 		position: Position,
 		context: InlineCompletionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ResolvedInlineCompletion> {
-		this._chunkCount = 0;
-		this._nonce = this._nonce + 1;
-	
-		this._parser = await getParser(document.uri.fsPath);
+		this._chunkCount = 0
+		this._nonce = this._nonce + 1
+
+		this._parser = await getParser(document.uri.fsPath)
 		try {
 			if (this._parser) {
-				const text = document.getText();
-				const tree = this._parser.parse(text);
-				this._nodeAtPosition = getNodeAtPosition(tree, position);
+				const text = document.getText()
+				const tree = this._parser.parse(text)
+				this._nodeAtPosition = getNodeAtPosition(tree, position)
 			}
 		} catch (error) {
-			console.error("Parsing failed:", error);
+			console.error("Parsing failed:", error)
 		}
-	
+
 		this._isMultilineCompletion = getIsMultilineCompletion({
 			node: this._nodeAtPosition,
 			prefixSuffix: this._prefixSuffix,
-		});
-	
-		if (this._debouncer) clearTimeout(this._debouncer);
-	
-		const prompt = await this.getPrompt(this._prefixSuffix);
-		if (!prompt) return this.provideInlineCompletion();
-	
+		})
+
+		if (this._debouncer) clearTimeout(this._debouncer)
+
+		const prompt = await this.getPrompt(this._prefixSuffix)
+		if (!prompt) return this.provideInlineCompletion()
+
 		return new Promise((resolve, reject) => {
 			const cancellationListener = token.onCancellationRequested(() => {
-				clearTimeout(this._debouncer);
-				this._abortController?.abort();
-				cancellationListener.dispose();
-				this._statusBar.text = "$(check) AI×Coding";
-				reject(new Error("Completion request was cancelled."));
-			});
-	
+				clearTimeout(this._debouncer)
+				this._abortController?.abort()
+				cancellationListener.dispose()
+				this._statusBar.text = "$(check) AI×Coding"
+				reject(new Error("Completion request was cancelled."))
+			})
+
 			this._debouncer = setTimeout(() => {
 				this._lock.acquire("twinny.completion", async () => {
 					if (token.isCancellationRequested) {
-						cancellationListener.dispose();
-						return reject(new Error("Completion request was cancelled."));
+						cancellationListener.dispose()
+						return reject(new Error("Completion request was cancelled."))
 					}
 
-					const provider = this.getProvider();
+					const provider = this.getProvider()
 					if (!provider) {
-						cancellationListener.dispose();
-						return resolve(this.provideInlineCompletion());
+						cancellationListener.dispose()
+						return resolve(this.provideInlineCompletion())
 					}
 
-					const request = this.buildStreamRequest(prompt, provider);
-					const filename = path.basename(document.fileName);
-					const newTelemetry = { ...telemetry, requestId: context.requestUuid, filename };
-					const requestBody = { ...request.body, telemetry: newTelemetry };
-					this._requestId = newTelemetry.requestId;
-	
+					const request = this.buildStreamRequest(prompt, provider)
+					const filename = path.basename(document.fileName)
+					const newTelemetry = { ...telemetry, requestId: context.requestUuid, filename }
+					const requestBody = { ...request.body, telemetry: newTelemetry }
+					this._requestId = newTelemetry.requestId
+
 					try {
 						await streamResponse({
 							body: requestBody,
 							options: request.options,
 							onStart: (controller) => (this._abortController = controller),
 							onEnd: () => {
-								this.onEnd(resolve, token);
-								cancellationListener.dispose();
+								this.onEnd(resolve, token)
+								cancellationListener.dispose()
 							},
 							onError: (error) => {
-								console.error(error);
-								this.onError();
-								cancellationListener.dispose();
-								reject(error);
+								console.error(error)
+								this.onError()
+								cancellationListener.dispose()
+								reject(error)
 							},
 							onData: (data) => {
 								if (this._isAborted || token.isCancellationRequested) {
-									this._abortController?.abort();
-									return;
+									this._abortController?.abort()
+									return
 								}
-								const completion = this.onData(data);
+								const completion = this.onData(data)
 								if (completion) {
-									this._abortController?.abort();
-									this._isAborted = true;
+									this._abortController?.abort()
+									this._isAborted = true
 								}
 							},
-						});
+						})
 					} catch (error) {
-						console.error(error);
-						this.onError();
-						cancellationListener.dispose();
-						reject(error);
+						console.error(error)
+						this.onError()
+						cancellationListener.dispose()
+						reject(error)
 					}
-				});
-			}, this._debounceWait);
-		});
+				})
+			}, this._debounceWait)
+		})
 	}
 
 	private documentRangeFromOffsetRange(doc: TextDocument, range: OffsetRange): Range {
-		return new Range(
-			doc.positionAt(range.start),
-			doc.positionAt(range.endExclusive)
-		);
+		return new Range(doc.positionAt(range.start), doc.positionAt(range.endExclusive))
 	}
 	private buildStreamRequest(prompt: string, provider: TwinnyProvider) {
 		const body = createStreamRequestBodyFim(provider.provider, prompt, {
@@ -624,14 +620,14 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 	private onEnd(resolve: (completion: ResolvedInlineCompletion) => void, token: CancellationToken) {
 		if (token.isCancellationRequested) {
-			this.abortCompletion();
-			return resolve([]);
+			this.abortCompletion()
+			return resolve([])
 		}
-		return resolve(this.provideInlineCompletion());
+		return resolve(this.provideInlineCompletion())
 	}
 
 	public onError = (e?: Error) => {
-		this._abortController?.abort();
+		this._abortController?.abort()
 		console.error(e)
 	}
 
@@ -767,7 +763,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		// return this._extensionContext.globalState.get<TwinnyProvider>(
 		//   ACTIVE_FIM_PROVIDER_STORAGE_KEY
 		// );
-		const env: string = "test"
+		const env: string = "test1"
 		if (env === "test") {
 			return {
 				apiHostname: "api.together.xyz",
@@ -805,8 +801,6 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._acceptedLastCompletion = value
 		this._lastCompletionMultiline = getLineBreakCount(this._completion) > 1
 	}
-
-
 
 	public abortCompletion() {
 		this._abortController?.abort()
@@ -847,4 +841,3 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._autoSuggestEnabled = this._extensionContext.globalState.get("enableCompletion", false)
 	}
 }
-
