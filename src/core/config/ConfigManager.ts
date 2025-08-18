@@ -13,43 +13,13 @@ export interface ApiConfigData {
 
 export class ConfigManager {
 	private readonly defaultConfig: ApiConfigData = {
-		currentApiConfigName: "qwen",
+		currentApiConfigName: "default",
 		apiConfigs: {
-			"deepseek-r1": {
-				apiProvider: "openai",
-				openAiBaseUrl: "",
-				openAiApiKey: "",
-				openAiModelId: "deepseek-r1-chat-v1.0",
-				id: "ktfvsw1xwl",
+			default: {
+				id: this.generateId(),
 			},
-			qwen: {
-				apiProvider: "openai",
-				openAiBaseUrl: "",
-				openAiApiKey: "",
-				openAiModelId: "qwencoder-model-chat-v1.0",
-				id: "nwmcw0x6wcq",
-			},
-			// qwenvl: {
-			// 	apiProvider: "openai",
-			// 	openAiBaseUrl: "",
-			// 	openAiApiKey: "apiKey",
-			// 	openAiModelId: "qwenvl",
-			// 	// openAiModelId: "qwen/qwq-32b",
-			// 	id: "nwmcw0x6wc0",
-			// },
-		},
-		modeApiConfigs: {
-			code: "nwmcw0x6wcq",
 		},
 	}
-	// {
-	// 	currentApiConfigName: "default",
-	// 	apiConfigs: {
-	// 		default: {
-	// 			id: this.generateId(),
-	// 		},
-	// 	},
-	// }
 
 	private readonly SCOPE_PREFIX = "aixcoding_config_"
 	private readonly context: ExtensionContext

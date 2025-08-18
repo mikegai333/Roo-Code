@@ -1655,6 +1655,11 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 
 	// 加载配置文件
 	private async loadConfig() {
+		const listApiConfig1 = await this.configManager.listConfig()
+		console.log("listApiConfig1", listApiConfig1)
+		if (listApiConfig1.length === 2) {
+			return
+		}
 		const baseApi = this.context.globalState.get("baseApi") as string
 		const apiKey = this.context.globalState.get("openAiApiKey") as string
 		const openAiBaseUrl = `${baseApi}/api/v1`

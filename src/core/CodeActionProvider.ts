@@ -44,7 +44,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 	): vscode.CodeAction[] {
 		return [
 			this.createAction(`${baseTitle} 在新任务中`, kind, baseCommand, args),
-			this.createAction(`${baseTitle} 在当前任务中`, kind, `${baseCommand} 在当前任务中`, args),
+			this.createAction(`${baseTitle} 在当前任务中`, kind, `${baseCommand}InCurrentTask`, args),
 		]
 	}
 

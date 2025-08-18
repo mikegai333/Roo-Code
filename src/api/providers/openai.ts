@@ -92,9 +92,10 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 				stream_options: { include_usage: true },
 				telemetry,
 			}
-			if (this.options.includeMaxTokens) {
-				requestOptions.max_tokens = modelInfo.maxTokens
-			}
+			console.log("openai options", this.options, modelInfo)
+			// if (this.options.includeMaxTokens) {
+			requestOptions.max_tokens = modelInfo?.maxTokens
+			// }
 
 			const stream = await this.client.chat.completions.create(requestOptions)
 

@@ -53,6 +53,24 @@ interface ApiOptionsProps {
 
 const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: ApiOptionsProps) => {
 	const { apiConfiguration, uriScheme, handleInputChange } = useExtensionState()
+
+	// Helper function for complex model info updates with real-time state sync
+	const handleModelInfoChange = useCallback(
+		(newValue: any) => {
+			// First update local state immediately for UI responsiveness
+			handleInputChange(
+				"openAiCustomModelInfo",
+				true,
+			)({
+				target: { value: newValue },
+			})
+			// Then save to backend
+			handleInputChange("openAiCustomModelInfo")({
+				target: { value: newValue },
+			})
+		},
+		[handleInputChange],
+	)
 	const [ollamaModels, setOllamaModels] = useState<string[]>([])
 	const [lmStudioModels, setLmStudioModels] = useState<string[]>([])
 	const [vsCodeLmModels, setVsCodeLmModels] = useState<vscodemodels.LanguageModelChatSelector[]>([])
@@ -606,7 +624,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						value={apiConfiguration?.openAiBaseUrl || ""}
 						style={{ width: "100%" }}
 						type="url"
-						onBlur={handleInputChange("openAiBaseUrl")}
+						onBlur={handleInputChange("openAiBaseUrl", true)}
 						placeholder={"请输入基础 URL..."}>
 						<span style={{ fontWeight: 500 }}>基础 URL</span>
 					</VSCodeTextField>
@@ -614,7 +632,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						value={apiConfiguration?.openAiApiKey || ""}
 						style={{ width: "100%" }}
 						type="password"
-						onBlur={handleInputChange("openAiApiKey")}
+						onBlur={handleInputChange("openAiApiKey", true)}
 						placeholder="请输入 API 密钥...">
 						<span style={{ fontWeight: 500 }}>API 密钥</span>
 					</VSCodeTextField>
@@ -673,10 +691,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						actions={[
 							{
 								iconName: "refresh",
-								onClick: () =>
-									handleInputChange("openAiCustomModelInfo")({
-										target: { value: openAiModelInfoSaneDefaults },
-									}),
+								onClick: () => handleModelInfoChange(openAiModelInfoSaneDefaults),
 							},
 						]}>
 						<div
@@ -732,15 +747,12 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											title="模型在单个响应中可以生成的最大 Token 数量"
 											onChange={(e: any) => {
 												const value = parseInt(e.target.value)
-												handleInputChange("openAiCustomModelInfo")({
-													target: {
-														value: {
-															...(apiConfiguration?.openAiCustomModelInfo ||
-																openAiModelInfoSaneDefaults),
-															maxTokens: isNaN(value) ? undefined : value,
-														},
-													},
-												})
+												const newValue = {
+													...(apiConfiguration?.openAiCustomModelInfo ||
+														openAiModelInfoSaneDefaults),
+													maxTokens: isNaN(value) ? undefined : value,
+												}
+												handleModelInfoChange(newValue)
 											}}
 											placeholder="例如 4096">
 											<span style={{ fontWeight: 500 }}>最大输出 Token 数量</span>
@@ -784,20 +796,17 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											title="模型在单个请求中可以处理的 Token 总数（输入 + 输出）"
 											onChange={(e: any) => {
 												const parsed = parseInt(e.target.value)
-												handleInputChange("openAiCustomModelInfo")({
-													target: {
-														value: {
-															...(apiConfiguration?.openAiCustomModelInfo ||
-																openAiModelInfoSaneDefaults),
-															contextWindow:
-																e.target.value === ""
-																	? undefined
-																	: isNaN(parsed)
-																		? openAiModelInfoSaneDefaults.contextWindow
-																		: parsed,
-														},
-													},
-												})
+												const newValue = {
+													...(apiConfiguration?.openAiCustomModelInfo ||
+														openAiModelInfoSaneDefaults),
+													contextWindow:
+														e.target.value === ""
+															? undefined
+															: isNaN(parsed)
+																? openAiModelInfoSaneDefaults.contextWindow
+																: parsed,
+												}
+												handleModelInfoChange(newValue)
 											}}
 											placeholder="例如 128000">
 											<span style={{ fontWeight: 500 }}>上下文窗口大小</span>
@@ -847,15 +856,12 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 															openAiModelInfoSaneDefaults.supportsImages
 														}
 														onChange={(checked: boolean) => {
-															handleInputChange("openAiCustomModelInfo")({
-																target: {
-																	value: {
-																		...(apiConfiguration?.openAiCustomModelInfo ||
-																			openAiModelInfoSaneDefaults),
-																		supportsImages: checked,
-																	},
-																},
-															})
+															const newValue = {
+																...(apiConfiguration?.openAiCustomModelInfo ||
+																	openAiModelInfoSaneDefaults),
+																supportsImages: checked,
+															}
+															handleModelInfoChange(newValue)
 														}}>
 														<span style={{ fontWeight: 500 }}>图像支持</span>
 													</Checkbox>
@@ -894,15 +900,12 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 																?.supportsComputerUse ?? false
 														}
 														onChange={(checked: boolean) => {
-															handleInputChange("openAiCustomModelInfo")({
-																target: {
-																	value: {
-																		...(apiConfiguration?.openAiCustomModelInfo ||
-																			openAiModelInfoSaneDefaults),
-																		supportsComputerUse: checked,
-																	},
-																},
-															})
+															const newValue = {
+																...(apiConfiguration?.openAiCustomModelInfo ||
+																	openAiModelInfoSaneDefaults),
+																supportsComputerUse: checked,
+															}
+															handleModelInfoChange(newValue)
 														}}>
 														<span style={{ fontWeight: 500 }}>计算机使用</span>
 													</Checkbox>
@@ -990,20 +993,17 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											}}
 											onChange={(e: any) => {
 												const parsed = parseFloat(e.target.value)
-												handleInputChange("openAiCustomModelInfo")({
-													target: {
-														value: {
-															...(apiConfiguration?.openAiCustomModelInfo ??
-																openAiModelInfoSaneDefaults),
-															inputPrice:
-																e.target.value === ""
-																	? undefined
-																	: isNaN(parsed)
-																		? openAiModelInfoSaneDefaults.inputPrice
-																		: parsed,
-														},
-													},
-												})
+												const newValue = {
+													...(apiConfiguration?.openAiCustomModelInfo ??
+														openAiModelInfoSaneDefaults),
+													inputPrice:
+														e.target.value === ""
+															? undefined
+															: isNaN(parsed)
+																? openAiModelInfoSaneDefaults.inputPrice
+																: parsed,
+												}
+												handleModelInfoChange(newValue)
 											}}
 											placeholder="例如 0.0001">
 											<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1041,20 +1041,17 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 											}}
 											onChange={(e: any) => {
 												const parsed = parseFloat(e.target.value)
-												handleInputChange("openAiCustomModelInfo")({
-													target: {
-														value: {
-															...(apiConfiguration?.openAiCustomModelInfo ||
-																openAiModelInfoSaneDefaults),
-															outputPrice:
-																e.target.value === ""
-																	? undefined
-																	: isNaN(parsed)
-																		? openAiModelInfoSaneDefaults.outputPrice
-																		: parsed,
-														},
-													},
-												})
+												const newValue = {
+													...(apiConfiguration?.openAiCustomModelInfo ||
+														openAiModelInfoSaneDefaults),
+													outputPrice:
+														e.target.value === ""
+															? undefined
+															: isNaN(parsed)
+																? openAiModelInfoSaneDefaults.outputPrice
+																: parsed,
+												}
+												handleModelInfoChange(newValue)
 											}}
 											placeholder="例如 0.0002">
 											<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1436,7 +1433,6 @@ export function getOpenRouterAuthUrl(uriScheme?: string) {
 export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration) {
 	const provider = apiConfiguration?.apiProvider || "anthropic"
 	const modelId = apiConfiguration?.apiModelId
-	console.log(66666666, apiConfiguration)
 	const getProviderData = (models: Record<string, ModelInfo>, defaultId: string) => {
 		let selectedModelId: string
 		let selectedModelInfo: ModelInfo
