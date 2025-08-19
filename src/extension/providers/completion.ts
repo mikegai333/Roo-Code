@@ -428,13 +428,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		try {
 			const logContext = new InlineEditRequestLogContext(doc.id.uri, document.version, context)
 
-			const diagnosticsPromise = this.diagnosticsProvider.runUntilNextEdit(
-				doc.id,
-				context,
-				logContext,
-				500,
-				token,
-			)
+			const diagnosticsPromise = this.diagnosticsProvider.runUntilNextEdit(doc.id, context, logContext, 50, token)
 
 			const timeoutPromise = new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 750))
 
@@ -846,7 +840,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		// return this._extensionContext.globalState.get<TwinnyProvider>(
 		//   ACTIVE_FIM_PROVIDER_STORAGE_KEY
 		// );
-		const env: string = "test"
+		const env: string = "test1"
 		if (env === "test") {
 			return {
 				apiHostname: "192.168.163.1",

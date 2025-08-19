@@ -33,7 +33,7 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 
 	constructor(options: OpenAiHandlerOptions) {
 		this.options = options
-
+		console.log("openaiOptions", this.options)
 		const baseURL = this.options.openAiBaseUrl ?? "http://22.189.54.139/aicoding/api/v1" //"https://api.openai.com/v1"
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		let urlHost: string
@@ -92,9 +92,9 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 				stream_options: { include_usage: true },
 				telemetry,
 			}
-			if (this.options.includeMaxTokens) {
-				requestOptions.max_tokens = modelInfo.maxTokens
-			}
+			// if (this.options.includeMaxTokens) {
+			requestOptions.max_tokens = modelInfo?.maxTokens
+			// }
 
 			const stream = await this.client.chat.completions.create(requestOptions)
 
