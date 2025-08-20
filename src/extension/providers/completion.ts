@@ -77,7 +77,7 @@ import {
 } from "../../copilot/extension/inlineEdits/vscode-node/features/diagnosticsInlineEditProvider"
 import { VSCodeWorkspace } from "../../copilot/extension/inlineEdits/vscode-node/parts/vscodeWorkspace"
 import { CancellationToken, CancellationTokenSource } from "../../copilot/util/vs/base/common/cancellation"
-import { INextEditResult } from "../../copilot/extension/inlineEdits/node/nextEditResult"
+import { INextEditResult, NextEditResult } from "../../copilot/extension/inlineEdits/node/nextEditResult"
 import { DocumentId } from "../../copilot/platform/inlineEdits/common/dataTypes/documentId"
 import { InlineEditRequestLogContext } from "../../copilot/platform/inlineEdits/common/inlineEditLogContext"
 import { OffsetRange } from "../../copilot/util/vs/editor/common/core/ranges/offsetRange"
@@ -85,6 +85,18 @@ import { ShowNextEditPreference } from "../../copilot/platform/inlineEdits/commo
 import { toExternalRange } from "../../copilot/extension/inlineEdits/vscode-node/features/diagnosticsBasedCompletions/diagnosticsCompletions"
 import { language } from "../../copilot/util/vs/base/common/platform"
 import { report } from "process"
+import { IInstantiationService } from "../../copilot/util/vs/platform/instantiation/common/instantiation"
+import { StringReplacement } from "../../copilot/util/vs/editor/common/core/edits/stringEdit"
+import { Range as Range2 } from "../../copilot/util/vs/editor/common/core/range"
+import { StringText } from "../../copilot/util/vs/editor/common/core/text/abstractText"
+import { DocumentEditRecorder } from "../../copilot/platform/editSurvivalTracking/common/editComputer"
+import { EditSurvivalReporter } from "../../copilot/platform/editSurvivalTracking/common/editSurvivalReporter"
+import { stringEditFromDiff } from "../../copilot/platform/editing/common/edit"
+import { StringEdit } from "../../copilot/util/vs/editor/common/core/edits/stringEdit"
+import { softAssert } from "../../copilot/util/vs/base/common/assert"
+import { IDiffService } from "../../copilot/platform/diff/common/diffService"
+import { IGitService } from "../../copilot/platform/git/common/gitService"
+import { GitServiceImpl } from "../../copilot/platform/git/vscode/gitServiceImpl"
 
 abstract class BaseNesCompletionInfo<T extends INextEditResult> {
 	public abstract source: string
@@ -119,6 +131,9 @@ enum InlineCompletionReportKind {
 }
 export class DiagnosticsCompletionInfo extends BaseNesCompletionInfo<DiagnosticsNextEditResult> {
 	public readonly source = "diagnostics"
+}
+class LlmCompletionInfo extends BaseNesCompletionInfo<NextEditResult> {
+	public readonly source = "provider"
 }
 export type NesCompletionInfo = DiagnosticsCompletionInfo
 export class CompletionProvider implements InlineCompletionItemProvider {
@@ -162,6 +177,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	private _secretState
 	private contextRetrievalService: ContextRetrievalService
 	private completionContext: InlineCompletionContext | undefined
+	private readonly _instantiationService: IInstantiationService
+	private readonly _diffService: IDiffService
 
 	constructor(
 		statusBar: StatusBarItem,
@@ -171,6 +188,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		private ide: VsCodeIde,
 		private diagnosticsProvider: DiagnosticsNextEditProvider,
 		private readonly _workspace: VSCodeWorkspace,
+		instantiationService: IInstantiationService,
+		diffService: IDiffService,
 	) {
 		this._extensionContext = extentionContext
 		this._abortController = null
@@ -185,6 +204,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._secretState = extentionContext.secrets
 		this._autoSuggestEnabled = extentionContext.globalState.get("enableCompletion", false)
 		this.contextRetrievalService = new ContextRetrievalService(this.ide)
+		this._instantiationService = instantiationService
+		this._diffService = diffService
 
 		console.log(this.diagnosticsProvider)
 	}
@@ -241,6 +262,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		console.log("requestUuid", this._requestId)
 		switch (reason.kind) {
 			case InlineCompletionEndOfLifeReasonKind.Accepted: {
+				console.log("===补全结果接受===")
+				console.log("item", item)
 				this._handleAcceptance(item)
 				break
 			}
@@ -263,9 +286,63 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	// 报告补全结果接受事件
 	private _handleAcceptance(item: NesCompletionItem) {
 		console.log("accept", item)
+		console.log("===接受补全===")
 		this.setAcceptedLastCompletion(true)
+		//**使用mock数据调试 */
+		//const info = item.info;
+		const info = this.createMockLlmCompletionInfo()
+		console.log(info)
+		//**调用留存率跟踪 */
+		this._trackSurvivalRate(info)
 		// this.updateEvent(InlineCompletionReportKind.Accepted)
 	}
+
+	//**mock LlmCompletionInfo 数据 */
+	public createMockLlmCompletionInfo(): LlmCompletionInfo {
+		// Create a properly structured object for NextEditResult
+		const nextEditResultData = {
+			requestId: 123456,
+			result: {
+				edit: new StringReplacement(new OffsetRange(0, 5), "Hello World") as StringReplacement,
+				documentBeforeEdits: {
+					value: "console.log('Hello');",
+				} as StringText,
+				showRangePreference: ShowNextEditPreference.AroundEdit,
+				displayLocation: {
+					range: new Range2(1, 0, 1, 5) as Range2,
+					label: "Mock suggestion",
+				},
+				targetDocumentId: new DocumentId(
+					Uri.file("file:///c:/Users/tangs/wpsai/src/components/TaskPaneNeo.vue").toString(),
+				) as DocumentId,
+			},
+		}
+
+		// Create mock NextEditResult using type assertion
+		const mockNextEditResult = new NextEditResult(
+			nextEditResultData.requestId,
+			nextEditResultData.result as any, // 使用 any 来处理复杂的类型要求
+		) as NextEditResult
+
+		// Create mock DocumentId
+		const mockDocumentId = new DocumentId(
+			Uri.file("file:///c:/Users/tangs/wpsai/src/components/TaskPaneNeo.vue").toString(),
+		) as DocumentId
+
+		// Create mock TextDocument
+		const mockTextDocument = {
+			uri: Uri.file("file:///mock/document.ts"),
+			fileName: "/mock/document.ts",
+			languageId: "typescript",
+			version: 1,
+			getText: () => "console.log('Hello');",
+			positionAt: (offset: number) => new Position(0, offset),
+		} as TextDocument
+
+		// Create and return LlmCompletionInfo instance
+		return new LlmCompletionInfo(mockNextEditResult, mockDocumentId, mockTextDocument, "icr-mock-llm-request-id")
+	}
+
 	// 报告补全结果拒绝事件
 	private _handleDidRejectCompletionItem(item: NesCompletionItem) {
 		console.log("reject", item)
@@ -351,7 +428,13 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		try {
 			const logContext = new InlineEditRequestLogContext(doc.id.uri, document.version, context)
 
-			const diagnosticsPromise = this.diagnosticsProvider.runUntilNextEdit(doc.id, context, logContext, 50, token)
+			const diagnosticsPromise = this.diagnosticsProvider.runUntilNextEdit(
+				doc.id,
+				context,
+				logContext,
+				500,
+				token,
+			)
 
 			const timeoutPromise = new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 750))
 
@@ -763,13 +846,13 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		// return this._extensionContext.globalState.get<TwinnyProvider>(
 		//   ACTIVE_FIM_PROVIDER_STORAGE_KEY
 		// );
-		const env: string = "test1"
+		const env: string = "test"
 		if (env === "test") {
 			return {
-				apiHostname: "api.together.xyz",
-				apiPath: "/v1/chat/completions",
+				apiHostname: "192.168.163.1",
+				apiPath: "/v1/completions",
 				apiPort: 1234, //7680,
-				apiProtocol: "https",
+				apiProtocol: "http",
 				id: "77b8dc81-6a90-4ce8-92b8-2c980d1ac1e1",
 				label: "deepseek-completions-copy",
 				modelName: "deepseek-ai/DeepSeek-V3",
@@ -782,8 +865,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			const baseApi = this._globalState.get("baseApi")
 			const apiKey = this._globalState.get("openAiApiKey")
 			return {
-				apiHostname: (baseApi as string).replace("http://", ""),
-				apiPath: "/api/v1/completions/code",
+				apiHostname: "192.168.163.1",
+				apiPath: "/v1/completions",
 				apiPort: 1234, //7680,
 				apiProtocol: "http",
 				id: "77b8dc81-6a90-4ce8-92b8-2c980d1ac1e1",
@@ -839,5 +922,67 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 	public updateConfig() {
 		this._autoSuggestEnabled = this._extensionContext.globalState.get("enableCompletion", false)
+	}
+
+	//**留存率跟踪调用 */
+	private async _trackSurvivalRate(item: LlmCompletionInfo) {
+		console.log("===[InlineCompletionProviderImpl] Tracking survival rate for item:", item.requestUuid)
+		const result = item.suggestion.result
+		if (!result) {
+			return
+		}
+
+		const docBeforeEdits = result.documentBeforeEdits.value
+		const docAfterEdits = result.edit.toEdit().apply(docBeforeEdits)
+
+		//**创建DocumentEditRecorder实例 */
+		const recorder = this._instantiationService.createInstance(DocumentEditRecorder, item.document)
+
+		// Assumption: The user cannot edit the document while the inline edit is being applied
+		let userEdits = StringEdit.empty
+		softAssert(docAfterEdits === userEdits.apply(item.document.getText()))
+
+		const diffedNextEdit = await stringEditFromDiff(docBeforeEdits, docAfterEdits, this._diffService)
+		const recordedEdits = recorder.getEdits()
+
+		userEdits = userEdits.compose(recordedEdits)
+
+		//**创建EditSurvivalReporter实例 */
+		this._instantiationService.createInstance(
+			EditSurvivalReporter,
+			item.document,
+			result.documentBeforeEdits.value,
+			diffedNextEdit,
+			userEdits,
+			{ includeArc: true },
+			// res => {
+			// 	/* __GDPR__
+			// 		"reportInlineEditSurvivalRate" : {
+			// 			"owner": "hediet",
+			// 			"comment": "Reports the survival rate for an inline edit.",
+			// 			"opportunityId": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "comment": "Unique identifier for an opportunity to show an NES." },
+
+			// 			"survivalRateFourGram": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true, "comment": "The rate between 0 and 1 of how much of the AI edit is still present in the document." },
+			// 			"survivalRateNoRevert": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true, "comment": "The rate between 0 and 1 of how much of the ranges the AI touched ended up being reverted." },
+			// 			"didBranchChange": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true, "comment": "Indicates if the branch changed in the meantime. If the branch changed (value is 1), this event should probably be ignored." },
+			// 			"timeDelayMs": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true, "comment": "The time delay between the user accepting the edit and measuring the survival rate." },
+			// 			"arc": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true, "comment": "The accepted and restrained character count." }
+			// 		}
+			// 	*/
+			// 	this._telemetryService.sendTelemetryEvent('reportInlineEditSurvivalRate', { microsoft: true, github: { eventNamePrefix: 'copilot-nes/' } },
+			// 		{
+			// 			opportunityId: item.requestUuid,
+			// 		},
+			// 		{
+			// 			survivalRateFourGram: res.fourGram,
+			// 			survivalRateNoRevert: res.noRevert,
+			// 			didBranchChange: res.didBranchChange ? 1 : 0,
+			// 			timeDelayMs: res.timeDelayMs,
+			// 			arc: res.arc!,
+			// 		}
+			// 	);
+
+			// }
+		)
 	}
 }
