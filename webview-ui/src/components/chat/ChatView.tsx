@@ -1,7 +1,7 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import debounce from "debounce"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useDeepCompareEffect, useEvent, useMount } from "react-use"
+import { useEvent, useMount } from "react-use"
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso"
 import styled from "styled-components"
 import {
@@ -93,7 +93,94 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 		vscode.postMessage({ type: "playSound", audioType })
 	}
 
-	useDeepCompareEffect(() => {
+	// ====== isReadOnlyToolAction、isWriteToolAction、isAllowedCommand、isMcpToolAlwaysAllowed、isAutoApproved 提前到此处 ======
+	const isReadOnlyToolAction = useCallback((message: ClineMessage | undefined) => {
+		if (message?.type === "ask") {
+			if (!message.text) {
+				return true
+			}
+			const tool = JSON.parse(message.text)
+			return [
+				"readFile",
+				"listFiles",
+				"listFilesTopLevel",
+				"listFilesRecursive",
+				"listCodeDefinitionNames",
+				"searchFiles",
+			].includes(tool.tool)
+		}
+		return false
+	}, [])
+
+	const isWriteToolAction = useCallback((message: ClineMessage | undefined) => {
+		if (message?.type === "ask") {
+			if (!message.text) {
+				return true
+			}
+			const tool = JSON.parse(message.text)
+			return ["editedExistingFile", "appliedDiff", "newFileCreated"].includes(tool.tool)
+		}
+		return false
+	}, [])
+
+	const isMcpToolAlwaysAllowed = useCallback(
+		(message: ClineMessage | undefined) => {
+			if (message?.type === "ask" && message.ask === "use_mcp_server") {
+				if (!message.text) {
+					return true
+				}
+				const mcpServerUse = JSON.parse(message.text) as { type: string; serverName: string; toolName: string }
+				if (mcpServerUse.type === "use_mcp_tool") {
+					const server = mcpServers?.find((s: McpServer) => s.name === mcpServerUse.serverName)
+					const tool = server?.tools?.find((t: McpTool) => t.name === mcpServerUse.toolName)
+					return tool?.alwaysAllow || false
+				}
+			}
+			return false
+		},
+		[mcpServers],
+	)
+
+	const isAllowedCommand = useCallback(
+		(message: ClineMessage | undefined): boolean => {
+			if (message?.type !== "ask") return false
+			return validateCommand(message.text || "", allowedCommands || [])
+		},
+		[allowedCommands],
+	)
+
+	const isAutoApproved = useCallback(
+		(message: ClineMessage | undefined) => {
+			if (!autoApprovalEnabled || !message || message.type !== "ask") return false
+
+			return (
+				(alwaysAllowBrowser && message.ask === "browser_action_launch") ||
+				(alwaysAllowReadOnly && message.ask === "tool" && isReadOnlyToolAction(message)) ||
+				(alwaysAllowWrite && message.ask === "tool" && isWriteToolAction(message)) ||
+				(alwaysAllowExecute && message.ask === "command" && isAllowedCommand(message)) ||
+				(alwaysAllowMcp && message.ask === "use_mcp_server" && isMcpToolAlwaysAllowed(message)) ||
+				(alwaysAllowModeSwitch &&
+					message.ask === "tool" &&
+					(JSON.parse(message.text || "{}")?.tool === "switchMode" ||
+						JSON.parse(message.text || "{}")?.tool === "newTask"))
+			)
+		},
+		[
+			autoApprovalEnabled,
+			alwaysAllowBrowser,
+			alwaysAllowReadOnly,
+			isReadOnlyToolAction,
+			alwaysAllowWrite,
+			isWriteToolAction,
+			alwaysAllowExecute,
+			isAllowedCommand,
+			alwaysAllowMcp,
+			isMcpToolAlwaysAllowed,
+			alwaysAllowModeSwitch,
+		],
+	)
+
+	useEffect(() => {
 		// if last message is an ask, show user ask UI
 		// if user finished a task, then start a new task with a new conversation history since in this moment that the extension is waiting for user response, the user could close the extension and the conversation history would be lost.
 		// basically as long as a task is active, the conversation history will be persisted
@@ -246,7 +333,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			// setPrimaryButtonText(undefined)
 			// setSecondaryButtonText(undefined)
 		}
-	}, [lastMessage, secondLastMessage])
+	}, [lastMessage, secondLastMessage, isAutoApproved])
 
 	useEffect(() => {
 		if (messages.length === 0) {
@@ -565,93 +652,6 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 			return true
 		})
 	}, [modifiedMessages])
-
-	const isReadOnlyToolAction = useCallback((message: ClineMessage | undefined) => {
-		if (message?.type === "ask") {
-			if (!message.text) {
-				return true
-			}
-			const tool = JSON.parse(message.text)
-			return [
-				"readFile",
-				"listFiles",
-				"listFilesTopLevel",
-				"listFilesRecursive",
-				"listCodeDefinitionNames",
-				"searchFiles",
-			].includes(tool.tool)
-		}
-		return false
-	}, [])
-
-	const isWriteToolAction = useCallback((message: ClineMessage | undefined) => {
-		if (message?.type === "ask") {
-			if (!message.text) {
-				return true
-			}
-			const tool = JSON.parse(message.text)
-			return ["editedExistingFile", "appliedDiff", "newFileCreated"].includes(tool.tool)
-		}
-		return false
-	}, [])
-
-	const isMcpToolAlwaysAllowed = useCallback(
-		(message: ClineMessage | undefined) => {
-			if (message?.type === "ask" && message.ask === "use_mcp_server") {
-				if (!message.text) {
-					return true
-				}
-				const mcpServerUse = JSON.parse(message.text) as { type: string; serverName: string; toolName: string }
-				if (mcpServerUse.type === "use_mcp_tool") {
-					const server = mcpServers?.find((s: McpServer) => s.name === mcpServerUse.serverName)
-					const tool = server?.tools?.find((t: McpTool) => t.name === mcpServerUse.toolName)
-					return tool?.alwaysAllow || false
-				}
-			}
-			return false
-		},
-		[mcpServers],
-	)
-
-	// Check if a command message is allowed
-	const isAllowedCommand = useCallback(
-		(message: ClineMessage | undefined): boolean => {
-			if (message?.type !== "ask") return false
-			return validateCommand(message.text || "", allowedCommands || [])
-		},
-		[allowedCommands],
-	)
-
-	const isAutoApproved = useCallback(
-		(message: ClineMessage | undefined) => {
-			if (!autoApprovalEnabled || !message || message.type !== "ask") return false
-
-			return (
-				(alwaysAllowBrowser && message.ask === "browser_action_launch") ||
-				(alwaysAllowReadOnly && message.ask === "tool" && isReadOnlyToolAction(message)) ||
-				(alwaysAllowWrite && message.ask === "tool" && isWriteToolAction(message)) ||
-				(alwaysAllowExecute && message.ask === "command" && isAllowedCommand(message)) ||
-				(alwaysAllowMcp && message.ask === "use_mcp_server" && isMcpToolAlwaysAllowed(message)) ||
-				(alwaysAllowModeSwitch &&
-					message.ask === "tool" &&
-					(JSON.parse(message.text || "{}")?.tool === "switchMode" ||
-						JSON.parse(message.text || "{}")?.tool === "newTask"))
-			)
-		},
-		[
-			autoApprovalEnabled,
-			alwaysAllowBrowser,
-			alwaysAllowReadOnly,
-			isReadOnlyToolAction,
-			alwaysAllowWrite,
-			isWriteToolAction,
-			alwaysAllowExecute,
-			isAllowedCommand,
-			alwaysAllowMcp,
-			isMcpToolAlwaysAllowed,
-			alwaysAllowModeSwitch,
-		],
-	)
 
 	useEffect(() => {
 		// Only execute when isStreaming changes from true to false

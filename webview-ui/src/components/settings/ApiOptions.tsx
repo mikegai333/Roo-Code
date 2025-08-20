@@ -624,7 +624,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						value={apiConfiguration?.openAiBaseUrl || ""}
 						style={{ width: "100%" }}
 						type="url"
-						onBlur={handleInputChange("openAiBaseUrl", true)}
+						onBlur={handleInputChange("openAiBaseUrl")}
 						placeholder={"请输入基础 URL..."}>
 						<span style={{ fontWeight: 500 }}>基础 URL</span>
 					</VSCodeTextField>
@@ -632,7 +632,7 @@ const ApiOptions = ({ apiErrorMessage, modelIdErrorMessage, fromWelcomeView }: A
 						value={apiConfiguration?.openAiApiKey || ""}
 						style={{ width: "100%" }}
 						type="password"
-						onBlur={handleInputChange("openAiApiKey", true)}
+						onBlur={handleInputChange("openAiApiKey")}
 						placeholder="请输入 API 密钥...">
 						<span style={{ fontWeight: 500 }}>API 密钥</span>
 					</VSCodeTextField>
