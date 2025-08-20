@@ -1,4 +1,11 @@
-import { VSCodeButton, VSCodeCheckbox, VSCodeLink, VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import {
+	VSCodeButton,
+	VSCodeCheckbox,
+	VSCodeLink,
+	VSCodeTextField,
+	VSCodeDropdown,
+	VSCodeOption,
+} from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useState } from "react"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { validateApiConfiguration, validateModelId } from "../../utils/validate"
@@ -29,7 +36,7 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 		alwaysAllowExecute,
 		setAlwaysAllowExecute,
 		alwaysAllowBrowser,
-		setAlwaysAllowBrowser,
+		// setAlwaysAllowBrowser,
 		alwaysAllowMcp,
 		setAlwaysAllowMcp,
 		soundEnabled,
@@ -68,9 +75,9 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 		alwaysAllowModeSwitch,
 		setAlwaysAllowModeSwitch,
 		enableCompletion,
-		setEnableCompletion,
+		// setEnableCompletion,
 		completionMode,
-		setCompletionMode
+		setCompletionMode,
 	} = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [modelIdErrorMessage, setModelIdErrorMessage] = useState<string | undefined>(undefined)
@@ -89,10 +96,10 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 		setApiErrorMessage(apiValidationResult)
 		setModelIdErrorMessage(modelIdValidationResult)
 		if (!apiValidationResult && !modelIdValidationResult) {
-			vscode.postMessage({
-				type: "apiConfiguration",
-				apiConfiguration,
-			})
+			// vscode.postMessage({
+			// 	type: "apiConfiguration",
+			// 	apiConfiguration,
+			// })
 			vscode.postMessage({ type: "alwaysAllowReadOnly", bool: alwaysAllowReadOnly })
 			vscode.postMessage({ type: "alwaysAllowWrite", bool: alwaysAllowWrite })
 			vscode.postMessage({ type: "alwaysAllowExecute", bool: alwaysAllowExecute })
@@ -113,11 +120,11 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 			vscode.postMessage({ type: "requestDelaySeconds", value: requestDelaySeconds })
 			vscode.postMessage({ type: "rateLimitSeconds", value: rateLimitSeconds })
 			vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
-			vscode.postMessage({
-				type: "upsertApiConfiguration",
-				text: currentApiConfigName,
-				apiConfiguration,
-			})
+			// vscode.postMessage({
+			// 	type: "upsertApiConfiguration",
+			// 	text: currentApiConfigName,
+			// 	apiConfiguration,
+			// })
 
 			vscode.postMessage({
 				type: "updateExperimental",
@@ -268,8 +275,12 @@ const SettingsView = ({ onDone }: SettingsViewProps) => {
 							value={completionMode}
 							onChange={(e: any) => setCompletionMode(e.detail?.target?.value || e.target?.value)}
 							style={{ width: "100%" }}>
-								<VSCodeOption key="0" value="0">行补全</VSCodeOption>
-								<VSCodeOption key="1" value="1">块补全</VSCodeOption>
+							<VSCodeOption key="0" value="0">
+								行补全
+							</VSCodeOption>
+							<VSCodeOption key="1" value="1">
+								块补全
+							</VSCodeOption>
 						</VSCodeDropdown>
 					</div>
 				</div>

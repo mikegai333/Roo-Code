@@ -103,7 +103,7 @@ export class Cline {
 	isInitialized = false
 
 	// checkpoints
-	checkpointsEnabled: boolean = false
+	checkpointsEnabled: boolean = true
 	private checkpointService?: CheckpointService
 
 	// streaming
@@ -145,7 +145,7 @@ export class Cline {
 		this.fuzzyMatchThreshold = fuzzyMatchThreshold ?? 1.0
 		this.providerRef = new WeakRef(provider)
 		this.diffViewProvider = new DiffViewProvider(cwd)
-		this.checkpointsEnabled = false
+		this.checkpointsEnabled = enableCheckpoints ?? false
 
 		if (historyItem) {
 			this.taskId = historyItem.id
@@ -3350,7 +3350,8 @@ export class Cline {
 	}
 
 	public async checkpointSave({ isFirst }: { isFirst: boolean }) {
-		if (!this.checkpointsEnabled) {
+		const { mode } = (await this.providerRef.deref()?.getState()) ?? {}
+		if (!this.checkpointsEnabled || mode === "ask") {
 			return
 		}
 
