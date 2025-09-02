@@ -42,3 +42,5 @@ webview-ui/node_modules/**
 
 # Include icons
 !assets/icons/**
+
+node_modules.zip

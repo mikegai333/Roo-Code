@@ -203,8 +203,13 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 					const provider = this.getProvider()
 					if (!provider) return
 					const request = this.buildStreamRequest(prompt, provider)
-					const filename = this._document ? path.basename(this._document.fileName) : ""
-					let newTelemetry = { ...telemetry, requestId: uuidv4(), filename }
+					const fileName = this._document ? path.basename(this._document.fileName) : ""
+					let newTelemetry = {
+						...telemetry,
+						requestId: uuidv4(),
+						fileName,
+						language: this._document?.languageId,
+					}
 					console.log("newTelemetry", newTelemetry)
 					let requestBody = { ...request.body, telemetry: newTelemetry }
 					this._requestId = newTelemetry.requestId

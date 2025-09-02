@@ -962,7 +962,7 @@ export class Cline {
 			}
 			return { role, content }
 		})
-		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory)
+		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, this.taskId)
 		const iterator = stream[Symbol.asyncIterator]()
 
 		try {

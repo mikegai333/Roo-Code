@@ -37,7 +37,7 @@ let extensionContext: vscode.ExtensionContext
 // Your extension is activated the very first time the command is executed.
 export function activate(context: vscode.ExtensionContext) {
 	initializeConfiguration(context)
-	vscode.commands.executeCommand("setContext", "newVersion", context.globalState.get("mode") !== 'ask')
+	vscode.commands.executeCommand("setContext", "newVersion", context.globalState.get("mode") !== "ask")
 	extensionContext = context
 	outputChannel = vscode.window.createOutputChannel("AIxCoding")
 	context.subscriptions.push(outputChannel)
@@ -108,19 +108,41 @@ export function activate(context: vscode.ExtensionContext) {
 	const fileInteractionCache = new FileInteractionCache()
 	const ide = new VsCodeIde(context)
 	vscode.workspace.onDidSaveTextDocument(async (event) => {
-		ide.updateLastFileSaveTimestamp();
+		ide.updateLastFileSaveTimestamp()
 		// this.core.invoke("files/changed", {
 		//   uris: [event.uri.toString()],
 		// });
-	  });
+	})
 	const completionProvider = new CompletionProvider(statusBar, fileInteractionCache, templateProvider, context, ide)
 	templateProvider.init()
 	statusBar.text = "AIxCoding"
 	statusBar.command = "aixcoding.toggleCompletion"
 	updateStatusBar()
 	statusBar.show()
+	// 定义白名单语言 ID
+	const WHITELISTED_LANGUAGES = [
+		"java",
+		"javascript",
+		"python",
+		"shellscript",
+		"sql",
+		"xml",
+		"vue",
+		"html",
+		"cpp",
+		"json",
+		"css",
+		"typescript",
+		"typescriptreact",
+		"c",
+		"go",
+	]
+	const documentSelector: vscode.DocumentSelector = WHITELISTED_LANGUAGES.map((lang) => ({
+		language: lang,
+		scheme: "file", // 你也可以添加 'untitled' 来支持未保存的文件
+	}))
 	context.subscriptions.push(
-		vscode.languages.registerInlineCompletionItemProvider({ pattern: "**" }, completionProvider),
+		vscode.languages.registerInlineCompletionItemProvider(documentSelector, completionProvider),
 	)
 
 	// 停止补全代码
