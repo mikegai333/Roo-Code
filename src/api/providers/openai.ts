@@ -13,6 +13,7 @@ import { convertToR1Format } from "../transform/r1-format"
 import { convertToSimpleMessages } from "../transform/simple-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { telemetry } from "../../common/constants"
+import crypto from "crypto"
 
 // Add custom interface for OpenRouter params
 type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
@@ -33,7 +34,7 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 
 	constructor(options: OpenAiHandlerOptions) {
 		this.options = options
-		console.log("openaiOptions", this.options)
+
 		const baseURL = this.options.openAiBaseUrl ?? "http://22.189.54.139/aicoding/api/v1" //"https://api.openai.com/v1"
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		let urlHost: string
@@ -59,7 +60,11 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 		}
 	}
 
-	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		messageId?: string,
+	): ApiStream {
 		const modelInfo = this.getModel().info
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
@@ -81,7 +86,7 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 			} else {
 				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 			}
-
+			const telemetryObj = { ...telemetry, chatId: messageId, requestId: crypto.randomUUID() }
 			const requestOptions: OpenRouterChatCompletionParams = {
 				model: modelId,
 				temperature:
@@ -90,8 +95,9 @@ export class OpenAiHandler implements ApiHandler, SingleCompletionHandler {
 				messages: convertedMessages,
 				stream: true as const,
 				stream_options: { include_usage: true },
-				telemetry,
+				telemetry: telemetryObj,
 			}
+			console.log("openai options", this.options, modelInfo)
 			// if (this.options.includeMaxTokens) {
 			requestOptions.max_tokens = modelInfo?.maxTokens
 			// }

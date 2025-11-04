@@ -58,6 +58,12 @@ const copyWasmFiles = {
 				const filename = `tree-sitter-${lang}.wasm`
 				fs.copyFileSync(path.join(languageWasmDir, filename), path.join(targetDir, filename))
 			})
+
+			const schemaSource = path.join(__dirname, "src", "schema.json")
+			const schemaDest = path.join(__dirname, "dist", "schema.json")
+			if (fs.existsSync(schemaSource)) {
+				fs.copyFileSync(schemaSource, schemaDest)
+			}
 		})
 	},
 }

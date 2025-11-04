@@ -45,7 +45,7 @@ export const kebabToSentence = (kebabStr: string) => {
 	return words.join(" ")
 }
 
-export const getLineBreakCount = (str: string) => str.split("\n").length
+export const getLineBreakCount = (str: string) => str.split("\n").filter((line) => line.trim().length > 0).length
 
 export const getModelShortName = (name: string) => {
 	if (name.length > 25) {

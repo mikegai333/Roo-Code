@@ -22,7 +22,7 @@ export interface SingleCompletionHandler {
 }
 
 export interface ApiHandler {
-	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream
+	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[], messageId?: string): ApiStream
 	getModel(): { id: string; info: ModelInfo }
 }
 

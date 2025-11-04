@@ -66,7 +66,11 @@ import { ContextRetrievalService } from "../snippets/ContextRetrievalService"
 import { TabAutocompleteOptions } from "../util"
 import { renderPrompt } from "../snippets/template"
 import * as path from "path"
-import { DiagnosticsNextEditProvider, DiagnosticsNextEditResult, INextEditProvider } from "../../copilot/extension/inlineEdits/vscode-node/features/diagnosticsInlineEditProvider"
+import {
+	DiagnosticsNextEditProvider,
+	DiagnosticsNextEditResult,
+	INextEditProvider,
+} from "../../copilot/extension/inlineEdits/vscode-node/features/diagnosticsInlineEditProvider"
 import { VSCodeWorkspace } from "../../copilot/extension/inlineEdits/vscode-node/parts/vscodeWorkspace"
 import { CancellationToken, CancellationTokenSource } from "../../copilot/util/vs/base/common/cancellation"
 import { INextEditResult } from "../../copilot/extension/inlineEdits/node/nextEditResult"
@@ -77,34 +81,34 @@ import { ShowNextEditPreference } from "../../copilot/platform/inlineEdits/commo
 import { toExternalRange } from "../../copilot/extension/inlineEdits/vscode-node/features/diagnosticsBasedCompletions/diagnosticsCompletions"
 
 abstract class BaseNesCompletionInfo<T extends INextEditResult> {
-	public abstract source: string;
+	public abstract source: string
 
 	constructor(
 		public readonly suggestion: T,
 		public readonly documentId: DocumentId,
 		public readonly document: TextDocument,
-		public readonly requestUuid: string
-	) { }
+		public readonly requestUuid: string,
+	) {}
 }
 export interface NesCompletionItem extends InlineCompletionItem {
-	readonly info: NesCompletionInfo;
-	wasShown: boolean;
+	readonly info: NesCompletionInfo
+	wasShown: boolean
 }
 class NesCompletionList extends InlineCompletionList {
-	public override enableForwardStability = true;
+	public override enableForwardStability = true
 
 	constructor(
 		public readonly requestUuid: string,
 		item: NesCompletionItem | undefined,
 		public override readonly commands: Command[],
 	) {
-		super(item === undefined ? [] : [item]);
+		super(item === undefined ? [] : [item])
 	}
 }
 export class DiagnosticsCompletionInfo extends BaseNesCompletionInfo<DiagnosticsNextEditResult> {
-	public readonly source = 'diagnostics';
+	public readonly source = "diagnostics"
 }
-export type NesCompletionInfo = DiagnosticsCompletionInfo;
+export type NesCompletionInfo = DiagnosticsCompletionInfo
 export class CompletionProvider implements InlineCompletionItemProvider {
 	private _config = workspace.getConfiguration("aixcoding.main.config")
 	private _abortController: AbortController | null
@@ -145,7 +149,6 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	private _globalState
 	private _secretState
 	private contextRetrievalService: ContextRetrievalService
-	
 
 	constructor(
 		statusBar: StatusBarItem,
@@ -176,8 +179,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		document: TextDocument,
 		position: Position,
 		context: InlineCompletionContext,
-		token: CancellationToken
-		
+		token: CancellationToken,
 	): Promise<InlineCompletionItem[] | InlineCompletionList | NesCompletionList | null | undefined> {
 		this._isAborted = false
 		console.log("[AIXCODING] provideInlineCompletionItems called, enableCompletion:", this._autoSuggestEnabled)
@@ -198,15 +200,29 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		}
 		if (
 			!this._enabled ||
-			!editor 
-			||
+			!editor ||
 			isLastCompletionAccepted ||
 			this._lastCompletionMultiline ||
 			getShouldSkipCompletion(context, this._autoSuggestEnabled) ||
 			getIsMiddleOfString() ||
 			!triggerCompletion()
 		) {
-			console.log("[AIXCODING] Early return: _enabled:", this._enabled, "editor:", !!editor, "isLastCompletionAccepted:", isLastCompletionAccepted, "_lastCompletionMultiline:", this._lastCompletionMultiline, "shouldSkip:", getShouldSkipCompletion(context, this._autoSuggestEnabled), "isMiddleOfString:", getIsMiddleOfString(), "triggerCompletion:", triggerCompletion())
+			console.log(
+				"[AIXCODING] Early return: _enabled:",
+				this._enabled,
+				"editor:",
+				!!editor,
+				"isLastCompletionAccepted:",
+				isLastCompletionAccepted,
+				"_lastCompletionMultiline:",
+				this._lastCompletionMultiline,
+				"shouldSkip:",
+				getShouldSkipCompletion(context, this._autoSuggestEnabled),
+				"isMiddleOfString:",
+				getIsMiddleOfString(),
+				"triggerCompletion:",
+				triggerCompletion(),
+			)
 			this._acceptedLastCompletion = false
 			this._lastCompletionMultiline = false
 			// this._statusBar.text = "$(check) AI×Coding";
@@ -219,20 +235,20 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._statusBar.text = "$(loading~spin) AI×Coding"
 
 		// 开始请求获取诊断式补全结果
-		const doc = this._workspace.getDocumentByTextDocument(document);
+		const doc = this._workspace.getDocumentByTextDocument(document)
 		// if(!doc) {
 		// 	return undefined
 		// }
-		const requestCancellationTokenSource = new CancellationTokenSource(token);
-		let suggestionInfo: NesCompletionInfo | undefined;
-		const logContext = new InlineEditRequestLogContext(doc!.id.uri, document.version, context);
-		let diagnosticsSuggestion = undefined;
+		const requestCancellationTokenSource = new CancellationTokenSource(token)
+		let suggestionInfo: NesCompletionInfo | undefined
+		const logContext = new InlineEditRequestLogContext(doc!.id.uri, document.version, context)
+		let diagnosticsSuggestion = undefined
 		diagnosticsSuggestion = await this.diagnosticsProvider.getNextEdit(
-					doc!.id,
-					context,
-					logContext,
-					// 50,
-					requestCancellationTokenSource.token,
+			doc!.id,
+			context,
+			logContext,
+			// 50,
+			requestCancellationTokenSource.token,
 		)
 		// const emptyList = new NesCompletionList(context.requestUuid, undefined, []);
 		// if (token.isCancellationRequested) {
@@ -240,37 +256,31 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		// }
 
 		// 判断是否有诊断式补全建议，有的话直接采纳，没有的话调大模型补全
-		suggestionInfo = new DiagnosticsCompletionInfo(diagnosticsSuggestion, doc!.id, document, context.requestUuid);
+		suggestionInfo = new DiagnosticsCompletionInfo(diagnosticsSuggestion, doc!.id, document, context.requestUuid)
 		if (diagnosticsSuggestion?.result && suggestionInfo.suggestion.result) {
-			const result = suggestionInfo.suggestion.result;
-	
-			const range = this.documentRangeFromOffsetRange(document, result.edit.replaceRange);
-	
+			const result = suggestionInfo.suggestion.result
+
+			const range = this.documentRangeFromOffsetRange(document, result.edit.replaceRange)
+
 			// 只在光标距离编辑最多4行时显示编辑
-			const showRange = (
-				true//result.showRangePreference === ShowNextEditPreference.AroundEdit
-					? new Range(
-						Math.max(range.start.line - 4, 0),
-						0,
-						range.end.line + 4,
-						Number.MAX_SAFE_INTEGER
-					)
-					: undefined
-			);
-	
-			const displayLocation: InlineCompletionDisplayLocation | undefined = result.displayLocation ? {
-				range: toExternalRange(result.displayLocation.range),
-				label: result.displayLocation.label
-			} : undefined;
-	
-	
+			const showRange = true //result.showRangePreference === ShowNextEditPreference.AroundEdit
+				? new Range(Math.max(range.start.line - 4, 0), 0, range.end.line + 4, Number.MAX_SAFE_INTEGER)
+				: undefined
+
+			const displayLocation: InlineCompletionDisplayLocation | undefined = result.displayLocation
+				? {
+						range: toExternalRange(result.displayLocation.range),
+						label: result.displayLocation.label,
+					}
+				: undefined
+
 			// const allowInlineCompletions = true; // 简化配置，默认启用
 			// const isInlineCompletion = allowInlineCompletions && isInlineSuggestion(position, document, range, result.edit.newText);
 			const learnMoreAction: Command = {
-				title: 'Learn More',
-				command: 'inlineEdit.learnMore',
-				tooltip: 'https://example.com/learn-more'
-			};		
+				title: "Learn More",
+				command: "inlineEdit.learnMore",
+				tooltip: "https://example.com/learn-more",
+			}
 			const inlineEdit: NesCompletionItem = {
 				insertText: result.edit.newText, // 修复：必须为补全文本，否则 VSCode 不显示
 				range,
@@ -280,11 +290,10 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 				showInlineEditMenu: true,
 				displayLocation,
 				wasShown: false,
-				action: learnMoreAction
-	
-			};
+				action: learnMoreAction,
+			}
 			this._statusBar.text = "$(check) AI×Coding"
-			return new NesCompletionList(context.requestUuid, inlineEdit, []);
+			return new NesCompletionList(context.requestUuid, inlineEdit, [])
 		} else {
 			//诊断式补全没有结果的话调用大模型补全
 			// this._statusBar.command = "aixcoding.stopCompletion";
@@ -314,7 +323,6 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 			const prompt = await this.getPrompt(this._prefixSuffix)
 			if (!prompt) return
-
 
 			return new Promise<ResolvedInlineCompletion>((resolve, reject) => {
 				this._debouncer = setTimeout(() => {
@@ -356,17 +364,11 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 					})
 				}, this._debounceWait)
 			})
-		}		
-
-
-
+		}
 	}
 
 	private documentRangeFromOffsetRange(doc: TextDocument, range: OffsetRange): Range {
-		return new Range(
-			doc.positionAt(range.start),
-			doc.positionAt(range.endExclusive)
-		);
+		return new Range(doc.positionAt(range.start), doc.positionAt(range.endExclusive))
 	}
 	private buildStreamRequest(prompt: string, provider: TwinnyProvider) {
 		const body = createStreamRequestBodyFim(provider.provider, prompt, {
@@ -616,6 +618,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 				snippetPayload,
 				workspaceDirs,
 				helper,
+				document: this._document,
 			})
 			return prompt
 		}
@@ -722,4 +725,3 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._autoSuggestEnabled = this._extensionContext.globalState.get("enableCompletion", false)
 	}
 }
-

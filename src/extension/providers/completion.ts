@@ -122,7 +122,6 @@ export class DiagnosticsCompletionInfo extends BaseNesCompletionInfo<Diagnostics
 }
 export type NesCompletionInfo = DiagnosticsCompletionInfo
 export class CompletionProvider implements InlineCompletionItemProvider {
-	private _config = workspace.getConfiguration("aixcoding.main.config")
 	private _abortController: AbortController | null
 	private _acceptedLastCompletion = false
 	private _completionCacheEnabled = false
@@ -162,6 +161,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	private _secretState
 	private contextRetrievalService: ContextRetrievalService
 	private completionContext: InlineCompletionContext | undefined
+	private _apiKey: string | undefined
+	private _baseApi: string | undefined
 
 	constructor(
 		statusBar: StatusBarItem,
@@ -185,8 +186,8 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 		this._secretState = extentionContext.secrets
 		this._autoSuggestEnabled = extentionContext.globalState.get("enableCompletion", false)
 		this.contextRetrievalService = new ContextRetrievalService(this.ide)
-
-		console.log(this.diagnosticsProvider)
+		this._baseApi = this._globalState.get("baseApi")
+		this._apiKey = this._globalState.get("openAiApiKey")
 	}
 
 	public async provideInlineCompletionItems(
@@ -258,31 +259,31 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 	// 报告补全结果显示事件
 	public handleDidShowCompletionItem(completionItem: NesCompletionItem, updatedInsertText: string) {
 		console.log("shown", completionItem, updatedInsertText)
-		// this.reportEvent(InlineCompletionReportKind.Shown, completionItem)
+		this.reportEvent(InlineCompletionReportKind.Shown, completionItem)
 	}
 	// 报告补全结果接受事件
 	private _handleAcceptance(item: NesCompletionItem) {
 		console.log("accept", item)
 		this.setAcceptedLastCompletion(true)
-		// this.updateEvent(InlineCompletionReportKind.Accepted)
+		this.updateEvent(InlineCompletionReportKind.Accepted)
 	}
 	// 报告补全结果拒绝事件
 	private _handleDidRejectCompletionItem(item: NesCompletionItem) {
 		console.log("reject", item)
 		this.setAcceptedLastCompletion(false)
-		// this.updateEvent(InlineCompletionReportKind.Rejected)
+		this.updateEvent(InlineCompletionReportKind.Rejected)
 	}
 
 	// 报告补全结果忽略事件
 	private _handleDidIgnoreCompletionItem(item: NesCompletionItem, supersededBy: NesCompletionItem | undefined) {
 		console.log("ignored", item, supersededBy)
 		this.setAcceptedLastCompletion(false)
-		// this.updateEvent(InlineCompletionReportKind.Ignored)
+		this.updateEvent(InlineCompletionReportKind.Ignored)
 	}
 
 	public reportEvent(clientStatus: string, completionItem: NesCompletionItem) {
 		// console.log(this.completionContext.requestUuid)
-		const apiUrl = `${this._config.get("apiBaseUrl")}/api/v1/report/completion-event`
+		const apiUrl = `${this._baseApi}/api/v1/report/completion-event`
 		const clientRequestId = this.completionContext?.requestUuid
 		const completionLines = getLineBreakCount(completionItem.insertText as string)
 		const reportBody = {
@@ -302,7 +303,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			method: "POST", // 或 'PUT'
 			headers: {
 				"Content-Type": "application/json",
-				Token: this._config.get("apiKey") || "",
+				Token: this._apiKey || "",
 			},
 			body: JSON.stringify(reportBody),
 		})
@@ -313,7 +314,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 
 	// 更新事件状态
 	public updateEvent(clientStatus: string) {
-		const apiUrl = `${this._config.get("apiBaseUrl")}/api/v1/report/completion-event/update`
+		const apiUrl = `${this._baseApi}/api/v1/report/completion-event/update`
 		const clientRequestId = this.completionContext?.requestUuid
 		const reportBody = {
 			clientRequestId,
@@ -323,7 +324,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 			method: "POST", // 或 'PUT'
 			headers: {
 				"Content-Type": "application/json",
-				Token: this._config.get("apiKey") || "",
+				Token: this._apiKey || "",
 			},
 			body: JSON.stringify(reportBody),
 		})
@@ -455,8 +456,13 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 					}
 
 					const request = this.buildStreamRequest(prompt, provider)
-					const filename = path.basename(document.fileName)
-					const newTelemetry = { ...telemetry, requestId: context.requestUuid, filename }
+					const fileName = path.basename(document.fileName)
+					const newTelemetry = {
+						...telemetry,
+						requestId: context.requestUuid,
+						fileName,
+						language: document.languageId,
+					}
 					const requestBody = { ...request.body, telemetry: newTelemetry }
 					this._requestId = newTelemetry.requestId
 
@@ -754,6 +760,7 @@ export class CompletionProvider implements InlineCompletionItemProvider {
 				snippetPayload,
 				workspaceDirs,
 				helper,
+				document: this._document,
 			})
 			return prompt
 		}

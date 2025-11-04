@@ -3,7 +3,7 @@
 	"displayName": "AIxCoding",
 	"description": "一个基于大模型的智能编码VS Code插件",
 	"publisher": "bocsoft",
-	"version": "3.1.0-alpha",
+	"version": "3.1.0-alpha.1",
 	"enabledApiProposals": [
 		"extensionsAny",
 		"newSymbolNamesProvider",
